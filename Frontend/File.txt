@@ -1,0 +1,108 @@
+# 🎨 FRONTEND - Plataforma de E-Learning
+
+## 📋 Estado Actual del Frontend
+
+### 🚧 **EN DESARROLLO**
+El frontend de la plataforma de e-learning está actualmente en fase de planificación y diseño.
+
+### 🎯 **Tecnologías Planificadas**
+- **React 18+** - Biblioteca principal para la interfaz de usuario
+- **TypeScript** - Para tipado estático y mejor desarrollo
+- **Vite** - Herramienta de build rápida y moderna
+- **Tailwind CSS** - Framework de CSS utilitario para diseño responsive
+- **React Router** - Para navegación entre páginas
+- **Axios** - Cliente HTTP para comunicación con la API
+- **React Query/TanStack Query** - Para gestión de estado del servidor
+- **Zustand** - Para gestión de estado global (alternativa a Redux)
+
+### 📱 **Páginas Planificadas (12 páginas principales)**
+
+#### **🏠 PÁGINAS PÚBLICAS (3)**
+1. **Landing Page Principal** (`/`) - Página de bienvenida y marketing
+2. **Catálogo de Cursos** (`/courses`) - Mostrar todos los cursos disponibles
+3. **Detalle de Curso** (`/courses/:id`) - Información completa del curso
+
+#### **🔐 PÁGINAS DE AUTENTICACIÓN (2)**
+4. **Login** (`/login`) - Iniciar sesión
+5. **Registro** (`/register`) - Crear cuenta nueva
+
+#### **👨‍🎓 ÁREA DEL ESTUDIANTE (3)**
+6. **Dashboard Estudiante** (`/dashboard`) - Panel principal del estudiante
+7. **Mis Cursos** (`/my-courses`) - Listado detallado de cursos inscritos
+8. **Visor de Curso** (`/courses/:id/learn`) - Consumir contenido del curso
+
+#### **👨‍🏫 ÁREA DEL INSTRUCTOR (3)**
+9. **Dashboard Instructor** (`/instructor/dashboard`) - Panel principal del instructor
+10. **Gestión de Cursos** (`/instructor/courses`) - CRUD de cursos del instructor
+11. **Crear/Editar Curso** (`/instructor/courses/new` y `/instructor/courses/:id/edit`) - Formulario de curso
+
+#### **👨‍💼 ÁREA ADMINISTRATIVA (1)**
+12. **Panel Admin** (`/admin`) - Gestión general de la plataforma
+
+### 🧩 **Componentes Reutilizables Planificados**
+- **CourseCard** - Tarjeta de curso para grids
+- **VideoPlayer** - Player YouTube embebido
+- **ProgressBar** - Barra de progreso
+- **UserMenu** - Menú desplegable de usuario
+- **Navigation** - Barra de navegación responsive
+- **Footer** - Pie de página con enlaces
+- **LoadingSpinner** - Indicador de carga
+- **ErrorBoundary** - Manejo de errores
+- **ProtectedRoute** - Rutas protegidas por rol
+- **NotFound (404)** - Página de error
+
+### 🔧 **Configuración de Desarrollo**
+```bash
+# Comandos para iniciar el proyecto (cuando esté configurado)
+npm create vite@latest frontend -- --template react-ts
+cd frontend
+npm install
+npm run dev
+```
+
+### 📊 **Responsive Breakpoints**
+- **Mobile:** 320px - 768px
+- **Tablet:** 768px - 1024px  
+- **Desktop:** 1024px+
+
+### 🔗 **Integración con Backend**
+- **Base URL:** http://localhost:8080
+- **Endpoints principales:**
+  - `/api/auth/**` - Autenticación y autorización
+  - `/api/public/**` - Endpoints públicos
+  - `/api/protected/**` - Endpoints protegidos
+  - `/api/users/**` - Gestión de usuarios
+  - `/api/refresh-tokens/**` - Gestión de refresh tokens
+
+### 🎨 **Diseño y UX**
+- **Paleta de colores:** Por definir
+- **Tipografía:** Sistema de fuentes moderno
+- **Iconografía:** Lucide React o Heroicons
+- **Animaciones:** Framer Motion para transiciones suaves
+- **Accesibilidad:** Cumplimiento WCAG 2.1 AA
+
+### 📝 **Próximos Pasos**
+1. ✅ Configurar proyecto React con TypeScript
+2. ✅ Instalar dependencias básicas
+3. ✅ Configurar Tailwind CSS
+4. ✅ Crear estructura de carpetas
+5. ✅ Implementar sistema de rutas
+6. ✅ Crear componentes base
+7. ✅ Implementar autenticación JWT
+8. ✅ Integrar con API del backend
+9. ✅ Implementar páginas principales
+10. ✅ Testing y optimización
+
+### 🧪 **Testing Planificado**
+- **Jest** - Para pruebas unitarias
+- **React Testing Library** - Para pruebas de componentes
+- **Cypress** - Para pruebas end-to-end
+- **MSW (Mock Service Worker)** - Para simular API
+
+### 🚀 **Deploy Planificado**
+- **Vercel** - Para hosting del frontend
+- **Netlify** - Alternativa para hosting
+- **GitHub Pages** - Para documentación
+
+---
+*Este archivo se actualizará conforme avance el desarrollo del frontend.*
