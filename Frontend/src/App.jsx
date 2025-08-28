@@ -1,11 +1,14 @@
 
 function App() {
- 
+
 
   return (
-    <>
 
-    </>
+
+     <h1 className="text-6xl bg-black text-white font-bold underline ">
+      Hello world!
+    </h1>
+
   )
 }
 
