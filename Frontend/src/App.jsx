@@ -1,11 +1,11 @@
-import MainHeader from '@/components/layout/Header/MainHearder'
+import MainHeader from '@/components/common/Header'
 function App() {
 
 
   return (
 
 
-    <MainHeader/>
+    <Header/>
 
   )
 }
