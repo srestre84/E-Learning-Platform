@@ -1,4 +1,4 @@
-import MainHeader from '@/components/layout/Header/Main-Hearder'
+import MainHeader from '@/components/layout/Header/MainHearder'
 function App() {
 
 
