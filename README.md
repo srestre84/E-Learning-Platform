@@ -325,13 +325,10 @@ ENTRYPOINT ["java","-jar","/app.jar"]
 - **Manejo de errores** robusto
 - **Logging apropiado** para debugging
 
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
 ## 👥 Autores
 
-- **Equipo de Desarrollo** - *Desarrollo inicial* - [NoCountry]
+- **Equipo 7 No Country** - *Desarrollo inicial*
 
 ## 🙏 Agradecimientos
 
@@ -339,15 +336,6 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 - **Spring Security Team** - Por las herramientas de seguridad
 - **Comunidad JWT** - Por las librerías de tokens
 - **NoCountry** - Por la oportunidad de desarrollo
-
----
-
-## 📞 Soporte
-
-Para soporte técnico o preguntas sobre el proyecto:
-- 📧 Email: [tu-email@ejemplo.com]
-- 🐛 Issues: [GitHub Issues]
-- 📖 Documentación: [Wiki del proyecto]
 
 ---
 
