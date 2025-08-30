@@ -21,7 +21,7 @@ jobs:
         distribution: 'temurin'
 
     - name: Build with Maven
-      run: ./mvnw test
+      run: ./mvnw test -Dspring.profiles.active=dev
 
     - name: Deploy to OCI VM
       if: success() # Solo si los pasos anteriores fueron exitosos
