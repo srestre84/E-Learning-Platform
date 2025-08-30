@@ -11,7 +11,7 @@ export default function FormInput({
 }) {
   const [showPassword, setShowPassword] = useState(false);
 
-  // Si es password, cambiamos el tipo dinámicamente
+  // Si es password, se cambia el tipo dinámicamente
   const inputType = type === "password" && showPassword ? "text" : type;
 
   return (
