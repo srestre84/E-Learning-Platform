@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15  # Timeout para todo el job
+    timeout-minutes: 15
     
     steps:
     - uses: actions/checkout@v4
@@ -32,17 +32,16 @@ jobs:
         host: ${{ secrets.VM_HOST }}
         username: ${{ secrets.VM_USER }}
         key: ${{ secrets.VM_SSH_KEY }}
-        timeout: 300s  # Timeout específico para SSH
-        command_timeout: 300s  # Timeout para comandos individuales
+        timeout: 300s
+        command_timeout: 120s
         script: |
-          set -e  # Detener si cualquier comando falla
+          set -e
           
           echo "=== Iniciando deployment ==="
           cd /home/opc/Git-Repository/E-Learning-Platform/Backend/Dev-learning-Platform
           
-          echo "=== Verificando Java y Maven ==="
+          echo "=== Verificando Java ==="
           java -version
-          ./mvnw --version
           
           echo "=== Haciendo git pull ==="
           git pull origin main
@@ -54,41 +53,37 @@ jobs:
             echo "=== Tests exitosos, construyendo aplicación ==="
             ./mvnw clean package -Dspring.profiles.active=prod -DskipTests
             
-            echo "=== Deteniendo aplicación anterior ==="
-            # Oracle Linux: usar pkill con patrón más específico
-            pkill -f 'Dev-learning-Platform.*jar' || true  # No fallar si no hay proceso corriendo
-            sleep 5
+            echo "=== Deteniendo servicio anterior ==="
+            sudo systemctl stop elearning-backend || echo "Servicio no estaba corriendo"
             
-            echo "=== Iniciando nueva aplicación ==="
-            # Para Oracle Linux, verificar si screen está disponible, sino usar nohup
-            if command -v screen > /dev/null; then
-              screen -dmS backend java -jar target/Dev-learning-Platform-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
-            else
-              # Fallback a nohup si screen no está instalado
-              nohup java -jar target/Dev-learning-Platform-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod > app.log 2>&1 &
-              echo $! > backend.pid  # Guardar PID para mejor control
-            fi
+            echo "=== Iniciando nuevo servicio ==="
+            sudo systemctl start elearning-backend
             
-            echo "=== Verificando que la aplicación inició ==="
-            sleep 15
+            echo "=== Esperando que el servicio inicie ==="
+            sleep 10
             
-            # Verificar que el proceso está corriendo (Oracle Linux compatible)
-            if pgrep -f 'Dev-learning-Platform.*jar' > /dev/null; then
-              echo "✅ Despliegue exitoso - Backend iniciado correctamente"
+            echo "=== Verificando estado del servicio ==="
+            if sudo systemctl is-active --quiet elearning-backend; then
+              echo "✅ Despliegue exitoso - Servicio activo"
+              sudo systemctl status elearning-backend --no-pager -l
               
-              # Opcional: verificar que el endpoint responde
-              # curl -f http://localhost:8080/actuator/health || echo "⚠️  Health check falló"
+              # Opcional: Health check
+              echo "=== Verificando health endpoint ==="
+              sleep 5
+              curl -f http://localhost:8080/actuator/health || echo "⚠️  Health check no disponible"
               
             else
-              echo "❌ Error: El backend no se inició correctamente"
-              # Mostrar logs para debugging
-              echo "=== Últimas líneas del log ==="
-              tail -20 /home/opc/Git-Repository/E-Learning-Platform/Backend/Dev-learning-Platform/app.log || echo "No se pudo leer app.log"
+              echo "❌ Error: El servicio no se inició correctamente"
+              echo "=== Estado del servicio ==="
+              sudo systemctl status elearning-backend --no-pager -l
+              echo "=== Últimos logs ==="
+              sudo journalctl -u elearning-backend --no-pager -l -n 20
               exit 1
             fi
+            
           else
             echo "❌ Error en los tests, no se despliega"
             exit 1
           fi
           
-          echo "=== Deployment completado ==="
+          echo "=== Deployment completado exitosamente ==="
