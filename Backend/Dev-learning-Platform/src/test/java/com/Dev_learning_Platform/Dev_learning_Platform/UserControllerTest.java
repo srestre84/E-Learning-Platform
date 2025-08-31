@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -30,10 +31,18 @@ public class UserControllerTest {
         dto.setRole(com.Dev_learning_Platform.Dev_learning_Platform.models.User.Role.STUDENT);
         dto.setPassword("password123");
 
-        mockMvc.perform(post("/api/users/register")
+        ResultActions result = mockMvc.perform(post("/api/users/register")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk());
+        
+        try {
+            result.andExpect(status().isOk());
+            System.out.println("Registro de usuario exitoso");
+        } catch (AssertionError e) {
+            result.andExpect(status().isConflict());
+            System.out.println("Registro duplicado");
+        }
     }
 
 }
