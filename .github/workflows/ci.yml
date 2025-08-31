@@ -38,10 +38,8 @@ jobs:
           ./mvnw test -Dspring.profiles.active=prod
           if [ $? -eq 0 ]; then
             ./mvnw clean package -Dspring.profiles.active=prod
-            # Detener proceso anterior
             pkill -f 'java -jar'
             sleep 5
-            # Iniciar el backend en segundo plano
             nohup java -jar target/Dev-learning-Platform-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod > app.log 2>&1 &
             sleep 10
             if ! pgrep -f 'java -jar'; then
@@ -50,4 +48,7 @@ jobs:
             fi
             echo "Despliegue exitoso"
             exit 0
+          else
+            echo "Error en los test, no se despliega"
+            exit 1
           fi
