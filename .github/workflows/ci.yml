@@ -73,7 +73,7 @@ jobs:
               # Health check opcional
               echo "=== Verificando health endpoint ==="
               sleep 10
-              curl -f http://localhost:8080/actuator/health || echo "Health check no disponible (normal si no tienes actuator)"
+              curl -f http://localhost:8080/actuator/health || echo "Health check no disponible"
               
             else
               echo "❌ Error: El servicio no se inició correctamente"
