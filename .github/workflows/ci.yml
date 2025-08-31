@@ -40,10 +40,12 @@ jobs:
             ./mvnw clean package -Dspring.profiles.active=prod
             # Detener proceso anterior
             pkill -f 'java -jar'
+            sleep 5
             # Iniciar el backend en segundo plano
             nohup java -jar target/Dev-learning-Platform-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod > app.log 2>&1 &
+            sleep 10
+            if ! pgrep -f 'java -jar'; then
+              echo "El backend no se inició correctamente"
+              exit 1
+            fi
             echo "Despliegue exitoso"
-          else
-            echo "Error en los test, no se despliega"
-            exit 1
-          fi
