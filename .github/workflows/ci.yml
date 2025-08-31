@@ -49,4 +49,5 @@ jobs:
               exit 1
             fi
             echo "Despliegue exitoso"
+            exit 0
           fi
