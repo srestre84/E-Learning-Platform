@@ -8,47 +8,87 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
+    timeout-minutes: 15  # Timeout para todo el job
+    
     steps:
     - uses: actions/checkout@v4
-
+    
     - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
         java-version: '21'
         distribution: 'temurin'
-
+    
     - name: Build with Maven
       run: |
         cd Backend/Dev-learning-Platform
         ./mvnw test -Dspring.profiles.active=dev
-
+    
     - name: Deploy to OCI VM
-      if: success() # Solo si los pasos anteriores fueron exitosos
+      if: success()
       uses: appleboy/ssh-action@v1
       with:
         host: ${{ secrets.VM_HOST }}
         username: ${{ secrets.VM_USER }}
         key: ${{ secrets.VM_SSH_KEY }}
+        timeout: 300s  # Timeout específico para SSH
+        command_timeout: 300s  # Timeout para comandos individuales
         script: |
+          set -e  # Detener si cualquier comando falla
+          
+          echo "=== Iniciando deployment ==="
           cd /home/opc/Git-Repository/E-Learning-Platform/Backend/Dev-learning-Platform
+          
+          echo "=== Verificando Java y Maven ==="
+          java -version
+          ./mvnw --version
+          
+          echo "=== Haciendo git pull ==="
           git pull origin main
+          
+          echo "=== Ejecutando tests en producción ==="
           ./mvnw test -Dspring.profiles.active=prod
+          
           if [ $? -eq 0 ]; then
-            ./mvnw clean package -Dspring.profiles.active=prod
-            pkill -f 'java -jar'
+            echo "=== Tests exitosos, construyendo aplicación ==="
+            ./mvnw clean package -Dspring.profiles.active=prod -DskipTests
+            
+            echo "=== Deteniendo aplicación anterior ==="
+            # Oracle Linux: usar pkill con patrón más específico
+            pkill -f 'Dev-learning-Platform.*jar' || true  # No fallar si no hay proceso corriendo
             sleep 5
-            nohup java -jar target/Dev-learning-Platform-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod > app.log 2>&1 &
-            sleep 10
-            if ! pgrep -f 'java -jar'; then
-              echo "El backend no se inició correctamente"
+            
+            echo "=== Iniciando nueva aplicación ==="
+            # Para Oracle Linux, verificar si screen está disponible, sino usar nohup
+            if command -v screen > /dev/null; then
+              screen -dmS backend java -jar target/Dev-learning-Platform-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+            else
+              # Fallback a nohup si screen no está instalado
+              nohup java -jar target/Dev-learning-Platform-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod > app.log 2>&1 &
+              echo $! > backend.pid  # Guardar PID para mejor control
+            fi
+            
+            echo "=== Verificando que la aplicación inició ==="
+            sleep 15
+            
+            # Verificar que el proceso está corriendo (Oracle Linux compatible)
+            if pgrep -f 'Dev-learning-Platform.*jar' > /dev/null; then
+              echo "✅ Despliegue exitoso - Backend iniciado correctamente"
+              
+              # Opcional: verificar que el endpoint responde
+              # curl -f http://localhost:8080/actuator/health || echo "⚠️  Health check falló"
+              
+            else
+              echo "❌ Error: El backend no se inició correctamente"
+              # Mostrar logs para debugging
+              echo "=== Últimas líneas del log ==="
+              tail -20 /home/opc/Git-Repository/E-Learning-Platform/Backend/Dev-learning-Platform/app.log || echo "No se pudo leer app.log"
               exit 1
             fi
-            echo "Despliegue exitoso"
-            exit 0
           else
-            echo "Error en los test, no se despliega"
+            echo "❌ Error en los tests, no se despliega"
             exit 1
           fi
+          
+          echo "=== Deployment completado ==="
