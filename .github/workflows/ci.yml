@@ -70,10 +70,10 @@ jobs:
               echo "✅ Despliegue exitoso - Servicio activo"
               sudo systemctl status elearning-backend --no-pager -l
               
-              # Health check
+              # Health check opcional
               echo "=== Verificando health endpoint ==="
               sleep 10
-              curl -f http://localhost:8080/actuator/health || echo "⚠️  Health check no disponible"
+              curl -f http://localhost:8080/actuator/health || echo "Health check no disponible (normal si no tienes actuator)"
               
             else
               echo "❌ Error: El servicio no se inició correctamente"
@@ -104,4 +104,4 @@ jobs:
             exit 1
           fi
           
-          echo "=== Deployment completado exitosamente ===
+          echo "=== Deployment completado exitosamente ==="
