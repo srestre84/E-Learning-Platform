@@ -12,7 +12,7 @@ export default function HeroSection() {
   // Usar las nuevas variables de entorno configuradas
   const isDevelopment = import.meta.env.DEV === true;
   const appTitle = import.meta.env.VITE_APP_TITLE || "EduPlatform";
-  const debugMode = import.meta.env.VITE_DEBUG_MODE === "true";
+  const debugMode = import.meta.env.VITE_DEBUG_MODE === "false";
 
   // Debug: mostrar en consola
   console.log("🚀 HeroSection - import.meta.env:", import.meta.env);
@@ -34,7 +34,7 @@ export default function HeroSection() {
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-gray-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-700"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        
+
 
         {/* Badge de desarrollo */}
         {isDevelopment && (
@@ -67,7 +67,7 @@ export default function HeroSection() {
 
             <div className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start">
               <a
-                href="#cursos"
+                href="cursos"
                 className="group bg-red-500 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-red-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center justify-center">
                 Ver cursos disponibles
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
