@@ -33,5 +33,5 @@ build/
 .vscode/
 
 .github/instructions/Dev_Auth.instructions.md
-/Auth.md
-/env
+
+/Backend/Dev-learning-Platform/src/main/resources/.env
