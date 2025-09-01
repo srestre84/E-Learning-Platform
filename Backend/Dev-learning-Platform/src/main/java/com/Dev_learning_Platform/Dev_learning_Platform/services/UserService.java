@@ -16,7 +16,6 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public User saveUser(User user) {
-        // Hashear la contraseña antes de guardar
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
@@ -24,5 +23,4 @@ public class UserService {
     public User findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
-
 }

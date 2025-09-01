@@ -20,10 +20,10 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<User> registerUser(@RequestBody UserRegisterDto user) {
-        // Buscar si ya existe el usuario
+        
         User existingUser = userService.findByEmail(user.getEmail());
         if (existingUser != null) {
-            // Si ya existe, retorna 200 OK con el usuario existente
+            
             return ResponseEntity.ok(existingUser);
         }
 

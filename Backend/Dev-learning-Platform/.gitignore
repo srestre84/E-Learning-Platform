@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+.github/instructions/Dev_Auth.instructions.md
+/Auth.md
+/env
