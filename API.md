@@ -7,6 +7,9 @@
 **Tipo de Autenticación:** JWT (JSON Web Tokens)  
 **Content-Type:** `application/json`  
 
+## Comando para ejecutar backend en entorno de desarrollo
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+
 ## 🔐 Endpoints de Autenticación
 
 ### 1. Login de Usuario
