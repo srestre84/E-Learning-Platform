@@ -9,15 +9,13 @@ import TestimonioCard from "@/components/Landing/testimonioCard";
 export default function Home() {
   return (
     <>
-     <HeroSection/>
-     <CursoDisponible/>
-     <Price/>
-     <InstuctoresCard/>
-     <TestimonioCard/>
-     <CtaButton/>
+      <HeroSection />
+     
+      <CursoDisponible />
+      <Price />
+      <InstuctoresCard />
+      <TestimonioCard />
+      <CtaButton />
     </>
-
-
-
   );
 }
