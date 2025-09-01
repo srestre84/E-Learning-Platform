@@ -32,6 +32,9 @@ build/
 ### VS Code ###
 .vscode/
 
+### Development Instructions ###
 .github/instructions/Dev_Auth.instructions.md
+.github/instructions/*.instructions.md
 
+### Environment Files ###
 /Backend/Dev-learning-Platform/src/main/resources/.env
