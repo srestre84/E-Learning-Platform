@@ -130,6 +130,203 @@
 #### Nota Importante:
 Si el email ya existe, retorna el usuario existente (200 OK) en lugar de crear uno nuevo.
 
+## 📚 Endpoints de Cursos
+
+### 4. Crear Curso
+**Endpoint:** `POST /api/courses`  
+**Descripción:** Crea un nuevo curso en la plataforma  
+**Acceso:** INSTRUCTOR, ADMIN  
+**Autenticación:** JWT Required  
+
+#### Request Body:
+```json
+{
+  "title": "Curso de Java Básico",
+  "description": "Aprende Java desde cero con ejemplos prácticos y proyectos reales.",
+  "shortDescription": "Curso introductorio de Java para principiantes",
+  "instructorId": 2,
+  "youtubeUrls": [
+    "https://www.youtube.com/watch?v=abc123",
+    "https://www.youtube.com/watch?v=def456"
+  ],
+  "thumbnailUrl": "https://example.com/images/java-course.jpg",
+  "price": 99.99,
+  "isPremium": true,
+  "isPublished": false,
+  "isActive": true,
+  "estimatedHours": 20
+}
+```
+
+#### Validaciones:
+- **title:** Requerido, máximo 200 caracteres
+- **description:** Requerido, máximo 1000 caracteres
+- **shortDescription:** Opcional, máximo 255 caracteres
+- **instructorId:** Requerido, debe existir
+- **youtubeUrls:** Opcional, formato YouTube válido
+- **thumbnailUrl:** Opcional, URL de imagen válida
+- **price:** Requerido, no negativo, máximo 6 dígitos enteros y 2 decimales
+- **estimatedHours:** Opcional, entre 1 y 1000
+
+#### Response Exitoso (201 Created):
+```json
+{
+  "id": 1,
+  "title": "Curso de Java Básico",
+  "description": "Aprende Java desde cero con ejemplos prácticos y proyectos reales.",
+  "shortDescription": "Curso introductorio de Java para principiantes",
+  "instructor": {
+    "id": 2,
+    "userName": "María",
+    "lastName": "García",
+    "email": "maria.garcia@example.com",
+    "role": "INSTRUCTOR"
+  },
+  "youtubeUrls": [
+    "https://www.youtube.com/watch?v=abc123",
+    "https://www.youtube.com/watch?v=def456"
+  ],
+  "thumbnailUrl": "https://example.com/images/java-course.jpg",
+  "price": 99.99,
+  "isPremium": true,
+  "isPublished": false,
+  "isActive": true,
+  "estimatedHours": 20,
+  "createdAt": "2025-01-01T10:00:00.000+00:00",
+  "updatedAt": "2025-01-01T10:00:00.000+00:00"
+}
+```
+
+### 5. Catálogo Público de Cursos
+**Endpoint:** `GET /api/courses`  
+**Descripción:** Obtiene todos los cursos activos y publicados  
+**Acceso:** Público  
+
+#### Response Exitoso (200 OK):
+```json
+[
+  {
+    "id": 1,
+    "title": "Curso de Java Básico",
+    "description": "Aprende Java desde cero con ejemplos prácticos.",
+    "shortDescription": "Curso introductorio de Java",
+    "instructor": {
+      "id": 2,
+      "userName": "María",
+      "lastName": "García",
+      "email": "maria.garcia@example.com",
+      "role": "INSTRUCTOR"
+    },
+    "thumbnailUrl": "https://example.com/images/java-course.jpg",
+    "price": 99.99,
+    "isPremium": true,
+    "estimatedHours": 20,
+    "createdAt": "2025-01-01T10:00:00.000+00:00"
+  }
+]
+```
+
+### 6. Detalle de Curso
+**Endpoint:** `GET /api/courses/{id}`  
+**Descripción:** Obtiene el detalle completo de un curso específico  
+**Acceso:** Público  
+
+#### Path Parameters:
+- **id:** ID del curso (requerido)
+
+#### Response Exitoso (200 OK):
+```json
+{
+  "id": 1,
+  "title": "Curso de Java Básico",
+  "description": "Aprende Java desde cero con ejemplos prácticos y proyectos reales.",
+  "shortDescription": "Curso introductorio de Java para principiantes",
+  "instructor": {
+    "id": 2,
+    "userName": "María",
+    "lastName": "García",
+    "email": "maria.garcia@example.com",
+    "role": "INSTRUCTOR"
+  },
+  "youtubeUrls": [
+    "https://www.youtube.com/watch?v=abc123",
+    "https://www.youtube.com/watch?v=def456"
+  ],
+  "thumbnailUrl": "https://example.com/images/java-course.jpg",
+  "price": 99.99,
+  "isPremium": true,
+  "isPublished": true,
+  "isActive": true,
+  "estimatedHours": 20,
+  "createdAt": "2025-01-01T10:00:00.000+00:00",
+  "updatedAt": "2025-01-01T10:00:00.000+00:00"
+}
+```
+
+#### Response de Error (404 Not Found):
+```json
+{
+  "message": "Curso no encontrado con ID: 999",
+  "status": 404,
+  "timestamp": "2025-01-01T10:00:00"
+}
+```
+
+### 7. Cursos por Instructor
+**Endpoint:** `GET /api/courses/instructor/{instructorId}`  
+**Descripción:** Obtiene todos los cursos de un instructor específico  
+**Acceso:** INSTRUCTOR (propio), ADMIN  
+**Autenticación:** JWT Required  
+
+#### Path Parameters:
+- **instructorId:** ID del instructor (requerido)
+
+#### Response Exitoso (200 OK):
+```json
+[
+  {
+    "id": 1,
+    "title": "Curso de Java Básico",
+    "description": "Aprende Java desde cero",
+    "instructor": {
+      "id": 2,
+      "userName": "María",
+      "lastName": "García"
+    },
+    "price": 99.99,
+    "isPublished": true,
+    "estimatedHours": 20,
+    "createdAt": "2025-01-01T10:00:00.000+00:00"
+  }
+]
+```
+
+### 8. Gestión Administrativa de Cursos
+**Endpoint:** `GET /api/courses/admin/active`  
+**Descripción:** Obtiene todos los cursos activos para gestión administrativa  
+**Acceso:** ADMIN  
+**Autenticación:** JWT Required  
+
+#### Response Exitoso (200 OK):
+```json
+[
+  {
+    "id": 1,
+    "title": "Curso de Java Básico",
+    "instructor": {
+      "id": 2,
+      "userName": "María",
+      "lastName": "García"
+    },
+    "price": 99.99,
+    "isPremium": true,
+    "isPublished": true,
+    "isActive": true,
+    "createdAt": "2025-01-01T10:00:00.000+00:00"
+  }
+]
+```
+
 ## 🔒 Autenticación JWT
 
 ### Headers Requeridos para Endpoints Protegidos
@@ -156,6 +353,32 @@ Content-Type: application/json
   "password": "string (encrypted)",
   "role": "STUDENT | INSTRUCTOR | ADMIN",
   "isActive": "boolean",
+  "createdAt": "timestamp",
+  "updatedAt": "timestamp"
+}
+```
+
+### Curso (Course)
+```json
+{
+  "id": "number",
+  "title": "string (max 200 chars)",
+  "description": "string (max 1000 chars)",
+  "shortDescription": "string (max 255 chars, optional)",
+  "instructor": {
+    "id": "number",
+    "userName": "string",
+    "lastName": "string",
+    "email": "string",
+    "role": "INSTRUCTOR"
+  },
+  "youtubeUrls": ["string[] (YouTube URLs)"],
+  "thumbnailUrl": "string (image URL, optional)",
+  "price": "decimal (8,2)",
+  "isPremium": "boolean",
+  "isPublished": "boolean",
+  "isActive": "boolean",
+  "estimatedHours": "number (1-1000, optional)",
   "createdAt": "timestamp",
   "updatedAt": "timestamp"
 }
@@ -221,13 +444,53 @@ curl -X POST http://localhost:8080/api/users/register \
   }'
 ```
 
-### 3. Acceso a Endpoint Protegido (cURL)
+### 3. Crear Curso (cURL)
+```bash
+curl -X POST http://localhost:8080/api/courses \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Curso de Java Básico",
+    "description": "Aprende Java desde cero con ejemplos prácticos y proyectos reales.",
+    "shortDescription": "Curso introductorio de Java para principiantes",
+    "instructorId": 2,
+    "youtubeUrls": [
+      "https://www.youtube.com/watch?v=abc123"
+    ],
+    "thumbnailUrl": "https://example.com/images/java-course.jpg",
+    "price": 99.99,
+    "isPremium": true,
+    "isPublished": false,
+    "estimatedHours": 20
+  }'
+```
+
+### 4. Obtener Catálogo de Cursos (cURL)
+```bash
+curl -X GET http://localhost:8080/api/courses \
+  -H "Content-Type: application/json"
+```
+
+### 5. Obtener Detalle de Curso (cURL)
+```bash
+curl -X GET http://localhost:8080/api/courses/1 \
+  -H "Content-Type: application/json"
+```
+
+### 6. Obtener Cursos por Instructor (cURL)
+```bash
+curl -X GET http://localhost:8080/api/courses/instructor/2 \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+### 7. Acceso a Endpoint Protegido (cURL)
 ```bash
 curl -X GET http://localhost:8080/api/protected-endpoint \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
-### 4. Validación de Token (cURL)
+### 8. Validación de Token (cURL)
 ```bash
 curl -X GET "http://localhost:8080/auth/validate?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
@@ -299,10 +562,23 @@ const fetchProtectedData = async () => {
 - `POST /auth/login` - Login de usuario
 - `GET /auth/validate` - Validación de token
 - `POST /api/users/register` - Registro de usuario
+- `GET /api/courses` - Catálogo público de cursos
+- `GET /api/courses/{id}` - Detalle del curso
 - `GET /h2-console/**` - Consola H2 (solo desarrollo)
 - `GET /actuator/health` - Health check
 
 ### Endpoints Protegidos (Requieren JWT)
+
+#### INSTRUCTOR y ADMIN
+- `POST /api/courses` - Crear curso
+
+#### INSTRUCTOR (propio) y ADMIN
+- `GET /api/courses/instructor/{instructorId}` - Cursos por instructor
+
+#### Solo ADMIN
+- `GET /api/courses/admin/active` - Gestión administrativa de cursos
+
+#### Todos los usuarios autenticados
 - Todos los demás endpoints bajo `/api/**`
 - Cualquier endpoint no listado como público
 
