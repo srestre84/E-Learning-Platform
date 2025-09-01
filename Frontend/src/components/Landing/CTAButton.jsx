@@ -18,7 +18,7 @@ export default function CtaButton() {
           <a
             href="login"
             className="group bg-red-500 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-red-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center justify-center">
-            Explorar cursos ahora
+            Quiero aprender
             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </a>
           <Link
