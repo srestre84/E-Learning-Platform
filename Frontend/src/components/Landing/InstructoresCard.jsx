@@ -1,4 +1,4 @@
-import React, {  } from "react";
+import React from "react";
 import {
   Star,
   Users,
@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 
 export default function InstuctoresCard() {
-  
   //const [selectedInstructor, setSelectedInstructor] = useState(null);
 
   const instructorInfo = [
