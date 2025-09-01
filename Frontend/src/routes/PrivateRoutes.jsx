@@ -1,7 +1,7 @@
-//import { lazy } from "react";
+import { lazy } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 
-//const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const Dashboard = lazy(() => import("@/pages/Alumno/Dahboard"));
 //const Profile = lazy(() => import("@/pages/Profile"));
 
 const privateRoutes = [
@@ -9,7 +9,7 @@ const privateRoutes = [
     path: "/dashboard",
     element: (
       <AppLayout>
-        {/*<Dashboard />*/}
+        <Dashboard />
       </AppLayout>
     ),
   },
