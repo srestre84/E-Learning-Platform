@@ -7,6 +7,10 @@ import {
   Users,
   BookOpen,
   ArrowLeft,
+  ChevronDown,
+  ChevronUp,
+  Play,
+  Award
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -14,6 +18,8 @@ export default function CatalogoCursos() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("todos");
   const [selectedLevel, setSelectedLevel] = useState("todos");
+
+  const [expandedCourse, setExpandedCourse] = useState(null);
 
   const categories = [
     { id: "todos", name: "Todos los cursos" },
@@ -36,7 +42,7 @@ export default function CatalogoCursos() {
   const cursos = [
     {
       id: 1,
-      title: "React desde Cero hasta Avanzado",
+      title: "Full Stack con React",
       instructor: "Carlos Mendoza",
       category: "frontend",
       level: "intermedio",
@@ -50,6 +56,16 @@ export default function CatalogoCursos() {
       tags: ["React", "JavaScript", "Hooks", "Redux"],
       description:
         "Aprende React desde los fundamentos hasta técnicas avanzadas. Construye aplicaciones modernas y escalables.",
+
+      categoryColor: "",
+
+      whatYouLearn: [
+        "Fundamentos de React",
+        "Custom Hooks ",
+        "APIs RESTful y bases de datos",
+        "Despliegue y DevOps básico",
+      ],
+      requirements: [],
     },
     {
       id: 2,
@@ -188,6 +204,10 @@ export default function CatalogoCursos() {
     }
   };
 
+  const toggleExpanded = (cursoId) => {
+    setExpandedCourse(expandedCourse === cursoId ? null : cursoId);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -269,115 +289,216 @@ export default function CatalogoCursos() {
 
         {/* Grid de Cursos */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredCursos.map((curso) => (
-            <div
-              key={curso.id}
-              className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100">
-              {/* Imagen del curso */}
-              <div className="relative">
-                <img
-                  src={curso.image}
-                  alt={curso.title}
-                  className="w-full h-48 object-cover rounded-t-2xl"
-                />
-                <div className="absolute top-4 right-4">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${getLevelColor(
-                      curso.level
-                    )}`}>
-                    {levels.find((l) => l.id === curso.level)?.name}
-                  </span>
-                </div>
-                {curso.originalPrice > curso.price && (
-                  <div className="absolute top-4 left-4">
-                    <span className="px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full">
-                      -
-                      {Math.round(
-                        ((curso.originalPrice - curso.price) /
-                          curso.originalPrice) *
-                          100
-                      )}
-                      %
-                    </span>
-                  </div>
-                )}
-              </div>
+          {filteredCursos.map((curso) => {
+            const isExpanded = expandedCourse === curso.id;
 
-              {/* Contenido del curso */}
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(
-                      curso.category
-                    )}`}>
-                    {categories.find((c) => c.id === curso.category)?.name}
-                  </span>
-                  <div className="flex items-center">
-                    <Star className="w-4 h-4 text-yellow-500 fill-current mr-1" />
-                    <span className="text-sm font-medium text-gray-700">
-                      {curso.rating}
-                    </span>
-                  </div>
-                </div>
-
-                <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
-                  {curso.title}
-                </h3>
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                  {curso.description}
-                </p>
-
-                <div className="flex items-center text-sm text-gray-500 mb-4">
-                  <span className="mr-4 flex items-center">
-                    <Clock className="w-4 h-4 mr-1" />
-                    {curso.duration}
-                  </span>
-                  <span className="mr-4 flex items-center">
-                    <Users className="w-4 h-4 mr-1" />
-                    {curso.students.toLocaleString()}
-                  </span>
-                  <span className="flex items-center">
-                    <BookOpen className="w-4 h-4 mr-1" />
-                    {curso.instructor}
-                  </span>
-                </div>
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {curso.tags.slice(0, 3).map((tag, index) => (
+            return (
+              <div
+                key={curso.id}
+                className={`"bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 ${
+                  isExpanded ? "shadow-xl scale-[1.02]" : ""
+                } `}>
+                {/* Imagen del curso */}
+                <div className="relative">
+                  <img
+                    src={curso.image}
+                    alt={curso.title}
+                    className="w-full h-48 object-cover rounded-t-2xl"
+                  />
+                  <div className="absolute top-4 right-4">
                     <span
-                      key={index}
-                      className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                      {tag}
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${getLevelColor(
+                        curso.level
+                      )}`}>
+                      {levels.find((l) => l.id === curso.level)?.name}
                     </span>
-                  ))}
+                  </div>
+                  {curso.originalPrice > curso.price && (
+                    <div className="absolute top-4 left-4">
+                      <span className="px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full">
+                        -
+                        {Math.round(
+                          ((curso.originalPrice - curso.price) /
+                            curso.originalPrice) *
+                            100
+                        )}
+                        %
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Precio y botón */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    {curso.originalPrice > curso.price ? (
-                      <div className="flex items-center space-x-2">
-                        <span className="text-2xl font-bold text-red-500">
+                {/* Contenido del curso */}
+                <div className="p-3">
+                  <div className="flex items-center justify-between mb-3">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(
+                        curso.category
+                      )}`}>
+                      {categories.find((c) => c.id === curso.category)?.name}
+                    </span>
+                    <div className="flex items-center">
+                      <Star className="w-4 h-4 text-yellow-500 fill-current mr-1" />
+                      <span className="text-sm font-medium text-gray-700">
+                        {curso.rating}
+                      </span>
+                    </div>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
+                    {curso.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                    {curso.description}
+                  </p>
+
+                  <div className="flex items-center text-sm text-gray-500 mb-4">
+                    <span className="mr-4 flex items-center">
+                      <Clock className="w-4 h-4 mr-1" />
+                      {curso.duration}
+                    </span>
+                    <span className="mr-4 flex items-center">
+                      <Users className="w-4 h-4 mr-1" />
+                      {curso.students.toLocaleString()}
+                    </span>
+                    <span className="flex items-center">
+                      <BookOpen className="w-4 h-4 mr-1" />
+                      {curso.instructor}
+                    </span>
+                  </div>
+
+                  {/* Tags */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {curso.tags.slice(0, 3).map((tag, index) => (
+                      <span
+                        key={index}
+                        className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/*Informacion expanda del curso */}
+
+                  {isExpanded && (
+                    <div className="border-gray-100 border-t pt-4 mb-4 space-y-4 animate-inslide-in-from-top-2 duration-300">
+                      <div>
+                        <h4 className="text-sm font-semibold text-gray-900 mb-2">
+                          Descripción
+                        </h4>
+                        <p className="text-xs text-gray-600 leading-relaxed">
+                          {curso.description}
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-semibold text-gray-900 mb-2">
+                          Lo que aprenderás
+                        </h4>
+                        <div className="space-y-1">
+                          {curso.whatYouLearn.map((item, index) => (
+                            <div key={index} className="flex items-start gap-2">
+                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                              <span className="text-xs text-gray-600">
+                                {item}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="text-sm font-semibold text-gray-900 mb-2">
+                          Requisitos
+                        </h4>
+                        <div className="space-y-1">
+                          {curso.requirements.map((item, index) => (
+                            <div key={index} className="flex items-start gap-2">
+                              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                              <span className="text-xs text-gray-600">
+                                {item}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-100">
+                        <div className="text-center p-2 bg-gray-50 rounded-lg">
+                          <Clock className="w-4 h-4 text-purple-500 mx-auto mb-1" />
+                          <div className="text-xs font-bold text-gray-900">
+                            {curso.duration}
+                          </div>
+                          <div className="text-xs text-gray-500">Duración</div>
+                        </div>
+                        <div className="text-center p-2 bg-gray-50 rounded-lg">
+                          <BookOpen className="w-4 h-4 text-green-500 mx-auto mb-1" />
+                          <div className="text-xs font-bold text-gray-900">
+                            {curso.lessons}
+                          </div>
+                          <div className="text-xs text-gray-500">Lecciones</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Precio y botón */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      {curso.originalPrice > curso.price ? (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-2xl font-bold text-red-500">
+                            ${curso.price}
+                          </span>
+                          <span className="text-lg text-gray-400 line-through">
+                            ${curso.originalPrice}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-2xl font-bold text-gray-900">
                           ${curso.price}
                         </span>
-                        <span className="text-lg text-gray-400 line-through">
-                          ${curso.originalPrice}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-2xl font-bold text-gray-900">
-                        ${curso.price}
-                      </span>
-                    )}
+                      )}
+                    </div>
+                    <button
+                      onClick={() => toggleExpanded(curso.id)}
+                      className="bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-red-600 transition-colors flex items-center gap-1">
+                      {isExpanded ? (
+                        <>
+                          <ChevronUp className="w-3 h-3" />
+                          Ocultar
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="w-3 h-3" />
+                          Ver detalles
+                        </>
+                      )}
+                    </button>
                   </div>
-                  <button className="px-6 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors font-medium">
-                    Ver curso
-                  </button>
                 </div>
+
+                {isExpanded && (
+                   <div className="pt-3 border-t border-gray-100 animate-in slide-in-from-bottom-2 duration-300">
+                   <div className="flex gap-2">
+                     <button className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-1">
+                       <Play className="w-3 h-3" />
+                       Vista previa
+                     </button>
+                     <button className="flex-1 bg-red-500 text-white py-2 rounded-lg text-xs font-semibold hover:bg-red-600 transition-colors flex items-center justify-center gap-1">
+                       <Award className="w-3 h-3" />
+                       Comprar ahora
+                     </button>
+                   </div>
+                 </div>
+
+                )
+
+
+                }
+
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Mensaje si no hay resultados */}
@@ -390,7 +511,7 @@ export default function CatalogoCursos() {
               No se encontraron cursos
             </h3>
             <p className="text-gray-500">
-              Intenta ajustar tus filtros de búsqueda
+              Intenta ajustar tusb filtros de búsqueda
             </p>
           </div>
         )}
