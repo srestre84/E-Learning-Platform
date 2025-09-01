@@ -11,7 +11,7 @@ import {
 
 
 export default function RegisterForm() {
-  
+
   const [ form, setForm]= useState({
     firstName: "",
     lastName: "",
@@ -56,6 +56,8 @@ export default function RegisterForm() {
       icon: <BriefcaseBusiness />,
     },
   ]
+
+
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -136,7 +138,7 @@ export default function RegisterForm() {
             className="mr-2"
             required
           />
-          <a href="http://">Acepto los <span className="text-red-500 font-medium ml-1">Términos de Servicio</span></a> <spam className='ml-1' > y </spam>
+          <a href="http://">Acepto los <span className="text-red-500 font-medium ml-1">Términos de Servicio</span></a> <span className='ml-1' > y </span>
           <a href="">
             <span className="text-red-500 font-medium ml-1">Política de Privacidad</span>
             </a>
@@ -157,15 +159,20 @@ export default function RegisterForm() {
       <button
         type="submit"
         className="w-full bg-red-500 text-white py-3 rounded-lg hover:bg-gray-800 transition-colors duration-200 mt-4"
+
       >
         Crear Cuenta
       </button>
 
       <div className="text-sm mt-4 text-center">
         ¿Ya tienes una cuenta?{" "}
-        <span className="text-red-500 font-medium cursor-pointer">
+
+          <a href="http://">
+          <span  className="text-red-500 font-medium cursor-pointer">
           Iniciar Sesión
-        </span>
+          </span>
+          </a>
+
       </div>
     </form>
   );
