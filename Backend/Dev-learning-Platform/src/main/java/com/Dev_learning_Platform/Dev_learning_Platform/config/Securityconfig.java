@@ -1,10 +1,10 @@
 package com.Dev_learning_Platform.Dev_learning_Platform.config;
 
-import com.Dev_learning_Platform.Dev_learning_Platform.middlewares.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -15,9 +15,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 
+import com.Dev_learning_Platform.Dev_learning_Platform.middlewares.JwtAuthenticationFilter;
+
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class Securityconfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -54,10 +57,17 @@ public class Securityconfig {
             .sessionManagement(session -> 
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
+                // ✅ Endpoints públicos (sin autenticación)
                 .requestMatchers("/auth/**").permitAll()           // Login públicos
                 .requestMatchers("/api/users/register").permitAll() // Registro público  
+                .requestMatchers("/api/courses").permitAll() // Catálogo público
+                .requestMatchers("/api/courses/{id}").permitAll() // Detalle público de curso
+
+                // ✅ Herramientas de desarrollo
                 .requestMatchers("/h2-console/**").permitAll()      // H2 para desarrollo
                 .requestMatchers("/actuator/health").permitAll()    // Health check
+
+                // ✅ Todo lo demás requiere autenticación JWT
                 .anyRequest().authenticated()                       // Resto requiere JWT
             )
             .headers(headers -> headers
