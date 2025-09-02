@@ -1,12 +1,20 @@
-import HeaderApp from "@/components/common/HeaderApp";
-import Dashboard from "@/pages/Alumno/Dahboard"
+import  Sidebar from "@/components/common/Sidebar";
+import HeaderApp from "@/components/common/HeaderApp"
 
-export default function AppLayout({ children }) {
+import { Outlet } from "react-router-dom";
+
+export default function AppLayout() {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
+    <div className="flex min-h-screen">
+      <Sidebar/>
+      <div className="flex-1" >
       <HeaderApp />
-      <Dashboard/>
-      <main className="flex-1 p-6">{children}</main>
+
+      <main className="flex-1 p-6">
+        <Outlet/>
+        </main>
+      </div>
+
     </div>
   );
 }
