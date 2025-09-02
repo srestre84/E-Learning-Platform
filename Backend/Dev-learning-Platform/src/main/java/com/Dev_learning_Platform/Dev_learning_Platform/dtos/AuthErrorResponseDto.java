@@ -43,4 +43,5 @@ public class AuthErrorResponseDto {
                 .path(path)
                 .build();
     }
+
 }
