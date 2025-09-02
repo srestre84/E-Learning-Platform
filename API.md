@@ -234,9 +234,115 @@ Si el email ya existe, retorna el usuario existente (200 OK) en lugar de crear u
 ]
 ```
 
+### 7. Obtener Perfil de Usuario
+**Endpoint:** `GET /api/users/profile`  
+**Descripción:** Obtiene el perfil del usuario autenticado  
+**Historia de Usuario:** "Como usuario quiero ver mi perfil"  
+**Acceso:** STUDENT, INSTRUCTOR, ADMIN  
+**Autenticación:** JWT Required  
+
+#### Response Exitoso (200 OK):
+```json
+{
+  "id": 1,
+  "userName": "Juan",
+  "lastName": "Pérez",
+  "email": "juan.perez@example.com",
+  "role": "STUDENT",
+  "isActive": true,
+  "profileImageUrl": null,
+  "createdAt": "2025-01-01T10:00:00.000+00:00",
+  "updatedAt": "2025-01-01T10:00:00.000+00:00"
+}
+```
+
+#### Response de Error (401 Unauthorized):
+```json
+{
+  "message": "Token ausente, inválido o expirado",
+  "status": 401,
+  "timestamp": "2025-01-01T10:00:00"
+}
+```
+
+#### Response de Error (404 Not Found):
+```json
+{
+  "message": "Usuario no encontrado",
+  "status": 404,
+  "timestamp": "2025-01-01T10:00:00"
+}
+```
+
+### 8. Actualizar Perfil de Usuario
+**Endpoint:** `PUT /api/users/profile`  
+**Descripción:** Actualiza el perfil del usuario autenticado  
+**Historia de Usuario:** "Como usuario quiero editar mi perfil"  
+**Acceso:** STUDENT, INSTRUCTOR, ADMIN  
+**Autenticación:** JWT Required  
+
+#### Request Body:
+```json
+{
+  "userName": "Juan Carlos",
+  "lastName": "Pérez González",
+  "email": "juan.carlos.perez@example.com",
+  "profileImageUrl": "https://example.com/profile-images/user_123.jpg"
+}
+```
+
+#### Validaciones:
+- **userName:** Requerido, 2-50 caracteres, solo letras y espacios
+- **lastName:** Requerido, 2-50 caracteres, solo letras y espacios
+- **email:** Requerido, formato email válido, máximo 100 caracteres, único
+- **profileImageUrl:** Opcional, máximo 500 caracteres, URL válida de imagen
+
+#### Response Exitoso (200 OK):
+```json
+{
+  "id": 1,
+  "userName": "Juan Carlos",
+  "lastName": "Pérez González",
+  "email": "juan.carlos.perez@example.com",
+  "role": "STUDENT",
+  "isActive": true,
+  "profileImageUrl": "https://example.com/profile-images/user_123.jpg",
+  "createdAt": "2025-01-01T10:00:00.000+00:00",
+  "updatedAt": "2025-01-01T12:30:00.000+00:00"
+}
+```
+
+#### Response de Error (400 Bad Request):
+```json
+{
+  "message": "El email ya está en uso por otro usuario",
+  "status": 400,
+  "timestamp": "2025-01-01T10:00:00"
+}
+```
+
+#### Response de Error (422 Unprocessable Entity):
+```json
+{
+  "message": "Datos de entrada inválidos",
+  "errors": [
+    {
+      "field": "userName",
+      "message": "El nombre debe tener entre 2 y 50 caracteres"
+    },
+    {
+      "field": "email",
+      "message": "El formato del email no es válido"
+    }
+  ],
+  "status": 422,
+  "timestamp": "2025-01-01T10:00:00"
+}
+```
+
 ## 📚 Endpoints de Cursos
 
-### 7. Crear Curso
+### 9. Crear Curso
 **Endpoint:** `POST /api/courses`  
 **Descripción:** Crea un nuevo curso en la plataforma  
 **Acceso:** INSTRUCTOR, ADMIN  
@@ -301,7 +407,7 @@ Si el email ya existe, retorna el usuario existente (200 OK) en lugar de crear u
 }
 ```
 
-### 8. Catálogo Público de Cursos
+### 10. Catálogo Público de Cursos
 **Endpoint:** `GET /api/courses`  
 **Descripción:** Obtiene todos los cursos activos y publicados  
 **Acceso:** Público  
@@ -330,7 +436,7 @@ Si el email ya existe, retorna el usuario existente (200 OK) en lugar de crear u
 ]
 ```
 
-### 9. Detalle de Curso
+### 11. Detalle de Curso
 **Endpoint:** `GET /api/courses/{id}`  
 **Descripción:** Obtiene el detalle completo de un curso específico  
 **Acceso:** Público  
@@ -376,7 +482,7 @@ Si el email ya existe, retorna el usuario existente (200 OK) en lugar de crear u
 }
 ```
 
-### 10. Cursos por Instructor
+### 12. Cursos por Instructor
 **Endpoint:** `GET /api/courses/instructor/{instructorId}`  
 **Descripción:** Obtiene todos los cursos de un instructor específico  
 **Acceso:** INSTRUCTOR (propio), ADMIN  
@@ -405,7 +511,7 @@ Si el email ya existe, retorna el usuario existente (200 OK) en lugar de crear u
 ]
 ```
 
-### 11. Gestión Administrativa de Cursos
+### 13. Gestión Administrativa de Cursos
 **Endpoint:** `GET /api/courses/admin/active`  
 **Descripción:** Obtiene todos los cursos activos para gestión administrativa  
 **Acceso:** ADMIN  
@@ -457,8 +563,34 @@ Content-Type: application/json
   "password": "string (encrypted)",
   "role": "STUDENT | INSTRUCTOR | ADMIN",
   "isActive": "boolean",
+  "profileImageUrl": "string (optional)",
   "createdAt": "timestamp",
   "updatedAt": "timestamp"
+}
+```
+
+### Perfil de Usuario (UserProfileDto)
+```json
+{
+  "id": "number",
+  "userName": "string",
+  "lastName": "string",
+  "email": "string",
+  "role": "STUDENT | INSTRUCTOR | ADMIN",
+  "isActive": "boolean",
+  "profileImageUrl": "string (optional)",
+  "createdAt": "timestamp",
+  "updatedAt": "timestamp"
+}
+```
+
+### Actualización de Perfil (UpdateProfileDto)
+```json
+{
+  "userName": "string (2-50 chars, letters and spaces only)",
+  "lastName": "string (2-50 chars, letters and spaces only)",
+  "email": "string (email format, max 100 chars, unique)",
+  "profileImageUrl": "string (optional, max 500 chars, valid image URL)"
 }
 ```
 
@@ -569,7 +701,27 @@ curl -X GET http://localhost:8080/api/users/all \
   -H "Content-Type: application/json"
 ```
 
-### 6. Crear Curso (cURL)
+### 6. Obtener Perfil de Usuario (cURL)
+```bash
+curl -X GET http://localhost:8080/api/users/profile \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+### 7. Actualizar Perfil de Usuario (cURL)
+```bash
+curl -X PUT http://localhost:8080/api/users/profile \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userName": "Juan Carlos",
+    "lastName": "Pérez González",
+    "email": "juan.carlos.perez@example.com",
+    "profileImageUrl": "https://example.com/profile-images/user_123.jpg"
+  }'
+```
+
+### 8. Crear Curso (cURL)
 ```bash
 curl -X POST http://localhost:8080/api/courses \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
@@ -590,32 +742,32 @@ curl -X POST http://localhost:8080/api/courses \
   }'
 ```
 
-### 7. Obtener Catálogo de Cursos (cURL)
+### 9. Obtener Catálogo de Cursos (cURL)
 ```bash
 curl -X GET http://localhost:8080/api/courses \
   -H "Content-Type: application/json"
 ```
 
-### 8. Obtener Detalle de Curso (cURL)
+### 10. Obtener Detalle de Curso (cURL)
 ```bash
 curl -X GET http://localhost:8080/api/courses/1 \
   -H "Content-Type: application/json"
 ```
 
-### 9. Obtener Cursos por Instructor (cURL)
+### 11. Obtener Cursos por Instructor (cURL)
 ```bash
 curl -X GET http://localhost:8080/api/courses/instructor/2 \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json"
 ```
 
-### 10. Acceso a Endpoint Protegido (cURL)
+### 12. Acceso a Endpoint Protegido (cURL)
 ```bash
 curl -X GET http://localhost:8080/api/protected-endpoint \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
-### 11. Validación de Token (cURL)
+### 13. Validación de Token (cURL)
 ```bash
 curl -X GET "http://localhost:8080/auth/validate?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
@@ -706,7 +858,9 @@ const fetchProtectedData = async () => {
 #### INSTRUCTOR (propio) y ADMIN
 - `GET /api/courses/instructor/{instructorId}` - Cursos por instructor
 
-#### Todos los usuarios autenticados
+#### Todos los usuarios autenticados (STUDENT, INSTRUCTOR, ADMIN)
+- `GET /api/users/profile` - Obtener perfil propio
+- `PUT /api/users/profile` - Actualizar perfil propio
 - Todos los demás endpoints bajo `/api/**`
 - Cualquier endpoint no listado como público
 
