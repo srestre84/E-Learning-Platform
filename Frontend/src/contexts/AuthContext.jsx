@@ -1,32 +1,45 @@
-import React, { createContext, useContext, useState } from "react";
+// src/context/AuthContext.jsx
+import React, { createContext, useState, useEffect } from "react";
+import mockAuthService from "@/services/mockAuthService";
+import { ROLE_PERMISSIONS } from "@/constants/roles";
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
-  const login = ({ email, password }) => {
-    // Aquí pondrías llamada a tu API
-    if (email && password) {
-      setUser({ email }); // Simulación de login
+  useEffect(() => {
+    if (mockAuthService.isAuthenticated()) {
+      // Recuperar token y rol del localStorage
+      const token = mockAuthService.getToken();
+      // ⚡ aquí podrías decodificar token si simulas JWT, pero ahora lo mockeamos
+      setUser({ token, role: "student" });
+    }
+  }, []);
+
+  const login = async (email, password) => {
+    try {
+      const loggedUser = await mockAuthService.login(email, password);
+      setUser(loggedUser);
+      return loggedUser;
+    } catch (error) {
+      throw error;
     }
   };
 
-  const logout = () => setUser(null);
+  const logout = () => {
+    mockAuthService.logout();
+    setUser(null);
+  };
 
-  const register = ({ email, password }) => {
-    // Simulación de registro
-    setUser({ email });
-    setUser({ password })
+  const hasPermission = (permission) => {
+    if (!user) return false;
+    return ROLE_PERMISSIONS[user.role]?.[permission] ?? false;
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register }}>
+    <AuthContext.Provider value={{ user, login, logout, hasPermission }}>
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  return useContext(AuthContext);
-}
+};
