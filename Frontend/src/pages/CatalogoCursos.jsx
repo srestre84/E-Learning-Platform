@@ -65,7 +65,11 @@ export default function CatalogoCursos() {
         "APIs RESTful y bases de datos",
         "Despliegue y DevOps básico",
       ],
-      requirements: [],
+      requirements: [
+        "Conocimientos básicos de JavaScript",
+        "Familiaridad con HTML y CSS",
+        "Computadora con conexión a internet"
+      ],
     },
     {
       id: 2,
