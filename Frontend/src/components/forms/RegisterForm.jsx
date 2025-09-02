@@ -1,5 +1,5 @@
 import { useState } from "react";
-import FormInput from "../common/FormInput";
+import FormInput from "../ui/FormInput";
 
 import {
   SquareUser,
@@ -8,11 +8,8 @@ import {
   ShieldHalf,
 } from "lucide-react";
 
-
-
 export default function RegisterForm() {
-
-  const [ form, setForm]= useState({
+  const [form, setForm] = useState({
     firstName: "",
     lastName: "",
     email: "",
@@ -42,12 +39,12 @@ export default function RegisterForm() {
       accountType: type,
     }));
   };
-  const accountTypes =[
+  const accountTypes = [
     {
-      type:"Student",
-      label:"Estudiante",
+      type: "Student",
+      label: "Estudiante",
       description: "Accede a cursos y materiales de aprendizaje",
-      icon: <GraduationCap/>
+      icon: <GraduationCap />,
     },
     {
       type: "instructor",
@@ -55,9 +52,7 @@ export default function RegisterForm() {
       description: "Crea y gestiona cursos educativos",
       icon: <BriefcaseBusiness />,
     },
-  ]
-
-
+  ];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -117,9 +112,10 @@ export default function RegisterForm() {
                 form.accountType === accType.type
                   ? "border-black bg-black text-white shadow-lg"
                   : "border-gray-300 hover:border-black"
-              }`}
-            >
-              <div className="flex justify-center text-4xl mb-2">{accType.icon}</div>
+              }`}>
+              <div className="flex justify-center text-4xl mb-2">
+                {accType.icon}
+              </div>
               <p className="font-semibold text-sm">{accType.label}</p>
               <p className="text-xs">{accType.description}</p>
             </div>
@@ -138,11 +134,18 @@ export default function RegisterForm() {
             className="mr-2"
             required
           />
-          <a href="http://">Acepto los <span className="text-red-500 font-medium ml-1">Términos de Servicio</span></a> <span className='ml-1' > y </span>
+          <a href="http://">
+            Acepto los{" "}
+            <span className="text-red-500 font-medium ml-1">
+              Términos de Servicio
+            </span>
+          </a>{" "}
+          <span className="ml-1"> y </span>
           <a href="">
-            <span className="text-red-500 font-medium ml-1">Política de Privacidad</span>
-            </a>
-
+            <span className="text-red-500 font-medium ml-1">
+              Política de Privacidad
+            </span>
+          </a>
         </label>
         <label className="flex items-center text-gray-700">
           <input
@@ -158,23 +161,18 @@ export default function RegisterForm() {
 
       <button
         type="submit"
-        className="w-full bg-red-500 text-white py-3 rounded-lg hover:bg-gray-800 transition-colors duration-200 mt-4"
-
-      >
+        className="w-full bg-red-500 text-white py-3 rounded-lg hover:bg-gray-800 transition-colors duration-200 mt-4">
         Crear Cuenta
       </button>
 
       <div className="text-sm mt-4 text-center">
         ¿Ya tienes una cuenta?{" "}
-
-          <a href="http://">
-          <span  className="text-red-500 font-medium cursor-pointer">
-          Iniciar Sesión
+        <a href="http://">
+          <span className="text-red-500 font-medium cursor-pointer">
+            Iniciar Sesión
           </span>
-          </a>
-
+        </a>
       </div>
     </form>
   );
-
 }
