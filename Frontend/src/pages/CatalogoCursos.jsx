@@ -83,6 +83,13 @@ export default function CatalogoCursos() {
       tags: ["Node.js", "Express", "MongoDB", "API"],
       description:
         "Desarrolla APIs robustas y escalables con Node.js y Express. Aprende autenticación, bases de datos y deployment.",
+        whatYouLearn: [
+          "Fundamentos de React",
+          "Custom Hooks ",
+          "APIs RESTful y bases de datos",
+          "Despliegue y DevOps básico",
+        ],
+        requirements: [],
     },
     {
       id: 3,
@@ -100,6 +107,13 @@ export default function CatalogoCursos() {
       tags: ["Python", "TensorFlow", "Scikit-learn", "Deep Learning"],
       description:
         "Domina el Machine Learning con Python. Implementa algoritmos de IA y crea modelos predictivos avanzados.",
+        whatYouLearn: [
+          "Fundamentos de React",
+          "Custom Hooks ",
+          "APIs RESTful y bases de datos",
+          "Despliegue y DevOps básico",
+        ],
+        requirements: [],
     },
     {
       id: 4,
@@ -117,6 +131,13 @@ export default function CatalogoCursos() {
       tags: ["Figma", "UX Research", "Prototyping", "User Testing"],
       description:
         "Crea experiencias de usuario excepcionales. Aprende investigación, diseño y testing de interfaces.",
+        whatYouLearn: [
+          "Fundamentos de React",
+          "Custom Hooks ",
+          "APIs RESTful y bases de datos",
+          "Despliegue y DevOps básico",
+        ],
+        requirements: []
     },
     {
       id: 5,
@@ -134,6 +155,13 @@ export default function CatalogoCursos() {
       tags: ["Docker", "Kubernetes", "CI/CD", "AWS"],
       description:
         "Automatiza el deployment y escalado de aplicaciones. Domina Docker, Kubernetes y pipelines de CI/CD.",
+        whatYouLearn: [
+          "Fundamentos de React",
+          "Custom Hooks ",
+          "APIs RESTful y bases de datos",
+          "Despliegue y DevOps básico",
+        ],
+        requirements: [],
     },
     {
       id: 6,
@@ -151,6 +179,13 @@ export default function CatalogoCursos() {
       tags: ["Flutter", "Dart", "Mobile", "Cross-platform"],
       description:
         "Desarrolla apps móviles nativas para iOS y Android con Flutter. Una base de código, dos plataformas.",
+        whatYouLearn: [
+          "Fundamentos de React",
+          "Custom Hooks ",
+          "APIs RESTful y bases de datos",
+          "Despliegue y DevOps básico",
+        ],
+        requirements: [],
     },
   ];
 
