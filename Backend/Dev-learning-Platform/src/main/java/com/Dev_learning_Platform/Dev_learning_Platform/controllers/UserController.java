@@ -52,4 +52,11 @@ public class UserController {
         List<User> users = userService.getUsersByRole(role);
         return ResponseEntity.ok(users);
     }
+
+    @GetMapping("all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
+    }
 }

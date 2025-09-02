@@ -130,9 +130,113 @@
 #### Nota Importante:
 Si el email ya existe, retorna el usuario existente (200 OK) en lugar de crear uno nuevo.
 
+### 4. Obtener Usuario por ID
+**Endpoint:** `GET /api/users/{id}`  
+**Descripción:** Obtiene la información de un usuario específico por su ID  
+**Acceso:** ADMIN  
+**Autenticación:** JWT Required  
+
+#### Path Parameters:
+- **id:** ID del usuario (requerido)
+
+#### Response Exitoso (200 OK):
+```json
+{
+  "id": 1,
+  "userName": "Juan",
+  "lastName": "Pérez",
+  "email": "juan.perez@example.com",
+  "role": "STUDENT",
+  "isActive": true,
+  "createdAt": "2025-01-01T10:00:00.000+00:00",
+  "updatedAt": "2025-01-01T10:00:00.000+00:00"
+}
+```
+
+#### Response de Error (404 Not Found):
+```json
+{
+  "message": "Usuario no encontrado con ID: 999",
+  "status": 404,
+  "timestamp": "2025-01-01T10:00:00"
+}
+```
+
+### 5. Obtener Usuarios por Rol
+**Endpoint:** `GET /api/users/role/{role}`  
+**Descripción:** Obtiene todos los usuarios que tienen un rol específico  
+**Acceso:** ADMIN  
+**Autenticación:** JWT Required  
+
+#### Path Parameters:
+- **role:** Rol del usuario - `STUDENT`, `INSTRUCTOR`, `ADMIN` (requerido)
+
+#### Response Exitoso (200 OK):
+```json
+[
+  {
+    "id": 1,
+    "userName": "Juan",
+    "lastName": "Pérez",
+    "email": "juan.perez@example.com",
+    "role": "STUDENT",
+    "isActive": true,
+    "createdAt": "2025-01-01T10:00:00.000+00:00"
+  },
+  {
+    "id": 2,
+    "userName": "María",
+    "lastName": "García",
+    "email": "maria.garcia@example.com",
+    "role": "STUDENT",
+    "isActive": true,
+    "createdAt": "2025-01-01T10:00:00.000+00:00"
+  }
+]
+```
+
+### 6. Obtener Todos los Usuarios
+**Endpoint:** `GET /api/users/all`  
+**Descripción:** Obtiene la lista completa de todos los usuarios del sistema  
+**Acceso:** ADMIN  
+**Autenticación:** JWT Required  
+
+#### Response Exitoso (200 OK):
+```json
+[
+  {
+    "id": 1,
+    "userName": "Juan",
+    "lastName": "Pérez",
+    "email": "juan.perez@example.com",
+    "role": "STUDENT",
+    "isActive": true,
+    "createdAt": "2025-01-01T10:00:00.000+00:00"
+  },
+  {
+    "id": 2,
+    "userName": "María",
+    "lastName": "García",
+    "email": "maria.garcia@example.com",
+    "role": "INSTRUCTOR",
+    "isActive": true,
+    "createdAt": "2025-01-01T10:00:00.000+00:00"
+  },
+  {
+    "id": 3,
+    "userName": "Carlos",
+    "lastName": "López",
+    "email": "carlos.lopez@example.com",
+    "role": "ADMIN",
+    "isActive": true,
+    "createdAt": "2025-01-01T10:00:00.000+00:00"
+  }
+]
+```
+
 ## 📚 Endpoints de Cursos
 
-### 4. Crear Curso
+### 7. Crear Curso
 **Endpoint:** `POST /api/courses`  
 **Descripción:** Crea un nuevo curso en la plataforma  
 **Acceso:** INSTRUCTOR, ADMIN  
@@ -197,7 +301,7 @@ Si el email ya existe, retorna el usuario existente (200 OK) en lugar de crear u
 }
 ```
 
-### 5. Catálogo Público de Cursos
+### 8. Catálogo Público de Cursos
 **Endpoint:** `GET /api/courses`  
 **Descripción:** Obtiene todos los cursos activos y publicados  
 **Acceso:** Público  
@@ -226,7 +330,7 @@ Si el email ya existe, retorna el usuario existente (200 OK) en lugar de crear u
 ]
 ```
 
-### 6. Detalle de Curso
+### 9. Detalle de Curso
 **Endpoint:** `GET /api/courses/{id}`  
 **Descripción:** Obtiene el detalle completo de un curso específico  
 **Acceso:** Público  
@@ -272,7 +376,7 @@ Si el email ya existe, retorna el usuario existente (200 OK) en lugar de crear u
 }
 ```
 
-### 7. Cursos por Instructor
+### 10. Cursos por Instructor
 **Endpoint:** `GET /api/courses/instructor/{instructorId}`  
 **Descripción:** Obtiene todos los cursos de un instructor específico  
 **Acceso:** INSTRUCTOR (propio), ADMIN  
@@ -301,7 +405,7 @@ Si el email ya existe, retorna el usuario existente (200 OK) en lugar de crear u
 ]
 ```
 
-### 8. Gestión Administrativa de Cursos
+### 11. Gestión Administrativa de Cursos
 **Endpoint:** `GET /api/courses/admin/active`  
 **Descripción:** Obtiene todos los cursos activos para gestión administrativa  
 **Acceso:** ADMIN  
@@ -444,7 +548,28 @@ curl -X POST http://localhost:8080/api/users/register \
   }'
 ```
 
-### 3. Crear Curso (cURL)
+### 3. Obtener Usuario por ID (cURL)
+```bash
+curl -X GET http://localhost:8080/api/users/1 \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+### 4. Obtener Usuarios por Rol (cURL)
+```bash
+curl -X GET http://localhost:8080/api/users/role/STUDENT \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+### 5. Obtener Todos los Usuarios (cURL)
+```bash
+curl -X GET http://localhost:8080/api/users/all \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+### 6. Crear Curso (cURL)
 ```bash
 curl -X POST http://localhost:8080/api/courses \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
@@ -465,32 +590,32 @@ curl -X POST http://localhost:8080/api/courses \
   }'
 ```
 
-### 4. Obtener Catálogo de Cursos (cURL)
+### 7. Obtener Catálogo de Cursos (cURL)
 ```bash
 curl -X GET http://localhost:8080/api/courses \
   -H "Content-Type: application/json"
 ```
 
-### 5. Obtener Detalle de Curso (cURL)
+### 8. Obtener Detalle de Curso (cURL)
 ```bash
 curl -X GET http://localhost:8080/api/courses/1 \
   -H "Content-Type: application/json"
 ```
 
-### 6. Obtener Cursos por Instructor (cURL)
+### 9. Obtener Cursos por Instructor (cURL)
 ```bash
 curl -X GET http://localhost:8080/api/courses/instructor/2 \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json"
 ```
 
-### 7. Acceso a Endpoint Protegido (cURL)
+### 10. Acceso a Endpoint Protegido (cURL)
 ```bash
 curl -X GET http://localhost:8080/api/protected-endpoint \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
-### 8. Validación de Token (cURL)
+### 11. Validación de Token (cURL)
 ```bash
 curl -X GET "http://localhost:8080/auth/validate?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
@@ -569,14 +694,17 @@ const fetchProtectedData = async () => {
 
 ### Endpoints Protegidos (Requieren JWT)
 
+#### Solo ADMIN
+- `GET /api/users/{id}` - Obtener usuario por ID
+- `GET /api/users/role/{role}` - Obtener usuarios por rol
+- `GET /api/users/all` - Obtener todos los usuarios
+- `GET /api/courses/admin/active` - Gestión administrativa de cursos
+
 #### INSTRUCTOR y ADMIN
 - `POST /api/courses` - Crear curso
 
 #### INSTRUCTOR (propio) y ADMIN
 - `GET /api/courses/instructor/{instructorId}` - Cursos por instructor
-
-#### Solo ADMIN
-- `GET /api/courses/admin/active` - Gestión administrativa de cursos
 
 #### Todos los usuarios autenticados
 - Todos los demás endpoints bajo `/api/**`
