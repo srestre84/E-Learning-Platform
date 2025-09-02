@@ -89,7 +89,11 @@ export default function CatalogoCursos() {
           "APIs RESTful y bases de datos",
           "Despliegue y DevOps básico",
         ],
-        requirements: [],
+        requirements: [
+          "Conocimientos básicos de JavaScript",
+        "Familiaridad con HTML y CSS",
+        "Computadora con conexión a internet"
+        ],
     },
     {
       id: 3,
@@ -113,7 +117,11 @@ export default function CatalogoCursos() {
           "APIs RESTful y bases de datos",
           "Despliegue y DevOps básico",
         ],
-        requirements: [],
+        requirements: [
+          "Python intermedio",
+          "Matemáticas básicas",
+          "Lógica de programación"
+        ],
     },
     {
       id: 4,
@@ -137,7 +145,11 @@ export default function CatalogoCursos() {
           "APIs RESTful y bases de datos",
           "Despliegue y DevOps básico",
         ],
-        requirements: []
+        requirements: [
+          "Creatividad y sentido estético",
+        "Familiaridad con herramientas digitales",
+        "Interés en experiencia de usuario"
+        ]
     },
     {
       id: 5,
@@ -161,7 +173,11 @@ export default function CatalogoCursos() {
           "APIs RESTful y bases de datos",
           "Despliegue y DevOps básico",
         ],
-        requirements: [],
+        requirements: [
+          "Conocimientos básicos de internet",
+        "Interés en marketing",
+        "Dispositivo con conexión web"
+        ],
     },
     {
       id: 6,
@@ -185,7 +201,11 @@ export default function CatalogoCursos() {
           "APIs RESTful y bases de datos",
           "Despliegue y DevOps básico",
         ],
-        requirements: [],
+        requirements: [
+          "Conocimientos básicos de internet",
+        "Interés en marketing",
+        "Dispositivo con conexión web"
+        ],
     },
   ];
 
