@@ -5,36 +5,41 @@ import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-export default defineConfig(() => {
-  // Cargar variables de entorno
-  const env = loadEnv( __dirname, '')
-
-  // Log para debug
+export default defineConfig(({ mode }) => {
+  // Load environment variables
+  const env = loadEnv(mode, process.cwd(), '')
 
   return {
     plugins: [react()],
     css: {
-      postcss: './postcss.config.js'
+      postcss: './postcss.config.js',
+      devSourcemap: mode === 'development',
+    },
+    build: {
+      sourcemap: mode === 'development',
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            react: ['react', 'react-dom', 'react-router-dom'],
+          },
+        },
+      },
     },
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, './src')
-      }
+        '@': path.resolve(__dirname, './src'),
+      },
     },
-
-    // Configuración del servidor de desarrollo
     server: {
       port: 5173,
-      open: true,
       host: true,
-      // Configuración de proxy para APIs (descomenta si necesitas)
-       proxy: {
-         '/api': {
-           target: env.VITE_API_URL,
-           changeOrigin: true,
-           secure: false
-         }
-       }
+      open: true,
+      hmr: {
+        overlay: false,
+      },
     },
+    define: {
+      'process.env': {}
+    }
   }
 })
