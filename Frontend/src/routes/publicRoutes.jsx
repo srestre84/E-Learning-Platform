@@ -1,9 +1,11 @@
-import LandingLayout from "@/components/layout/LandingLayout";
-import { lazy } from "react";
+import { lazy } from 'react';
+import { Navigate } from 'react-router-dom';
+import LandingLayout from "@/ui/layout/LandingLayout";
 
-const Home = lazy(() => import("@/pages/Home"));
-const LoginPage = lazy(() => import("@/pages/Login"));
-const CatalogoCursos = lazy(() => import("@/pages/CatalogoCursos"));
+const Home = lazy(() => import("@/features/marketing/pages/Home"));
+const LoginPage = lazy(() => import("@/features/auth/pages/AuthPage"));
+const CatalogoCursos = lazy(() => import("@/features/marketing/pages/CatalogoCursos"));
+const ComoFunciona = lazy(() => import("@/features/marketing/pages/comoFunciona"));
 
 const publicRoutes = [
   {
@@ -14,6 +16,10 @@ const publicRoutes = [
         index: true,
         element: <Home />,
       },
+      {
+        path: "comoFunciona",
+        element: <ComoFunciona />,
+      },
     ],
   },
   {
@@ -23,6 +29,10 @@ const publicRoutes = [
   {
     path: "/cursos",
     element: <CatalogoCursos />,
+  },
+  {
+    path: "*",
+    element: <Navigate to="/" replace />,
   },
 ];
 
