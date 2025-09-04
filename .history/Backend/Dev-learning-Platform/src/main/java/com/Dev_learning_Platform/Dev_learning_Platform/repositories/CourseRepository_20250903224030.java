@@ -31,9 +31,4 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
      * Obtiene todos los cursos publicados de una categoría específica.
      */
     List<Course> findByCategoryIdAndIsPublishedTrue(Long categoryId);
-    
-    /**
-     * Obtiene todos los cursos de una categoría específica para un instructor.
-     */
-    List<Course> findByCategoryIdAndInstructor(Long categoryId, User instructor);
 }

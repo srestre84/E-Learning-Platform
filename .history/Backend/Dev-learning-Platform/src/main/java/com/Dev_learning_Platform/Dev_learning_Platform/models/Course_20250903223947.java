@@ -46,16 +46,9 @@ public class Course {
     @JoinColumn(name = "instructor_id", nullable = false)
     private User instructor;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    private Category category;
-
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "youtube_urls", columnDefinition = "json")
     private List<String> youtubeUrls;
-
-    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
-    private List<CourseVideo> videos;
 
     @Column(name = "thumbnail_url", length = 500)
     private String thumbnailUrl;
