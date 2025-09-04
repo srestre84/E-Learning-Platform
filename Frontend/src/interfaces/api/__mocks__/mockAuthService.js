@@ -30,7 +30,7 @@ const mockTokenKey = "mockToken";
 const networkDelay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const mockAuthService = {
-  // Función de login simulada
+  // Función delogin simulada
   login: async (email, password) => {
     await networkDelay(500); // Simula 500ms de latencia
 
