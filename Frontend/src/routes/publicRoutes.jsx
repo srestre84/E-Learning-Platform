@@ -1,7 +1,7 @@
 import { lazy } from 'react';
 import { Navigate } from 'react-router-dom';
 import LandingLayout from "@/ui/layout/LandingLayout";
-
+import NotFound from "@/shared/ui/layout/NotFound";
 const Home = lazy(() => import("@/features/marketing/pages/Home"));
 const LoginPage = lazy(() => import("@/features/auth/pages/AuthPage"));
 const CatalogoCursos = lazy(() => import("@/features/marketing/pages/CatalogoCursos"));
@@ -32,7 +32,11 @@ const publicRoutes = [
   },
   {
     path: "*",
-    element: <Navigate to="/" replace />,
+    element: <Navigate to="not-found" replace />,
+  },
+  {
+    path: "not-found",
+    element: <NotFound />,
   },
 ];
 

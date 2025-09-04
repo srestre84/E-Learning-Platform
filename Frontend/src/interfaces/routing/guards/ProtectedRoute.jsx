@@ -1,9 +1,11 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import useAuth from "@/shared/hooks/useAuth";
+import NotFound from "@/shared/ui/layout/NotFound";
 
-const ProtectedRoute = ({ children, allowedRoles = ['student'] }) => {
+const ProtectedRoute = ({ children, allowedRoles = ['student' , 'teacher'] }) => {
   const { isAuthenticated, user, loading } = useAuth();
   const location = useLocation();
+ 
 
   if (loading) {
     return (
@@ -15,14 +17,14 @@ const ProtectedRoute = ({ children, allowedRoles = ['student'] }) => {
 
   if (!isAuthenticated) {
     // Redirect to login page, saving the current location they were trying to go to
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="not-found" state={{ from: location }} replace />;
   }
 
   // Verificar si el usuario tiene el rol necesario
   if (!allowedRoles.includes(user?.role)) {
     // Redirigir a la página de inicio correspondiente según el rol
     const redirectPath = user?.role === 'teacher' ? '/teacher/courses' : '/';
-    return <Navigate to={redirectPath} replace />;
+    return <Navigate to={ notFound} replace />;
   }
 
   return children;
