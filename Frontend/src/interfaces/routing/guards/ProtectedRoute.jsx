@@ -7,14 +7,36 @@ const ProtectedRoute = ({ children, allowedRoles = ['student' , 'teacher'] }) =>
   const location = useLocation();
  
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
+  useEffect(() => {
+    // Sincronizar el estado de carga
+    setIsLoading(loading);
+
+    // Manejar errores de autenticación
+    if (authError) {
+      setError('Error al verificar la autenticación. ' + (authError.message || ''));
+      setIsLoading(false);
+    }
+  }, [loading, authError]);
+
+  // Manejar reintento
+  const handleRetry = () => {
+    setError(null);
+    setIsLoading(true);
+    // Aquí podrías implementar una función de reintento si es necesario
+    window.location.reload();
+  };
+
+  // Mostrar estado de error
+  if (error) {
+    return <ErrorMessage message={error} onRetry={handleRetry} />;
   }
 
+  // Mostrar estado de carga
+  if (isLoading) {
+    return <LoadingSpinner message="Verificando autenticación..." />;
+  }
+
+  // Redirigir si no está autenticado
   if (!isAuthenticated) {
     // Redirect to login page, saving the current location they were trying to go to
     return <Navigate to="not-found" state={{ from: location }} replace />;
