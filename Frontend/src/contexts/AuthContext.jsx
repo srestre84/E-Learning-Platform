@@ -24,8 +24,11 @@ export const AuthProvider = ({ children }) => {
           if (userData) {
             setUser({
               token: mockAuthService.getToken(),
+              ...userData,
               role: userData.role || 'student',
-              name: userData.username || 'Usuario',
+              name: userData.userName || 'Usuario',
+              lastName: userData.lastName || '',
+              avatar: userData.avatar || '',
               email: userData.email
             });
           }
@@ -46,9 +49,11 @@ export const AuthProvider = ({ children }) => {
       const loggedUser = await mockAuthService.login(email, password);
       if (loggedUser && loggedUser.token) {
         const userData = {
-          token: loggedUser.token,
+          ...loggedUser,
           role: loggedUser.role || 'student',
-          name: loggedUser.username || 'Usuario',
+          name: loggedUser.userName || 'Usuario',
+          lastName: loggedUser.lastName || '',
+          avatar: loggedUser.avatar || '',
           email: loggedUser.email
         };
         setUser(userData);
@@ -69,7 +74,7 @@ export const AuthProvider = ({ children }) => {
   const logout = useCallback(() => {
     mockAuthService.logout();
     setUser(null);
-    // Call the logout callback if it exists
+    // llamadas a la funcion de logout para redirigir al login
     if (onLogoutCallback) {
       onLogoutCallback();
     }
@@ -80,38 +85,42 @@ export const AuthProvider = ({ children }) => {
     return ROLE_PERMISSIONS[user.role]?.[permission] ?? false;
   };
 
-  // Profile APIs
+  // contexto para manejar el perfil del usuario con la api de mock se cambia por la api de backend
+  // fetchProfile como funcion se encarga de obtener los datos de los usuarios autenticados
   const fetchProfile = async () => {
     const profile = await mockAuthService.getProfile();
-    // keep context basic user fields in sync
+    // actualiza el contexto del usuario
     setUser((prev) => prev ? { ...prev, name: profile.name, email: profile.email, role: profile.role } : prev);
     return profile;
   };
 
   const updateProfile = async (updates) => {
     const updated = await mockAuthService.updateProfile(updates);
-    // sync context
+    // actualiza el contexto del usuario
     setUser((prev) => prev ? { ...prev, name: updated.name, email: updated.email } : prev);
     return updated;
   };
-
+  // isAuthenticated es una funcion que retorna true si el usuario esta autenticado
   const isAuthenticated = !!user;
+  // role es una funcion que retorna el rol del usuario
   const role = user?.role || 'guest';
 
   return (
     <AuthContext.Provider value={{
       user,
-      login,
-      logout,
       loading,
-      setLogoutCallback,
-      hasPermission,
       isAuthenticated,
       role,
+      login,
+      logout,
+      setLogoutCallback,
+      hasPermission,
       fetchProfile,
-      updateProfile,
+      updateProfile
     }}>
       {children}
     </AuthContext.Provider>
   );
 };
+
+export default AuthContext;
