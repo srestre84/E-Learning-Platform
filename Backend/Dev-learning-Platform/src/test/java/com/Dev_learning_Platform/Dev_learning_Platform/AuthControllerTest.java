@@ -1,26 +1,26 @@
 package com.Dev_learning_Platform.Dev_learning_Platform;
 
-import com.Dev_learning_Platform.Dev_learning_Platform.controllers.AuthController;
-import com.Dev_learning_Platform.Dev_learning_Platform.services.UserService;
-import com.Dev_learning_Platform.Dev_learning_Platform.services.auth.JwtService;
-import com.Dev_learning_Platform.Dev_learning_Platform.services.CustomUserDetailsService;
-
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.Dev_learning_Platform.Dev_learning_Platform.controllers.AuthController;
+import com.Dev_learning_Platform.Dev_learning_Platform.services.CustomUserDetailsService;
+import com.Dev_learning_Platform.Dev_learning_Platform.services.UserService;
+import com.Dev_learning_Platform.Dev_learning_Platform.services.auth.JwtService;
 
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
@@ -42,7 +42,7 @@ class AuthControllerTest {
 
     private MockMvc mockMvc;
 
-    @org.junit.jupiter.api.BeforeEach
+    @BeforeEach
     void setUp() {
         mockMvc = org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup(authController).build();
     }
