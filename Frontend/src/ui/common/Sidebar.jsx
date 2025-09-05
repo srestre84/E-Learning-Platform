@@ -333,22 +333,25 @@ const Sidebar = () => {
                   <div className="w-10 h-10 overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-indigo-600">
                     <img
                       className="w-full h-full object-cover"
-                      src={user?.avatar || `https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=${encodeURIComponent(user?.name || 'U')}`}
-                      alt={user?.name}
+                      src={user?.avatar || `https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=${encodeURIComponent(user?.userName || 'U')}`}
+                      alt={user?.userName}
                       onError={(e) => {
-                        e.target.src = `https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=${encodeURIComponent(user?.name || 'U')}`;
+                        e.target.src = `https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=${encodeURIComponent(user?.userName || 'U')}`;
                       }}
                     />
                   </div>
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full dark:border-gray-900"></span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate dark:text-white">
-                    {user?.name || 'Usuario'}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate dark:text-gray-400">
+                  <h1 className="text-sm font-medium text-gray-900 truncate dark:text-white">
+                    {user?.userName || 'Usuario'}
+                  </h1>
+                  <h2 className="text-xs font-medium text-gray-900 truncate dark:text-gray-400">
+                    {user?.lastName || 'Apellido'}
+                  </h2>
+                  <h3 className="text-xs font-medium text-gray-900 truncate dark:text-gray-400">
                     {role === 'student' ? 'Estudiante' : role === 'teacher' ? 'Profesor' : 'Administrador'}
-                  </p>
+                  </h3>
                 </div>
               </div>
             </div>
@@ -379,7 +382,7 @@ const Sidebar = () => {
                 ) : (
                   <div className="p-3 text-center">
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      No se encontraron resultados
+                        No se encontraron resultados
                     </p>
                   </div>
                 )}
