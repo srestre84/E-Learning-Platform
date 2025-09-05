@@ -6,11 +6,22 @@ import { Label } from '@/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/ui/avatar';
 import { Pencil, Save, X } from 'lucide-react';
 import { AuthContext } from '@/contexts/AuthContext';
+import { EyeOff, Eye } from 'lucide-react';
 
+// Componente para editar el perfil con rol de estudiante
 export default function StudentProfileEditor() {
+  // aqui estamos utilizando un contexto de autenticacion para obtener los datos del usuario autenticado
   const { fetchProfile, updateProfile, role } = useContext(AuthContext);
 
-  const [userData, setUserData] = useState({ name: '', email: '', occupation: '', avatar: '' });
+  //Aqui estamos utilizando el useState para los estado de los componentes
+  const [userData, setUserData] = useState({
+    userName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    occupation: '',
+    avatar: ''
+  });
   const [initialData, setInitialData] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -19,14 +30,18 @@ export default function StudentProfileEditor() {
   const [errors, setErrors] = useState({});
   const fileInputRef = useRef(null);
 
+
+  //Utilizamos un useEffect para poder cargar los datos del usuario autenticado
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
         const profile = await fetchProfile();
         setUserData({
-          name: profile.name || '',
+          userName: profile.name || '',
+          lastName: profile.lastname || '',
           email: profile.email || '',
+          password: profile.password || '',
           occupation: profile.occupation || '',
           avatar: profile.avatar || '',
         });
@@ -38,8 +53,10 @@ export default function StudentProfileEditor() {
       }
     };
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
+
+  //Se agregan una funcion de para manejar los cambios en los formularios
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -50,8 +67,10 @@ export default function StudentProfileEditor() {
 
   const validate = () => {
     const newErr = {};
-    if (!userData.name.trim()) newErr.name = 'El nombre es obligatorio';
+    if (!userData.userName.trim()) newErr.userName = 'El nombre es obligatorio';
     if (!userData.email.trim()) newErr.email = 'El correo es obligatorio';
+    if (!userData.password.trim()) newErr.password = 'La contraseña es obligatoria';
+    if (!userData.lastName.trim()) newErr.lastName = 'El apellido es obligatorio';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email)) newErr.email = 'Correo inválido';
     setErrors(newErr);
     return Object.keys(newErr).length === 0;
@@ -66,14 +85,18 @@ export default function StudentProfileEditor() {
     try {
       setSaving(true);
       const updated = await updateProfile({
-        name: userData.name,
+        userName: userData.userName,
         email: userData.email,
+        lastName: userData.lastName,
+        password: userData.password,
         occupation: userData.occupation,
         avatar: userData.avatar,
       });
       setUserData({
-        name: updated.name,
+        userName: updated.userName,
         email: updated.email,
+        lastName: updated.lastName,
+        password: updated.password,
         occupation: updated.occupation || '',
         avatar: updated.avatar || '',
       });
@@ -108,6 +131,11 @@ export default function StudentProfileEditor() {
   const getInitials = (name) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
+
+  const getFallbackAvatar = (name) => {
+    const initials = name ? name.split('').map(n => n[0]).join('').toUpperCase() : 'U';
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=0D8ABC&color=fff&font-size=0.3&length=2`;
+  }
 
   const titleByRole = role === 'teacher' ? 'Perfil del Instructor' : 'Perfil del Estudiante';
   const subtitleByRole = isEditing ? 'Actualiza tu información personal' : 'Detalles de tu cuenta';
@@ -151,9 +179,13 @@ export default function StudentProfileEditor() {
               <div className="flex flex-col items-center mb-8">
                 <div className="relative group">
                   <Avatar className="h-32 w-32 border-4 border-blue-100 shadow-lg">
-                    <AvatarImage src={userData.avatar} alt={userData.name} />
+                    <AvatarImage 
+                    src={userData.avatar || getFallbackAvatar(userData.userName)}
+                    alt={userData.userName}
+                    onError={(e) => {e.target.src = getFallbackAvatar(userData.userName)}}
+                    />
                     <AvatarFallback className="text-3xl bg-blue-100 text-blue-600">
-                      {getInitials(userData.name || 'U')}
+                      {getInitials(userData.userName || 'U')}
                     </AvatarFallback>
                   </Avatar>
                   {isEditing && (
@@ -172,9 +204,11 @@ export default function StudentProfileEditor() {
                     </div>
                   )}
                 </div>
-                <h3 className="mt-4 text-xl font-semibold text-gray-900">{userData.name}</h3>
+                <h2 className="mt-4 text-xl font-semibold text-gray-900">{userData.userName}</h2>
+                <h2 className="mt-4 text-xl font-semibold text-gray-900">{userData.lastName}</h2>
                 <p className="text-gray-200 bg-blue-700/50 px-2 py-0.5 rounded text-xs mt-1 capitalize">{role}</p>
                 <p className="text-gray-600">{userData.occupation}</p>
+
               </div>
 
               {!isEditing ? (
@@ -195,18 +229,51 @@ export default function StudentProfileEditor() {
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                        Nombre Completo
+                        Nombres
                       </Label>
                       <Input
-                        id="name"
-                        name="name"
-                        value={userData.name}
+                        id="userName"
+                        name="userName"
+                        value={userData.userName || ''}
                         onChange={handleChange}
                         disabled={saving}
-                        className={`mt-1 ${errors.name ? 'border-red-500' : ''}`}
+                        className={`mt-1 ${errors.userName ? 'border-red-500' : ''}`}
                       />
-                      {errors.name && <p className="text-xs text-red-600 mt-1">{errors.name}</p>}
+                      {errors.userName && <p className="text-xs text-red-600 mt-1">{errors.userName}</p>}
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+                        Apellidos
+                      </Label>
+                      <Input
+                        id="lastName"
+                        name="lastName"
+                        value={userData.lastName || ''}
+                        onChange={handleChange}
+                        disabled={saving}
+                        className={`mt-1 ${errors.lastName ? 'border-red-500' : ''}`}
+                      />
+                      {errors.lastName && <p className="text-xs text-red-600 mt-1">{errors.lastName}</p>}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+                        Nueva Contraseña
+                      </Label>
+
+
+                      <Input
+
+                        id="password"
+                        name="password"
+                        type="password"
+                        value={userData.password || ''}
+                        onChange={handleChange}
+                        disabled={saving}
+                        className={`mt-1 ${errors.password ? 'border-red-500' : ''}`}
+                      />
+                      {errors.password && <p className="text-xs text-red-600 mt-1">{errors.password}</p>}
+                    </div>
+
                     <div className="space-y-2">
                       <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                         Correo Electrónico
@@ -215,7 +282,7 @@ export default function StudentProfileEditor() {
                         id="email"
                         name="email"
                         type="email"
-                        value={userData.email}
+                        value={userData.email || ''}
                         onChange={handleChange}
                         disabled={saving}
                         className={`mt-1 ${errors.email ? 'border-red-500' : ''}`}
@@ -229,7 +296,7 @@ export default function StudentProfileEditor() {
                       <Input
                         id="occupation"
                         name="occupation"
-                        value={userData.occupation}
+                        value={userData.occupation || ''}
                         onChange={handleChange}
                         disabled={saving}
                         className="mt-1"
