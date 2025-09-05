@@ -8,10 +8,10 @@ const TestConnection = () => {
   useEffect(() => {
     const testConnection = async () => {
       try {
-        const response = await api.get('/');
+        const response = await api.get('/api');
         setMessage(`Conexión exitosa: ${response.data.message}`);
       } catch (error) {
-        setMessage(`lo sentimos: ${error.message}`);
+        setMessage(`lo sentimos no se pudo conectar con el backend: ${error.message}`);
         console.error('Error:', error);
       }
     };
