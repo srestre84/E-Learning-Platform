@@ -4,11 +4,11 @@ import publicRoutes from './publicRoutes';
 import privateRoutes from './PrivateRoutes';
 import teacherRoutes from './teacherRoutes';
 
-// Combine all routes
+
 const router = createBrowserRouter([
   ...publicRoutes,
-  ...privateRoutes,
-  ...teacherRoutes,
+  // ...privateRoutes,
+  // ...teacherRoutes
 ], {
   future: {
     v7_normalizeFormMethod: true,
@@ -17,6 +17,9 @@ const router = createBrowserRouter([
 
 export { router };
 
+
+
+
 export default function AppRouter() {
   return (
     <Suspense fallback={
@@ -24,7 +27,7 @@ export default function AppRouter() {
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
       </div>
     }>
-      <RouterProvider router={router} />
+      <RouterProvider router={router} />  
     </Suspense>
   );
 }
