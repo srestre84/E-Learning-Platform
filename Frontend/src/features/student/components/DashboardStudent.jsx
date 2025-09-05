@@ -1,3 +1,5 @@
+'use client';
+
 import React, { lazy, Suspense, useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/ui/card";
 import { Button } from "@/ui/button";
@@ -13,6 +15,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Link } from 'react-router-dom';
 import { getRecommendedCourses, getEnrolledCourses } from '@/features/course/services';
+import { useAuth } from "@/contexts/ContextUse";
 
 // Lazy load components for better performance
 const DashboardStats = lazy(() => import('./DashboardStats'));
@@ -74,6 +77,11 @@ export default function DashboardStudent() {
     return () => { active = false; };
   }, []);
 
+  // mostras el nombre del usuario autenticado 
+  const {user}= useAuth();
+
+  console.log('Usuario actual QUE SE ESTA MOSTRANDO EN EL DASHBOARD:', user);
+
   // Local: toggle favorite for enrolled courses
   const handleToggleFavoriteEnrolled = (courseId) => {
     setEnrolled(prev => prev.map(c => c.id === courseId ? { ...c, isFavorite: !c.isFavorite } : c));
@@ -104,7 +112,7 @@ export default function DashboardStudent() {
       {/* Header redesigned */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Bienvenido 👋</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Bienvenido {user?.userName} <span className="text-blue-600">👋</span></h1>
           <p className="text-gray-600">{formattedDate}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
@@ -131,10 +139,6 @@ export default function DashboardStudent() {
           <Button variant="outline" size="icon" className="rounded-full" disabled={loading}>
             <Bell className="h-4 w-4" />
           </Button>
-          <Avatar className="h-9 w-9">
-            <AvatarImage src="https://github.com/shadcn.png" alt="User" />
-            <AvatarFallback>US</AvatarFallback>
-          </Avatar>
         </div>
       </div>
 
