@@ -7,21 +7,33 @@ const mockUsers = [
   {
     email: "test@example.com",
     password: "password123",
-    username: "TestTeacher",
+    userName: "TestTeacher",
+    lastName: "Teacher",
     token: "mock-jwt-token-12345",
     role: "teacher",
     occupation: "Instructor de Programación",
-    avatar: "https://github.com/shadcn.png",
+    avatar: "",
   },
   {
     email: "student@example.com",
     password: "password123",
-    username: "TestStudent",
+    userName: "Test",
+    lastName: "Student",
     token: "mock-jwt-token-67890",
     role: "student",
     occupation: "Estudiante",
-    avatar: "https://github.com/shadcn.png",
+    avatar: "",
   },
+  {
+    email: "testadmin@example.com",
+    password: "password123",
+    userName: "TestAdmin",
+    lastName: "Admin",
+    token: "mock-jwt-token-12345",
+    role: "admin",
+    occupation: "Administrador",
+    avatar: "",
+  }
 ];
 
 const mockTokenKey = "mockToken";
@@ -43,9 +55,9 @@ const mockAuthService = {
       localStorage.setItem(mockTokenKey, user.token);
       return {
         token: user.token,
-        username: user.username,
+        userName: user.userName,
         role: user.role,
-        name: user.username // Asegurarse de que el nombre esté incluido
+        name: user.userName // Asegurarse de que el nombre esté incluido
       };
     } else {
       console.error("LOGIN MOCK: Credenciales incorrectas.");
@@ -56,7 +68,7 @@ const mockAuthService = {
   },
 
   // Registro simulado
-  register: async ({ firstName, lastName, email, password, role = 'student' }) => {
+  register: async ({ firstName, lastName, email, password, role = 'student'  }) => {
     await networkDelay(600);
 
     const exists = mockUsers.some(u => u.email.toLowerCase() === String(email).toLowerCase());
@@ -66,15 +78,16 @@ const mockAuthService = {
       });
     }
 
-    const username = `${firstName} ${lastName}`.trim() || email.split('@')[0];
+    const userName = `${firstName} ${lastName}`.trim() || email.split('@')[0];
     const token = `mock-jwt-token-${Date.now()}`;
 
-    const newUser = { email, password, username, token, role, occupation: '', avatar: '' };
+    const newUser = { email, password, userName, token, role, occupation: '', avatar: '' };
     mockUsers.push(newUser);
 
     // No inicia sesión automáticamente para permitir redirigir al login
     return {
-      username,
+      userName,
+      lastName,
       email,
       role,
     };
@@ -87,8 +100,8 @@ const mockAuthService = {
     if (!token) return Promise.reject({ response: { status: 401, data: { message: 'No autenticado' } } });
     const user = mockUsers.find(u => u.token === token);
     if (!user) return Promise.reject({ response: { status: 401, data: { message: 'Token inválido' } } });
-    const { username, email, role, occupation = '', avatar = '' } = user;
-    return { name: username, email, role, occupation, avatar };
+    const { userName, email, role, occupation = '', avatar = '' } = user;
+    return { name: userName, lastName, email, role, occupation, avatar };
   },
 
   // Actualizar perfil del usuario autenticado
@@ -109,7 +122,8 @@ const mockAuthService = {
 
     const newUser = {
       ...current,
-      username: updates?.name ?? current.username,
+      userName: updates?.name ?? current.userName,
+      lastName: updates?.lastName ?? current.lastName,
       email: updates?.email ?? current.email,
       occupation: updates?.occupation ?? current.occupation,
       avatar: updates?.avatar ?? current.avatar,
@@ -119,8 +133,9 @@ const mockAuthService = {
 
     // Si se cambió el username, devolvemos los datos actualizados
     return {
-      name: newUser.username,
+      name: newUser.userName,
       email: newUser.email,
+      lastName: newUser.lastName,
       role: newUser.role,
       occupation: newUser.occupation,
       avatar: newUser.avatar,
@@ -155,10 +170,11 @@ const mockAuthService = {
     }
 
     return {
-      username: user.username,
+      userName: user.userName,
       email: user.email,
+      lastName: user.lastName,
       role: user.role,
-      name: user.username
+      name: user.userName
     };
   },
 };
