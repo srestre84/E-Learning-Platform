@@ -14,14 +14,15 @@ const TeacherRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    // Redirect to login page if not authenticated
+    // Redirigir a login si no está autenticado
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Check if user is a teacher
+  // Verificar si el usuario es un profesor
   if (user?.role !== 'teacher') {
-    // Redirect to home page if not a teacher
-    return <Navigate to="/" replace />;
+    console.log(`Acceso denegado: El usuario con rol ${user?.role} intentó acceder a una ruta de profesor`);
+    // Redirigir a no encontrado si no es profesor
+    return <Navigate to="/not-found" replace />;
   }
 
   return children;
