@@ -1,5 +1,5 @@
 import axios from 'axios';
- //importamo la url de la api en la variable de entorno
+ //importamos la url de la api en la variable de entorno
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   timeout: 10000,
