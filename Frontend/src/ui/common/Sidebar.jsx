@@ -25,7 +25,7 @@ import {
   ChevronUp,
   BarChart2,
 } from "lucide-react";
-import { Button } from "@/ui/button";
+import { Button } from "@/ui/Button";
 import { cn } from "@/lib/utils";
 
 // --- Definición de Links por Rol ---
