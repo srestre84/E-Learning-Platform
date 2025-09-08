@@ -19,7 +19,6 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
     private final UserService userService;
-    private final CategoryService categoryService;
 
    
     @Transactional
@@ -52,42 +51,6 @@ public class CourseService {
     public boolean canCreateCourses(Long userId) {
         User user = userService.findById(userId);
         return user.getRole() == User.Role.INSTRUCTOR || user.getRole() == User.Role.ADMIN;
-    }
-    
-    /**
-     * Obtiene todos los cursos de una categoría específica.
-     */
-    public List<Course> getCoursesByCategory(Long categoryId) {
-        return courseRepository.findByCategoryIdAndIsPublishedTrue(categoryId);
-    }
-    
-    /**
-     * Obtiene todos los cursos de una categoría específica para un instructor.
-     */
-    public List<Course> getCoursesByCategoryForInstructor(Long categoryId, Long instructorId) {
-        User instructor = userService.findById(instructorId);
-        return courseRepository.findByCategoryIdAndInstructor(categoryId, instructor);
-    }
-    
-    /**
-     * Actualiza la categoría de un curso.
-     */
-    @Transactional
-    public Course updateCourseCategory(Long courseId, Long categoryId, Long instructorId) {
-        Course course = findById(courseId);
-        
-        if (!course.getInstructor().getId().equals(instructorId)) {
-            throw new SecurityException("Solo el instructor del curso puede modificar la categoría");
-        }
-        
-        if (categoryId != null) {
-            Category category = categoryService.getCategoryById(categoryId);
-            course.setCategory(category);
-        } else {
-            course.setCategory(null);
-        }
-        
-        return courseRepository.save(course);
     }
 
 

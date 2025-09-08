@@ -62,14 +62,6 @@ public class CourseService {
     }
     
     /**
-     * Obtiene todos los cursos de una categoría específica para un instructor.
-     */
-    public List<Course> getCoursesByCategoryForInstructor(Long categoryId, Long instructorId) {
-        User instructor = userService.findById(instructorId);
-        return courseRepository.findByCategoryIdAndInstructor(categoryId, instructor);
-    }
-    
-    /**
      * Actualiza la categoría de un curso.
      */
     @Transactional
