@@ -19,3 +19,5 @@ Thumbs.db
 .env.development.local
 .env.test.local
 .env.production.local
+
+.github/instructions/Profile.instructions.md
