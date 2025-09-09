@@ -9,9 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.Dev_learning_Platform.Dev_learning_Platform.dtos.CourseCreateDto;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Category;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Course;
+import com.Dev_learning_Platform.Dev_learning_Platform.models.Enrollment;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Subcategory;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.User;
 import com.Dev_learning_Platform.Dev_learning_Platform.repositories.CourseRepository;
+import com.Dev_learning_Platform.Dev_learning_Platform.repositories.EnrollmentRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,6 +27,7 @@ public class CourseService {
     private final UserService userService;
     private final CategoryService categoryService;
     private final SubcategoryService subcategoryService;
+    private final EnrollmentRepository enrollmentRepository;
 
    
     @Transactional
@@ -162,5 +165,28 @@ public class CourseService {
         existingCourse.setEstimatedHours(courseDto.getEstimatedHours());
 
         return courseRepository.save(existingCourse);
+    }
+
+    @Transactional
+    public void deleteCourse(Long courseId) {
+        Course existingCourse = findById(courseId);
+
+        User authenticatedUser = userService.getAuthenticatedUser();
+        boolean isAdmin = authenticatedUser.getRole() == User.Role.ADMIN;
+        boolean isOwner = existingCourse.getInstructor().getId().equals(authenticatedUser.getId());
+        if (!isAdmin && !isOwner) {
+            throw new AccessDeniedException("No tienes permisos para eliminar este curso.");
+        }
+
+        // Desactivar el curso
+        existingCourse.setIsActive(false);
+        courseRepository.save(existingCourse);
+
+        // Desactivar inscripciones asociadas
+        List<Enrollment> enrollments = enrollmentRepository.findByCourse(existingCourse);
+        for (Enrollment enrollment : enrollments) {
+            enrollment.setStatus(Enrollment.EnrollmentStatus.SUSPENDED);
+            enrollmentRepository.save(enrollment);
+        }
     }
 }

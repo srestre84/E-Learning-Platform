@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.Dev_learning_Platform.Dev_learning_Platform.models.Course;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Enrollment;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Enrollment.EnrollmentStatus;
 
@@ -91,4 +92,6 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
      */
     @Query("SELECT e FROM Enrollment e WHERE e.enrolledAt >= :thirtyDaysAgo ORDER BY e.enrolledAt DESC")
     List<Enrollment> findRecentEnrollments(@Param("thirtyDaysAgo") java.time.LocalDateTime thirtyDaysAgo);
+
+    List<Enrollment> findByCourse(Course course);
 }
