@@ -7,6 +7,8 @@ import java.util.List;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -15,7 +17,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -44,18 +45,24 @@ public class Course {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "instructor_id", nullable = false)
+    @JsonBackReference("instructor-courses")
     private User instructor;
 
+    // Relación con la categoría principal
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
+    @JoinColumn(name = "category_id", nullable = false)
+    @JsonBackReference("category-courses")
     private Category category;
+
+    // Relación con la subcategoría de tecnología
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subcategory_id", nullable = false)
+    @JsonBackReference("subcategory-courses")
+    private Subcategory subcategory;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "youtube_urls", columnDefinition = "json")
     private List<String> youtubeUrls;
-
-    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
-    private List<CourseVideo> videos;
 
     @Column(name = "thumbnail_url", length = 500)
     private String thumbnailUrl;

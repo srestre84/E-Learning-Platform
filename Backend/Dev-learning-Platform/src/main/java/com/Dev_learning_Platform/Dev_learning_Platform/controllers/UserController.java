@@ -3,7 +3,6 @@ package com.Dev_learning_Platform.Dev_learning_Platform.controllers;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -101,7 +100,7 @@ public class UserController {
 
     /**
      * FUNCIONALIDAD OPCIONAL: "Como usuario quiero cargar mi imagen de perfil"
-     * Subir una imagen de perfil para el usuario autenticado.
+     * Sube una imagen de perfil para el usuario autenticado.
      * 
      * @param file Archivo de imagen a subir
      * @param principal Usuario autenticado
@@ -109,7 +108,7 @@ public class UserController {
      */
     @PostMapping("/profile/upload-image")
     @PreAuthorize("hasAnyRole('STUDENT', 'INSTRUCTOR', 'ADMIN')")
-    public ResponseEntity<?> uploadProfileImage(
+    public ResponseEntity<UserProfileDto> uploadProfileImage(
             @RequestParam("file") MultipartFile file,
             Principal principal) {
         
@@ -138,12 +137,10 @@ public class UserController {
             
         } catch (IllegalArgumentException e) {
             log.error("Archivo inválido: {}", e.getMessage());
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().build();
         } catch (IOException e) {
             log.error("Error al subir archivo: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error interno del servidor"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }
