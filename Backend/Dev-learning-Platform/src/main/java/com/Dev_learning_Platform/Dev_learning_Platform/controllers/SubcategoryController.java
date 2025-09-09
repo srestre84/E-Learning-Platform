@@ -17,55 +17,55 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.Dev_learning_Platform.Dev_learning_Platform.models.Category;
-import com.Dev_learning_Platform.Dev_learning_Platform.services.CategoryService;
+import com.Dev_learning_Platform.Dev_learning_Platform.models.Subcategory;
+import com.Dev_learning_Platform.Dev_learning_Platform.services.SubcategoryService;
 
 /**
- * Controlador REST para manejar operaciones de categorías
+ * Controlador REST para manejar operaciones de subcategorías
  */
 @RestController
-@RequestMapping("/api/categories")
-public class CategoryController {
+@RequestMapping("/api/subcategories")
+public class SubcategoryController {
 
     @Autowired
-    private CategoryService categoryService;
+    private SubcategoryService subcategoryService;
 
     /**
-     * Obtiene todas las categorías activas
+     * Obtiene todas las subcategorías activas
      */
     @GetMapping
-    public ResponseEntity<List<Category>> getAllActiveCategories() {
+    public ResponseEntity<List<Subcategory>> getAllActiveSubcategories() {
         try {
-            List<Category> categories = categoryService.getAllActiveCategories();
-            return ResponseEntity.ok(categories);
+            List<Subcategory> subcategories = subcategoryService.getAllActiveSubcategories();
+            return ResponseEntity.ok(subcategories);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
-     * Obtiene todas las categorías (incluyendo inactivas) - Solo para administradores
+     * Obtiene todas las subcategorías (incluyendo inactivas) - Solo para administradores
      */
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Category>> getAllCategories() {
+    public ResponseEntity<List<Subcategory>> getAllSubcategories() {
         try {
-            List<Category> categories = categoryService.getAllCategories();
-            return ResponseEntity.ok(categories);
+            List<Subcategory> subcategories = subcategoryService.getAllSubcategories();
+            return ResponseEntity.ok(subcategories);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
-     * Obtiene una categoría por ID
+     * Obtiene una subcategoría por ID
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Category> getCategoryById(@PathVariable Long id) {
+    public ResponseEntity<Subcategory> getSubcategoryById(@PathVariable Long id) {
         try {
-            Optional<Category> category = categoryService.getCategoryById(id);
-            if (category.isPresent()) {
-                return ResponseEntity.ok(category.get());
+            Optional<Subcategory> subcategory = subcategoryService.getSubcategoryById(id);
+            if (subcategory.isPresent()) {
+                return ResponseEntity.ok(subcategory.get());
             } else {
                 return ResponseEntity.notFound().build();
             }
@@ -75,27 +75,40 @@ public class CategoryController {
     }
 
     /**
-     * Busca categorías por término de búsqueda
+     * Obtiene todas las subcategorías de una categoría específica
      */
-    @GetMapping("/search")
-    public ResponseEntity<List<Category>> searchCategories(@RequestParam(required = false) String q) {
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<Subcategory>> getSubcategoriesByCategoryId(@PathVariable Long categoryId) {
         try {
-            List<Category> categories = categoryService.searchCategories(q);
-            return ResponseEntity.ok(categories);
+            List<Subcategory> subcategories = subcategoryService.getSubcategoriesByCategoryId(categoryId);
+            return ResponseEntity.ok(subcategories);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
-     * Crea una nueva categoría - Solo para administradores
+     * Busca subcategorías por término de búsqueda
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<Subcategory>> searchSubcategories(@RequestParam(required = false) String q) {
+        try {
+            List<Subcategory> subcategories = subcategoryService.searchSubcategories(q);
+            return ResponseEntity.ok(subcategories);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Crea una nueva subcategoría - Solo para administradores
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> createCategory(@RequestBody Category category) {
+    public ResponseEntity<?> createSubcategory(@RequestBody Subcategory subcategory) {
         try {
-            Category createdCategory = categoryService.createCategory(category);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdCategory);
+            Subcategory createdSubcategory = subcategoryService.createSubcategory(subcategory);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdSubcategory);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         } catch (Exception e) {
@@ -105,14 +118,14 @@ public class CategoryController {
     }
 
     /**
-     * Actualiza una categoría existente - Solo para administradores
+     * Actualiza una subcategoría existente - Solo para administradores
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateCategory(@PathVariable Long id, @RequestBody Category categoryDetails) {
+    public ResponseEntity<?> updateSubcategory(@PathVariable Long id, @RequestBody Subcategory subcategoryDetails) {
         try {
-            Category updatedCategory = categoryService.updateCategory(id, categoryDetails);
-            return ResponseEntity.ok(updatedCategory);
+            Subcategory updatedSubcategory = subcategoryService.updateSubcategory(id, subcategoryDetails);
+            return ResponseEntity.ok(updatedSubcategory);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         } catch (Exception e) {
@@ -122,14 +135,14 @@ public class CategoryController {
     }
 
     /**
-     * Elimina una categoría (soft delete) - Solo para administradores
+     * Elimina una subcategoría (soft delete) - Solo para administradores
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
+    public ResponseEntity<?> deleteSubcategory(@PathVariable Long id) {
         try {
-            categoryService.deleteCategory(id);
-            return ResponseEntity.ok().body(new SuccessResponse("Categoría eliminada exitosamente"));
+            subcategoryService.deleteSubcategory(id);
+            return ResponseEntity.ok().body(new SuccessResponse("Subcategoría eliminada exitosamente"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         } catch (Exception e) {
@@ -139,14 +152,14 @@ public class CategoryController {
     }
 
     /**
-     * Elimina permanentemente una categoría - Solo para administradores
+     * Elimina permanentemente una subcategoría - Solo para administradores
      */
     @DeleteMapping("/{id}/permanent")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> permanentDeleteCategory(@PathVariable Long id) {
+    public ResponseEntity<?> permanentDeleteSubcategory(@PathVariable Long id) {
         try {
-            categoryService.permanentDeleteCategory(id);
-            return ResponseEntity.ok().body(new SuccessResponse("Categoría eliminada permanentemente"));
+            subcategoryService.permanentDeleteSubcategory(id);
+            return ResponseEntity.ok().body(new SuccessResponse("Subcategoría eliminada permanentemente"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         } catch (Exception e) {
@@ -156,14 +169,14 @@ public class CategoryController {
     }
 
     /**
-     * Activa una categoría - Solo para administradores
+     * Activa una subcategoría - Solo para administradores
      */
     @PutMapping("/{id}/activate")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> activateCategory(@PathVariable Long id) {
+    public ResponseEntity<?> activateSubcategory(@PathVariable Long id) {
         try {
-            Category category = categoryService.activateCategory(id);
-            return ResponseEntity.ok(category);
+            Subcategory subcategory = subcategoryService.activateSubcategory(id);
+            return ResponseEntity.ok(subcategory);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         } catch (Exception e) {
@@ -173,14 +186,14 @@ public class CategoryController {
     }
 
     /**
-     * Desactiva una categoría - Solo para administradores
+     * Desactiva una subcategoría - Solo para administradores
      */
     @PutMapping("/{id}/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deactivateCategory(@PathVariable Long id) {
+    public ResponseEntity<?> deactivateSubcategory(@PathVariable Long id) {
         try {
-            Category category = categoryService.deactivateCategory(id);
-            return ResponseEntity.ok(category);
+            Subcategory subcategory = subcategoryService.deactivateSubcategory(id);
+            return ResponseEntity.ok(subcategory);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         } catch (Exception e) {

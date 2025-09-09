@@ -61,4 +61,51 @@ public class CourseController {
         List<Course> courses = courseService.getAllActiveCourses();
         return ResponseEntity.ok(courses);
     }
+
+    /**
+     * Obtiene cursos por categoría
+     */
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<Course>> getCoursesByCategory(@PathVariable Long categoryId) {
+        try {
+            List<Course> courses = courseService.getCoursesByCategory(categoryId);
+            return ResponseEntity.ok(courses);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Obtiene cursos por subcategoría
+     */
+    @GetMapping("/subcategory/{subcategoryId}")
+    public ResponseEntity<List<Course>> getCoursesBySubcategory(@PathVariable Long subcategoryId) {
+        try {
+            List<Course> courses = courseService.getCoursesBySubcategory(subcategoryId);
+            return ResponseEntity.ok(courses);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Obtiene cursos por categoría y subcategoría
+     */
+    @GetMapping("/category/{categoryId}/subcategory/{subcategoryId}")
+    public ResponseEntity<List<Course>> getCoursesByCategoryAndSubcategory(
+            @PathVariable Long categoryId, 
+            @PathVariable Long subcategoryId) {
+        try {
+            List<Course> courses = courseService.getCoursesByCategoryAndSubcategory(categoryId, subcategoryId);
+            return ResponseEntity.ok(courses);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }
