@@ -795,7 +795,10 @@ Content-Type: application/json
 JWT_SECRET_KEY=your-secret-key-here
 JWT_EXPIRATION_TIME=86400000
 ```
-
+############################################
+                TESTING
+############################################
+               
 ## 🧪 Ejemplos de Testing
 
 ### 1. Prueba de Login (cURL)
