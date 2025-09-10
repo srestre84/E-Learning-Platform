@@ -88,7 +88,11 @@
             <groupId>jakarta.ws.rs</groupId>
             <artifactId>jakarta.ws.rs-api</artifactId>
         </dependency>
-        
+        <dependency>
+    		<groupId>com.oracle.oci.sdk</groupId>
+   		 	<artifactId>oci-java-sdk-common-httpclient-jersey</artifactId>
+    		<version>3.45.0</version>
+		</dependency>
         <!-- Jersey Client (gestionado por Spring Boot) -->
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
