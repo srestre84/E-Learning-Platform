@@ -89,6 +89,24 @@
 			<artifactId>oci-java-sdk-objectstorage</artifactId>
 			<version>3.32.0</version>
 		</dependency>
+		<!-- Dependencias adicionales para OCI SDK con Jersey -->
+		<dependency>
+    		<groupId>com.oracle.oci.sdk</groupId>
+    		<artifactId>oci-java-sdk-common-httpclient-jersey</artifactId>
+    		<version>3.32.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.inject</groupId>
+			<artifactId>jersey-hk2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.ws.rs</groupId>
+			<artifactId>jakarta.ws.rs-api</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
