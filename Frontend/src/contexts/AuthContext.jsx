@@ -1,82 +1,156 @@
 // src/context/AuthContext.jsx
-import React, { createContext, useState, useEffect, useCallback } from "react";
-import mockAuthService from "@/interfaces/api/__mocks__/mockAuthService";
+import React, { createContext, useState, useEffect, useCallback, useContext } from "react";
 import { ROLE_PERMISSIONS } from "@/shared/constants/roles";
+import authService from "@/services/authService";
+import { setupResponseInterceptors } from "@/services/api";
 
 export const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export const AuthProvider = ({ children, onLogout }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [onLogoutCallback, setOnLogoutCallback] = useState(null);
+  const [onLogoutCallback, setOnLogoutCallback] = useState(() => onLogout);
+  const [error, setError] = useState(null);
 
-  // Set a callback to be called on logout
+  // Set a callback to be called on logout 
   const setLogoutCallback = useCallback((callback) => {
     setOnLogoutCallback(() => callback);
   }, []);
 
+  // Set up response interceptors
   useEffect(() => {
-    // Check if user is already authenticated
-    const checkAuth = async () => {
-      try {
-        if (mockAuthService.isAuthenticated()) {
-          const userData = mockAuthService.getCurrentUser();
-          if (userData) {
-            setUser({
-              token: mockAuthService.getToken(),
-              ...userData,
-              role: userData.role || 'student',
-              name: userData.userName || 'Usuario',
-              lastName: userData.lastName || '',
-              avatar: userData.avatar || '',
-              email: userData.email
-            });
-          }
-        }
-      } catch (error) {
-        console.error("Auth check failed:", error);
-      } finally {
-        setLoading(false);
+    const handleLogout = () => {
+      setUser(null);
+      if (onLogoutCallback) {
+        onLogoutCallback();
       }
     };
 
+    // Configure interceptors with the logout handler
+    setupResponseInterceptors(handleLogout);
+  }, [onLogoutCallback]);
+
+  // Check authentication status on load
+  useEffect(() => {
+    let isMounted = true;
+    
+    const checkAuth = async () => {
+      if (!isMounted) return;
+      
+      try {
+        setLoading(true);
+        
+        // Run token validation and user fetch in parallel
+        const [isTokenValid, currentUser] = await Promise.all([
+          authService.validateToken().catch(() => false),
+          authService.getCurrentUser().catch(() => null)
+        ]);
+        
+        if (!isMounted) return;
+        
+        if (isTokenValid && currentUser) {
+          setUser(currentUser);
+          setError(null);
+        } else {
+          // If token is not valid, clear the state
+          setUser(null);
+          authService.logout();
+        }
+      } catch (error) {
+        if (isMounted) {
+          console.error("Error checking auth status:", error);
+          setError(error.response?.data?.message || "Error verifying authentication");
+          setUser(null);
+          authService.logout();
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+    
     checkAuth();
+    
+    return () => {
+      isMounted = false; // Prevent state updates after unmount
+    };
   }, []);
 
-  const login = async (email, password) => {
+  const register = useCallback(async (userData) => {
     try {
       setLoading(true);
-      const loggedUser = await mockAuthService.login(email, password);
-      if (loggedUser && loggedUser.token) {
-        const userData = {
-          ...loggedUser,
-          role: loggedUser.role || 'student',
-          name: loggedUser.userName || 'Usuario',
-          lastName: loggedUser.lastName || '',
-          avatar: loggedUser.avatar || '',
-          email: loggedUser.email
-        };
-        setUser(userData);
-        return userData;
+      setError(null);
+      
+      // Registrar al usuario
+      const response = await authService.register({
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        email: userData.email,
+        password: userData.password,
+        role: userData.role || 'STUDENT'
+      });
+      
+      if (response) {
+        return { success: true, data: response };
       }
-      throw new Error("Invalid response from authentication service");
+      
+      return { success: false, error: 'No se pudo completar el registro' };
     } catch (error) {
-      console.error("Login error:", error);
-      if (!error.response) {
-        error.response = { data: { message: error.message || "Authentication failed" } };
-      }
-      throw error;
+      console.error("Registration error:", error);
+      const errorMessage = error.response?.data?.message || "Registration error. Please try again.";
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const logout = useCallback(() => {
-    mockAuthService.logout();
-    setUser(null);
-    // llamadas a la funcion de logout para redirigir al login
-    if (onLogoutCallback) {
-      onLogoutCallback();
+  const login = useCallback(async (email, password) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await authService.login({ email, password });
+      setUser(response);
+      return { success: true, data: response };
+    } catch (error) {
+      console.error("Login error:", error);
+      const errorMessage = error.response?.data?.message || "Authentication error. Please check your credentials.";
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const logout = useCallback(async (options = {}) => {
+    try {
+      // Clear authentication state
+      await authService.logout();
+      setUser(null);
+      setError(null);
+      
+      // Get redirect path from callback if it exists
+      let redirectTo = '/auth';
+      if (onLogoutCallback) {
+        const result = onLogoutCallback();
+        if (result) {
+          redirectTo = result;
+        }
+      }
+      
+      // Redirect after clearing state
+      if (options.redirect !== false) {
+        if (redirectTo) {
+          window.location.href = redirectTo;
+        }
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error during logout:', error);
+      return { success: false, error };
     }
   }, [onLogoutCallback]);
 
@@ -85,42 +159,74 @@ export const AuthProvider = ({ children }) => {
     return ROLE_PERMISSIONS[user.role]?.[permission] ?? false;
   };
 
-  // contexto para manejar el perfil del usuario con la api de mock se cambia por la api de backend
-  // fetchProfile como funcion se encarga de obtener los datos de los usuarios autenticados
-  const fetchProfile = async () => {
-    const profile = await mockAuthService.getProfile();
-    // actualiza el contexto del usuario
-    setUser((prev) => prev ? { ...prev, name: profile.name, email: profile.email, role: profile.role } : prev);
-    return profile;
-  };
+  // Get authenticated user's profile
+  const fetchProfile = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const profile = await authService.getCurrentUser();
+      setUser(profile);
+      return profile;
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      const errorMessage = error.response?.data?.message || "Error loading user profile";
+      setError(errorMessage);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const updateProfile = async (updates) => {
-    const updated = await mockAuthService.updateProfile(updates);
-    // actualiza el contexto del usuario
-    setUser((prev) => prev ? { ...prev, name: updated.name, email: updated.email } : prev);
-    return updated;
+  // Update user profile
+  const updateProfile = useCallback(async (updates) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const updatedProfile = await authService.updateProfile(updates);
+      setUser(prev => ({ ...prev, ...updatedProfile }));
+      return updatedProfile;
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      const errorMessage = error.response?.data?.message || "Error updating profile";
+      setError(errorMessage);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const value = {
+    user,
+    loading,
+    error,
+    isAuthenticated: !!user,
+    role: user?.role || 'guest',
+    login,
+    logout,
+    register,
+    hasPermission,
+    setLogoutCallback,
+    fetchProfile,
+    updateProfile,
+    setError
   };
-  // isAuthenticated es una funcion que retorna true si el usuario esta autenticado
-  const isAuthenticated = !!user;
-  // role es una funcion que retorna el rol del usuario
-  const role = user?.role || 'guest';
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      loading,
-      isAuthenticated,
-      role,
-      login,
-      logout,
-      setLogoutCallback,
-      hasPermission,
-      fetchProfile,
-      updateProfile
-    }}>
-      {children}
+    <AuthContext.Provider value={value}>
+      {!loading ? children : null}
     </AuthContext.Provider>
   );
+};
+
+// Custom hook to use the auth context
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };
 
 export default AuthContext;

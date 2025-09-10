@@ -1,5 +1,5 @@
 // src/interfaces/api/authApi.js
-import api from '@/services/apiConnection';
+import api from '@/services/api';
 import mockAuthService from './__mocks__/mockAuthService';
 
 const useMocks = import.meta.env.VITE_USE_MOCKS === 'true';

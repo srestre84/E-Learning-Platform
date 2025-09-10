@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import useAuth from "@/shared/hooks/useAuth";
+import {useAuth} from "@/shared/hooks/useAuth";
 
 const TeacherRoute = ({ children }) => {
   const { isAuthenticated, user, loading } = useAuth();

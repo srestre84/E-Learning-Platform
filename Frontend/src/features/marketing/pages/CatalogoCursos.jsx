@@ -10,16 +10,22 @@ import {
   ChevronDown,
   ChevronUp,
   Play,
-  Award
+  Award,
+  X,
+  UserPlus
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function CatalogoCursos() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("todos");
   const [selectedLevel, setSelectedLevel] = useState("todos");
-
   const [expandedCourse, setExpandedCourse] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const categories = [
     { id: "todos", name: "Todos los cursos" },
@@ -56,14 +62,12 @@ export default function CatalogoCursos() {
       tags: ["React", "JavaScript", "Hooks", "Redux"],
       description:
         "Aprende React desde los fundamentos hasta técnicas avanzadas. Construye aplicaciones modernas y escalables.",
-
-      categoryColor: "",
-
+      lessons: 42,
       whatYouLearn: [
-        "Fundamentos de React",
-        "Custom Hooks ",
-        "APIs RESTful y bases de datos",
-        "Despliegue y DevOps básico",
+        "Fundamentos sólidos de React y JSX",
+        "Hooks avanzados y custom hooks",
+        "Gestión de estado con Redux",
+        "Optimización y mejores prácticas",
       ],
       requirements: [
         "Conocimientos básicos de JavaScript",
@@ -87,17 +91,18 @@ export default function CatalogoCursos() {
       tags: ["Node.js", "Express", "MongoDB", "API"],
       description:
         "Desarrolla APIs robustas y escalables con Node.js y Express. Aprende autenticación, bases de datos y deployment.",
-        whatYouLearn: [
-          "Fundamentos de React",
-          "Custom Hooks ",
-          "APIs RESTful y bases de datos",
-          "Despliegue y DevOps básico",
-        ],
-        requirements: [
-          "Conocimientos básicos de JavaScript",
-        "Familiaridad con HTML y CSS",
-        "Computadora con conexión a internet"
-        ],
+      lessons: 28,
+      whatYouLearn: [
+        "Fundamentos de Node.js y npm",
+        "Creación de APIs REST con Express",
+        "Integración con bases de datos MongoDB",
+        "Autenticación JWT y middleware",
+      ],
+      requirements: [
+        "JavaScript intermedio",
+        "Conceptos básicos de HTTP",
+        "Familiaridad con línea de comandos"
+      ],
     },
     {
       id: 3,
@@ -115,17 +120,18 @@ export default function CatalogoCursos() {
       tags: ["Python", "TensorFlow", "Scikit-learn", "Deep Learning"],
       description:
         "Domina el Machine Learning con Python. Implementa algoritmos de IA y crea modelos predictivos avanzados.",
-        whatYouLearn: [
-          "Fundamentos de React",
-          "Custom Hooks ",
-          "APIs RESTful y bases de datos",
-          "Despliegue y DevOps básico",
-        ],
-        requirements: [
-          "Python intermedio",
-          "Matemáticas básicas",
-          "Lógica de programación"
-        ],
+      lessons: 65,
+      whatYouLearn: [
+        "Algoritmos de Machine Learning",
+        "Redes neuronales con TensorFlow",
+        "Análisis de datos con Pandas",
+        "Modelos predictivos avanzados",
+      ],
+      requirements: [
+        "Python intermedio",
+        "Matemáticas básicas (álgebra, estadística)",
+        "Lógica de programación"
+      ],
     },
     {
       id: 4,
@@ -143,17 +149,18 @@ export default function CatalogoCursos() {
       tags: ["Figma", "UX Research", "Prototyping", "User Testing"],
       description:
         "Crea experiencias de usuario excepcionales. Aprende investigación, diseño y testing de interfaces.",
-        whatYouLearn: [
-          "Fundamentos de React",
-          "Custom Hooks ",
-          "APIs RESTful y bases de datos",
-          "Despliegue y DevOps básico",
-        ],
-        requirements: [
-          "Creatividad y sentido estético",
+      lessons: 35,
+      whatYouLearn: [
+        "Principios de diseño UX/UI",
+        "Investigación de usuarios",
+        "Prototipado con Figma",
+        "Testing y validación de diseños",
+      ],
+      requirements: [
+        "Creatividad y sentido estético",
         "Familiaridad con herramientas digitales",
         "Interés en experiencia de usuario"
-        ]
+      ]
     },
     {
       id: 5,
@@ -171,17 +178,18 @@ export default function CatalogoCursos() {
       tags: ["Docker", "Kubernetes", "CI/CD", "AWS"],
       description:
         "Automatiza el deployment y escalado de aplicaciones. Domina Docker, Kubernetes y pipelines de CI/CD.",
-        whatYouLearn: [
-          "Fundamentos de React",
-          "Custom Hooks ",
-          "APIs RESTful y bases de datos",
-          "Despliegue y DevOps básico",
-        ],
-        requirements: [
-          "Conocimientos básicos de internet",
-        "Interés en marketing",
-        "Dispositivo con conexión web"
-        ],
+      lessons: 48,
+      whatYouLearn: [
+        "Containerización con Docker",
+        "Orquestación con Kubernetes",
+        "Pipelines de CI/CD",
+        "Deployment en la nube (AWS)",
+      ],
+      requirements: [
+        "Conocimientos de desarrollo web",
+        "Familiaridad con línea de comandos",
+        "Conceptos básicos de redes"
+      ],
     },
     {
       id: 6,
@@ -199,17 +207,18 @@ export default function CatalogoCursos() {
       tags: ["Flutter", "Dart", "Mobile", "Cross-platform"],
       description:
         "Desarrolla apps móviles nativas para iOS y Android con Flutter. Una base de código, dos plataformas.",
-        whatYouLearn: [
-          "Fundamentos de React",
-          "Custom Hooks ",
-          "APIs RESTful y bases de datos",
-          "Despliegue y DevOps básico",
-        ],
-        requirements: [
-          "Conocimientos básicos de internet",
-        "Interés en marketing",
-        "Dispositivo con conexión web"
-        ],
+      lessons: 38,
+      whatYouLearn: [
+        "Fundamentos de Flutter y Dart",
+        "Widgets y layouts responsivos",
+        "Navegación y gestión de estado",
+        "Publicación en App Store y Play Store",
+      ],
+      requirements: [
+        "Programación básica (cualquier lenguaje)",
+        "Interés en desarrollo móvil",
+        "Computadora para desarrollo"
+      ],
     },
   ];
 
@@ -265,6 +274,18 @@ export default function CatalogoCursos() {
 
   const toggleExpanded = (cursoId) => {
     setExpandedCourse(expandedCourse === cursoId ? null : cursoId);
+  };
+
+  const handleCourseAccess = (courseId, action) => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
+    navigate(`/curso/${courseId}/detalle`);
+  };
+
+  const closeAuthModal = () => {
+    setShowAuthModal(false);
   };
 
   return (
@@ -354,9 +375,9 @@ export default function CatalogoCursos() {
             return (
               <div
                 key={curso.id}
-                className={`"bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 ${
+                className={`bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 ${
                   isExpanded ? "shadow-xl scale-[1.02]" : ""
-                } `}>
+                }`}>
                 {/* Imagen del curso */}
                 <div className="relative">
                   <img
@@ -537,23 +558,25 @@ export default function CatalogoCursos() {
                 </div>
 
                 {isExpanded && (
-                   <div className="pt-3 border-t border-gray-100 animate-in slide-in-from-bottom-2 duration-300">
-                   <div className="flex gap-2">
-                     <button className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-1">
-                       <Play className="w-3 h-3" />
-                       Vista previa
-                     </button>
-                     <button className="flex-1 bg-red-500 text-white py-2 rounded-lg text-xs font-semibold hover:bg-red-600 transition-colors flex items-center justify-center gap-1">
-                       <Award className="w-3 h-3" />
-                       Comprar ahora
-                     </button>
-                   </div>
-                 </div>
-
-                )
-
-
-                }
+                  <div className="p-4 border-t border-gray-100">
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => handleCourseAccess(curso.id, 'preview')}
+                        className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-1"
+                      >
+                        <Play className="w-3 h-3" />
+                        Vista previa
+                      </button>
+                      <button 
+                        onClick={() => handleCourseAccess(curso.id, 'view')}
+                        className="flex-1 bg-red-500 text-white py-2 rounded-lg text-xs font-semibold hover:bg-red-600 transition-colors flex items-center justify-center gap-1"
+                      >
+                        <Award className="w-3 h-3" />
+                        Ver curso
+                      </button>
+                    </div>
+                  </div>
+                )}
 
               </div>
             );
@@ -570,11 +593,68 @@ export default function CatalogoCursos() {
               No se encontraron cursos
             </h3>
             <p className="text-gray-500">
-              Intenta ajustar tusb filtros de búsqueda
+              Intenta ajustar tus filtros de búsqueda
             </p>
           </div>
         )}
       </div>
+
+      {/* Modal de Autenticación Requerida */}
+      {showAuthModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-gray-900">Registro Requerido</h3>
+              <button 
+                onClick={closeAuthModal}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <UserPlus className="w-8 h-8 text-red-500" />
+              </div>
+              <p className="text-gray-600 mb-2">
+                Para poder ver este curso necesitas registrarte
+              </p>
+              <p className="text-sm text-gray-500">
+                Crea tu cuenta gratuita y accede a todos nuestros cursos
+              </p>
+            </div>
+            
+            <div className="flex gap-3">
+              <button 
+                onClick={() => {
+                  closeAuthModal();
+                  navigate('/login');
+                }}
+                className="flex-1 bg-red-500 text-white py-3 rounded-lg font-semibold hover:bg-red-600 transition-colors"
+              >
+                Iniciar Sesión
+              </button>
+              <button 
+                onClick={() => {
+                  closeAuthModal();
+                  navigate('/register');
+                }}
+                className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+              >
+                Registrarse
+              </button>
+            </div>
+            
+            <button 
+              onClick={closeAuthModal}
+              className="w-full mt-3 text-gray-500 text-sm hover:text-gray-700 transition-colors"
+            >
+              Continuar explorando
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

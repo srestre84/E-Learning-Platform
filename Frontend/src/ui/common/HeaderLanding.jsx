@@ -32,9 +32,10 @@ export default function Header() {
               className="text-text-primary hover:text-red-500 font-medium transition-colors cursor-pointer"
               onClick={(e) => {
                 e.preventDefault();
-                document
-                  .getElementById("Cursos")
-                  .scrollIntoView({ behavior: "smooth" });
+                const element = document.getElementById("Cursos");
+                if (element) {
+                  element.scrollIntoView({ behavior: "smooth" });
+                }
               }}>
               Cursos
             </a>
@@ -43,9 +44,10 @@ export default function Header() {
               className="text-gray-700 hover:text-red-500 font-medium transition-colors"
               onClick={(e) => {
                 e.preventDefault();
-                document
-                  .getElementById("precios")
-                  .scrollIntoView({ behavior: "smooth" });
+                const element = document.getElementById("precios");
+                if (element) {
+                  element.scrollIntoView({ behavior: "smooth" });
+                }
               }}
               >
               Precios
@@ -55,9 +57,10 @@ export default function Header() {
               className="text-gray-700 hover:text-red-500 font-medium transition-colors"
               onClick={(e) => {
                 e.preventDefault();
-                document
-                  .getElementById("instructores")
-                  .scrollIntoView({ behavior: "smooth" });
+                const element = document.getElementById("instructores");
+                if (element) {
+                  element.scrollIntoView({ behavior: "smooth" });
+                }
                 setIsMenuOpen(false);
               }}
 
@@ -70,22 +73,23 @@ export default function Header() {
                 className="text-gray-700 hover:text-red-500 font-medium transition-colors"
                 onClick={(e) => {
                   e.preventDefault();
-                  document
-                    .getElementById("testimonios")
-                    .scrollIntoView({ behavior: "smooth" });
+                  const element = document.getElementById("testimonios");
+                  if (element) {
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }
                   setIsMenuOpen(false);
                 }}
                 >
                 Testimonios
               </a>
               <Link
-                to="login"
+                to="/auth"
                 className="bg-red-500 text-white px-6 py-2.5 rounded-lg hover:bg-red-600 transition-colors font-semibold shadow-lg hover:shadow-xl">
                 Empezar ahora
               </Link>
             </div>
           </div>
-
+          
           <button
             className="md:hidden"
             onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -105,9 +109,10 @@ export default function Header() {
                 className="block px-3 py-2 text-gray-700 font-medium cursor-pointer"
                 onClick={(e) => {
                   e.preventDefault();
-                  document
-                    .getElementById("Cursos")
-                    .scrollIntoView({ behavior: "smooth" });
+                  const element = document.getElementById("Cursos");
+                  if (element) {
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }
                   setIsMenuOpen(false);
                 }}>
                 Cursos
@@ -117,9 +122,10 @@ export default function Header() {
                 className="block px-3 py-2 text-gray-700 font-medium"
                 onClick={(e) => {
                   e.preventDefault();
-                  document
-                    .getElementById("Cursos")
-                    .scrollIntoView({ behavior: "smooth" });
+                  const element = document.getElementById("precios");
+                  if (element) {
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }
                   setIsMenuOpen(false);
                 }}>
 
@@ -130,9 +136,10 @@ export default function Header() {
                 className="block px-3 py-2 text-gray-700 font-medium"
                 onClick={(e) => {
                   e.preventDefault();
-                  document
-                    .getElementById("Cursos")
-                    .scrollIntoView({ behavior: "smooth" });
+                  const element = document.getElementById("instructores");
+                  if (element) {
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }
                   setIsMenuOpen(false);
                 }}
                 >
@@ -144,15 +151,16 @@ export default function Header() {
                   className="block text-gray-700 font-medium"
                   onClick={(e) => {
                     e.preventDefault();
-                    document
-                      .getElementById("Cursos")
-                      .scrollIntoView({ behavior: "smooth" });
+                    const element = document.getElementById("testimonios");
+                    if (element) {
+                      element.scrollIntoView({ behavior: "smooth" });
+                    }
                     setIsMenuOpen(false);
                   }}>
                   Testimonios
                 </a>
                 <Link
-                  to="login"
+                  to="auth"
                   className="block bg-red-500 text-white px-4 py-2 rounded-lg text-center font-semibold">
                   Empezar ahora
                 </Link>

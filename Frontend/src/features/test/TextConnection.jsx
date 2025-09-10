@@ -1,6 +1,6 @@
 // src/features/test/TestConnection.jsx
 import { useEffect, useState } from 'react';
-import api from '@/services/apiConnection';
+import api from '@/services/api';
 
 const TestConnection = () => {
   const [message, setMessage] = useState('Probando conexión con el backend...');

@@ -64,7 +64,7 @@ const Students = () => {
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4 sm:mb-0">Mis Cursos</h2>
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4 sm:mb-0">Alumnos</h2>
         <div className="w-full sm:w-64">
           <div className="relative">
             <input

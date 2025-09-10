@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
-import useAuth from "@/shared/hooks/useAuth";
+import {useAuth} from "@/shared/hooks/useAuth";
 import {
   Home,
   Users,
@@ -58,14 +58,23 @@ const getApprenticeLinks = (isExpanded) => [
 ];
 
 const getTeacherLinks = (isExpanded) => [
-  { path: "/teacher", icon: LayoutDashboard, label: "Panel" },
-  { path: "/teacher/courses", icon: BookCopy, label: "Mis Cursos" },
-  { path: "/teacher/students", icon: GraduationCap, label: "Mis Alumnos" },
+  { path: "/teacher/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { 
+    path: "/teacher/courses", 
+    icon: BookCopy, 
+    label: "Mis Cursos",
+    subItems: [
+      { path: "/teacher/courses", icon: BookCopy, label: "Ver Cursos" },
+      { path: "/teacher/courses/new", icon: Plus, label: "Crear Curso" },
+    ]
+  },
+  { path: "/teacher/students", icon: GraduationCap, label: "Estudiantes" },
   { path: "/teacher/analytics", icon: BarChart2, label: "Análisis" },
+  // Mensajes quetado para futuras implementaciones
+  //{ path: "/teacher/messages", icon: MessageSquare, label: "Mensajes" },
   { path: "/teacher/profile", icon: User, label: "Perfil" },
-  { path: "/teacher/courses/new", icon: Plus, label: "Crear Curso", },
-
-  
+  // Configuración quetado para futuras implementaciones
+  //{ path: "/teacher/settings", icon: Settings, label: "Configuración" },
 ];
 
 const adminLinks = [
@@ -77,7 +86,7 @@ const adminLinks = [
   { path: "/admin/chat", icon: MessageSquare, label: "Chat" },
 ];
 
-// --- Componente NavLink mejorado ---
+// --- Componente NavLink ---
 const NavLink = ({
   to,
   icon: Icon,
@@ -87,7 +96,6 @@ const NavLink = ({
   hasSubItems,
   isExpanded,
   onToggle,
-  BarChart2,
   isSubItem = false,
   onNavigate,
 }) => {
@@ -108,37 +116,37 @@ const NavLink = ({
       <div
         onClick={handleClick}
         className={cn(
-          "flex items-center w-full p-2.5 text-sm font-medium rounded-lg transition-colors duration-150 cursor-pointer group",
+          "flex items-center w-full p-3 text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer group",
           isActive
-            ? "text-blue-600 dark:text-blue-400"
-            : "text-gray-700 hover:bg-gray-100/50 dark:text-gray-300 dark:hover:bg-gray-700/30",
-          isSubItem ? "pl-8" : ""
+            ? "bg-indigo-100 text-indigo-900 border-r-4 border-indigo-500 dark:bg-indigo-900/20 dark:text-indigo-400"
+            : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700/50",
+          isSubItem ? "pl-10 ml-2" : ""
         )}
       >
         {Icon && (
           <div className={cn(
-            "flex-shrink-0 w-6 h-6 mr-3 transition-colors duration-150",
+            "flex-shrink-0 w-6 h-6 mr-3 transition-colors duration-200",
             isActive
-              ? "text-blue-600 dark:text-blue-400"
-              : "text-gray-500 group-hover:text-gray-600 dark:text-gray-400 dark:group-hover:text-gray-300"
+              ? "text-indigo-600 dark:text-indigo-400"
+              : "text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300"
           )}>
             <Icon className="w-5 h-5" />
           </div>
         )}
-        <span className="flex-1 text-left">{label}</span>
+        <span className="flex-1 text-left font-medium">{label}</span>
         {notification && (
-          <span className="inline-flex items-center justify-center w-5 h-5 ml-2 text-xs font-semibold text-white bg-red-500 rounded-full">
+          <span className="inline-flex items-center justify-center w-5 h-5 ml-2 text-xs font-bold text-white bg-red-500 rounded-full animate-pulse">
             {notification}
           </span>
         )}
         {hasSubItems && (
           <ChevronDown
             className={cn(
-              "w-4 h-4 ml-2 transition-transform duration-150",
+              "w-4 h-4 ml-2 transition-transform duration-200",
               isExpanded ? "transform rotate-180" : "",
               isActive
-                ? "text-blue-600 dark:text-blue-400"
-                : "text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400"
+                ? "text-indigo-600 dark:text-indigo-400"
+                : "text-gray-400 group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-400"
             )}
           />
         )}
@@ -152,9 +160,21 @@ const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(window.innerWidth > 1024);
   const [expandedItems, setExpandedItems] = useState({});
   const location = useLocation();
-  const { user, role, isAuthenticated, logout } = useAuth();
+  const { user, role, isAuthenticated } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
+
+  const { logout } = useAuth();
+  
+  // Función para manejar el cierre de sesión
+  const handleLogout = async () => {
+    try {
+      await logout({ redirect: true });
+      // La redirección se manejará en el AuthContext
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
+  };
 
   // Obtener enlaces según el rol
   const getLinksByRole = () => {
@@ -163,7 +183,7 @@ const Sidebar = () => {
       case "student":
         return getApprenticeLinks(isOpen);
       case "teacher":
-        return getTeacherLinks();
+        return getTeacherLinks(isOpen);
       case "admin":
         return adminLinks;
       default:
@@ -262,14 +282,14 @@ const Sidebar = () => {
     if (!expandedItems[parentLabel]) return null;
 
     return (
-      <div className="ml-6 mt-1 space-y-1 border-l-2 border-gray-200 dark:border-gray-700 pl-4">
+      <div className="mt-2 space-y-1 border-l-2 border-indigo-200 dark:border-indigo-700 ml-4 pl-4">
         {subItems.map((subItem) => (
           <NavLink
             key={subItem.path}
             to={subItem.path}
             icon={subItem.icon}
             label={subItem.label}
-            isActive={isActive(subItem.path, false)}
+            isActive={isActive(subItem.path, true)}
             isSubItem
             onNavigate={handleNavigateClose}
           />
@@ -333,10 +353,10 @@ const Sidebar = () => {
                   <div className="w-10 h-10 overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-indigo-600">
                     <img
                       className="w-full h-full object-cover"
-                      src={user?.avatar || `https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=${encodeURIComponent(user?.userName || 'U')}`}
-                      alt={user?.userName}
+                      src={user?.avatar || `https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=${encodeURIComponent((user?.name || user?.userName) || 'U')}`}
+                      alt={user?.name || user?.userName}
                       onError={(e) => {
-                        e.target.src = `https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=${encodeURIComponent(user?.userName || 'U')}`;
+                        e.target.src = `https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=${encodeURIComponent((user?.name || user?.userName) || 'U')}`;
                       }}
                     />
                   </div>
@@ -344,10 +364,10 @@ const Sidebar = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h1 className="text-sm font-medium text-gray-900 truncate dark:text-white">
-                    {user?.userName || 'Usuario'}
+                    {user?.name || user?.userName || 'Usuario'}
                   </h1>
                   <h2 className="text-xs font-medium text-gray-900 truncate dark:text-gray-400">
-                    {user?.lastName || 'Apellido'}
+                    {user?.lastName || user?.lastName || 'Apellido'}
                   </h2>
                   <h3 className="text-xs font-medium text-gray-900 truncate dark:text-gray-400">
                     {role === 'student' ? 'Estudiante' : role === 'teacher' ? 'Profesor' : 'Administrador'}
@@ -357,14 +377,27 @@ const Sidebar = () => {
             </div>
 
             {/* Search */}
-
+            <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Buscar..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500"
+                />
+              </div>
+            </div>
 
             {/* Navigation */}
-            <div className="flex-1 px-2 pb-4 overflow-y-auto">
-              <nav className="space-y-1">
+            <div className="flex-1 px-3 pb-4 overflow-y-auto">
+              <nav className="space-y-2 mt-4">
                 {filteredLinks.length > 0 ? (
                   filteredLinks.map((link) => (
-                    <div key={link.path}>
+                    <div key={link.path} className="space-y-1">
                       <NavLink
                         to={link.path}
                         icon={link.icon}
@@ -380,9 +413,13 @@ const Sidebar = () => {
                     </div>
                   ))
                 ) : (
-                  <div className="p-3 text-center">
+                  <div className="p-4 text-center">
+                    <Search className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                         No se encontraron resultados
+                    </p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                        Intenta con otros términos
                     </p>
                   </div>
                 )}
@@ -392,7 +429,7 @@ const Sidebar = () => {
             {/* Bottom section */}
             <div className="p-3 border-t border-gray-200 dark:border-gray-800">
               <button
-                onClick={logout}
+                onClick={handleLogout}
                 className={cn(
                   "flex items-center w-full p-2.5 text-sm font-medium rounded-lg transition-colors duration-200",
                   "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700/50"
