@@ -62,13 +62,14 @@ public class UserControllerTest {
     void registerUser_withDuplicateEmail_shouldReturnConflict() throws Exception {
         UserRegisterDto originalUser = createUniqueUserDto("usuario.duplicado");
 
+        // Registrar el primer usuario
         mockMvc.perform(post("/api/users/register")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(originalUser)))
                 .andExpect(status().isOk());
 
         // Intentar registrar el mismo email
-        UserRegisterDto duplicateUser = createUniqueUserDto("usuario.duplicado");
+        UserRegisterDto duplicateUser = createUniqueUserDto("usuario.diferente");
         duplicateUser.setEmail(originalUser.getEmail()); // Fuerza el email duplicado
 
         mockMvc.perform(post("/api/users/register")
@@ -76,7 +77,8 @@ public class UserControllerTest {
                 .content(objectMapper.writeValueAsString(duplicateUser)))
                 .andDo(print())
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error").exists());
+                .andExpect(jsonPath("$.error").value("EMAIL_ALREADY_EXISTS"))
+                .andExpect(jsonPath("$.message").exists());
 
         System.out.println("✅ Manejo correcto de email duplicado: " + duplicateUser.getEmail());
     }
@@ -96,7 +98,9 @@ public class UserControllerTest {
                 .content(objectMapper.writeValueAsString(invalidDto)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors").exists());
+                .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.errors").exists())
+                .andExpect(jsonPath("$.errors").isArray());
 
         System.out.println("✅ Validación correcta de datos inválidos");
     }
@@ -116,7 +120,9 @@ public class UserControllerTest {
                 .content(objectMapper.writeValueAsString(dto)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors").exists());
+                .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.errors").exists())
+                .andExpect(jsonPath("$.errors").isArray());
 
         System.out.println("✅ Validación correcta de email null");
     }
