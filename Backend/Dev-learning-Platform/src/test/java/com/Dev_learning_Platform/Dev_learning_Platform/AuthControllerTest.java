@@ -61,7 +61,6 @@ class AuthControllerTest {
         user.setRole(com.Dev_learning_Platform.Dev_learning_Platform.models.User.Role.STUDENT);
         user.setActive(true);
 
-        // Mock del AuthenticationManager para que no falle la autenticación
         Mockito.when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(null); // Simulamos autenticación exitosa
 

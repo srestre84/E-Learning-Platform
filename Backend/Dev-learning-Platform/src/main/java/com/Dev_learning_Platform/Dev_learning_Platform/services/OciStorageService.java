@@ -18,13 +18,7 @@ import com.oracle.bmc.objectstorage.responses.PutObjectResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Servicio de almacenamiento en Oracle Cloud Infrastructure Object Storage.
- * Se activa solo cuando oci.enabled=true y en perfiles de producción.
- * 
- * @author Dev-Learning-Platform Team
- * @version 1.0
- */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -37,15 +31,6 @@ public class OciStorageService {
 
     @Value("${app.upload.storage-type:local}")
     private String storageType;
-
-    /**
-     * Sube un archivo al Object Storage de OCI y retorna la URL pública.
-     * 
-     * @param file Archivo a subir
-     * @param userId ID del usuario propietario
-     * @return URL pública del archivo en OCI Object Storage
-     * @throws IOException Si hay error en la subida
-     */
     public String uploadProfileImage(MultipartFile file, Long userId) throws IOException {
         log.info("Subiendo imagen de perfil a OCI Object Storage para usuario: {}", userId);
 
@@ -86,11 +71,6 @@ public class OciStorageService {
         }
     }
 
-    /**
-     * Elimina un archivo del Object Storage de OCI.
-     * 
-     * @param imageUrl URL del archivo a eliminar
-     */
     public void deleteProfileImage(String imageUrl) {
         if (imageUrl == null || !imageUrl.contains(storageProperties.getPublicUrlBase())) {
             log.warn("URL no válida para eliminación de OCI: {}", imageUrl);
@@ -98,7 +78,7 @@ public class OciStorageService {
         }
 
         try {
-            // Extraer el nombre del objeto de la URL
+    
             String objectName = extractObjectNameFromUrl(imageUrl);
             
             log.info("Eliminando objeto de OCI: {}", objectName);
@@ -119,9 +99,6 @@ public class OciStorageService {
         }
     }
 
-    /**
-     * Extrae la extensión del archivo.
-     */
     private String getFileExtension(String filename) {
         if (filename == null || !filename.contains(".")) {
             throw new IllegalArgumentException("Archivo debe tener una extensión válida");
@@ -129,9 +106,6 @@ public class OciStorageService {
         return filename.substring(filename.lastIndexOf('.') + 1);
     }
 
-    /**
-     * Extrae el nombre del objeto de la URL pública de OCI.
-     */
     private String extractObjectNameFromUrl(String url) {
         String baseUrl = storageProperties.getPublicUrlBase();
         if (url.startsWith(baseUrl)) {
@@ -140,9 +114,6 @@ public class OciStorageService {
         throw new IllegalArgumentException("URL no válida para OCI Object Storage: " + url);
     }
 
-    /**
-     * Verifica si el servicio está configurado y disponible.
-     */
     public boolean isAvailable() {
         return "oci".equals(storageType) && objectStorageClient != null;
     }

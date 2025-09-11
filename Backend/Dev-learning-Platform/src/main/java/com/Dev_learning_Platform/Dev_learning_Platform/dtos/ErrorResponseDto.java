@@ -9,10 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * DTO para respuestas de error standarizadas.
- * Implementa Clean Code para manejo consistente de errores.
- */
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,10 +22,7 @@ public class ErrorResponseDto {
     private LocalDateTime timestamp;
     private String path;
     private List<String> errors; // Para errores de validación múltiples
-    
-    /**
-     * Crea respuesta de error simple.
-     */
+
     public static ErrorResponseDto simple(String error, String message, String path) {
         return ErrorResponseDto.builder()
                 .error(error)
@@ -38,9 +32,6 @@ public class ErrorResponseDto {
                 .build();
     }
     
-    /**
-     * Crea respuesta de error con múltiples validaciones.
-     */
     public static ErrorResponseDto validation(List<String> errors, String path) {
         return ErrorResponseDto.builder()
                 .error("VALIDATION_ERROR")

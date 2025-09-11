@@ -44,7 +44,6 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    // Obtiene usuario filtrados por rol, solo para uso administrativo
     public List<User> getUsersByRole(User.Role role) {
         return userRepository.findByRole(role);
     }

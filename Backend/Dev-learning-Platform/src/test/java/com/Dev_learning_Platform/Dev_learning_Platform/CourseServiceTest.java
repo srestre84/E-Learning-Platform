@@ -35,7 +35,6 @@ import com.Dev_learning_Platform.Dev_learning_Platform.services.UserService;
 
 /**
  * Test unitario para CourseService usando solo Mockito.
- * Siguiendo mejores prácticas de Clean Code y SOLID principles.
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -61,10 +60,6 @@ class CourseServiceTest {
 
     // ---------- Helpers ----------
     
-    /**
-     * Crea un DTO de curso con datos válidos para pruebas.
-     * Implementa el patrón Builder implícito.
-     */
     private CourseCreateDto sampleDto(Long instructorId) {
         CourseCreateDto dto = new CourseCreateDto();
         dto.setTitle("Curso de Spring");
@@ -83,9 +78,6 @@ class CourseServiceTest {
         return dto;
     }
 
-    /**
-     * Crea un usuario mock para las pruebas.
-     */
     private User makeUser(Long id, User.Role role) {
         User u = new User();
         u.setId(id);
@@ -98,9 +90,6 @@ class CourseServiceTest {
         return u;
     }
 
-    /**
-     * Crea una categoría mock para las pruebas.
-     */
     private Category makeCategory(Long id, String name) {
         Category category = new Category();
         category.setId(id);
@@ -110,9 +99,6 @@ class CourseServiceTest {
         return category;
     }
 
-    /**
-     * Crea una subcategoría mock para las pruebas.
-     */
     private Subcategory makeSubcategory(Long id, String name, Category category) {
         Subcategory subcategory = new Subcategory();
         subcategory.setId(id);

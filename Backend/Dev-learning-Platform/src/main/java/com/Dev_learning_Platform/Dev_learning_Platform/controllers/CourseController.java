@@ -48,14 +48,12 @@ public class CourseController {
         return ResponseEntity.ok(course);
     }
 
-
     @GetMapping("/instructor/{instructorId}")
     @PreAuthorize("hasRole('ADMIN') or (hasRole('INSTRUCTOR') and #instructorId == authentication.principal.id)")
     public ResponseEntity<List<Course>> getCoursesByInstructor(@PathVariable Long instructorId) {
         List<Course> courses = courseService.getCoursesByInstructor(instructorId);
         return ResponseEntity.ok(courses);
     }
-
 
     @GetMapping("/admin/active")
     @PreAuthorize("hasRole('ADMIN')")
@@ -64,9 +62,6 @@ public class CourseController {
         return ResponseEntity.ok(courses);
     }
 
-    /**
-     * Obtiene cursos por categoría
-     */
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<List<Course>> getCoursesByCategory(@PathVariable Long categoryId) {
         try {
@@ -79,9 +74,6 @@ public class CourseController {
         }
     }
 
-    /**
-     * Obtiene cursos por subcategoría
-     */
     @GetMapping("/subcategory/{subcategoryId}")
     public ResponseEntity<List<Course>> getCoursesBySubcategory(@PathVariable Long subcategoryId) {
         try {
@@ -94,9 +86,6 @@ public class CourseController {
         }
     }
 
-    /**
-     * Obtiene cursos por categoría y subcategoría
-     */
     @GetMapping("/category/{categoryId}/subcategory/{subcategoryId}")
     public ResponseEntity<List<Course>> getCoursesByCategoryAndSubcategory(
             @PathVariable Long categoryId, 
@@ -111,7 +100,6 @@ public class CourseController {
         }
     }
 
-    // Actualizar curso instructor - admin
     @PutMapping("/{courseId}")
     @PreAuthorize("hasRole('INSTRUCTOR') or hasRole('ADMIN')")
     public ResponseEntity<Course> updateCourse(
@@ -121,7 +109,6 @@ public class CourseController {
         return ResponseEntity.ok(updatedCourse);
     }
 
-    // Eliminar curso instructor - admin
     @DeleteMapping("/{courseId}")
     @PreAuthorize("hasRole('INSTRUCTOR') or hasRole('ADMIN')")
     public ResponseEntity<Void> deleteCourse(@PathVariable Long courseId) {

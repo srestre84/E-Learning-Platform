@@ -137,16 +137,13 @@ public class UserController {
             if (currentUser == null) {
                 return ResponseEntity.notFound().build();
             }
-            
-            // Eliminar imagen anterior si existe
+
             if (currentUser.getProfileImageUrl() != null) {
                 fileUploadService.deleteProfileImage(currentUser.getProfileImageUrl());
             }
-            
-            // Subir nueva imagen
+
             String imageUrl = fileUploadService.uploadProfileImage(file, currentUser.getId());
-            
-            // Actualizar usuario con nueva URL
+
             User updatedUser = userService.updateProfileImage(currentUser.getId(), imageUrl);
             UserProfileDto profileDto = UserProfileDto.fromEntity(updatedUser);
             

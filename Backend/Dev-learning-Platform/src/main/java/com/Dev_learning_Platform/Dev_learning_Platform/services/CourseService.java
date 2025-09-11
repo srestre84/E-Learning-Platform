@@ -69,27 +69,18 @@ public class CourseService {
         return courseRepository.findByIsActive(true);
     }
 
-    /**
-     * Obtiene cursos por categoría
-     */
     public List<Course> getCoursesByCategory(Long categoryId) {
         Category category = categoryService.getCategoryById(categoryId)
                 .orElseThrow(() -> new IllegalArgumentException("Categoría no encontrada con ID: " + categoryId));
         return courseRepository.findByCategoryAndIsActiveAndIsPublished(category, true, true);
     }
 
-    /**
-     * Obtiene cursos por subcategoría
-     */
     public List<Course> getCoursesBySubcategory(Long subcategoryId) {
         Subcategory subcategory = subcategoryService.getSubcategoryById(subcategoryId)
                 .orElseThrow(() -> new IllegalArgumentException("Subcategoría no encontrada con ID: " + subcategoryId));
         return courseRepository.findBySubcategoryAndIsActiveAndIsPublished(subcategory, true, true);
     }
 
-    /**
-     * Obtiene cursos por categoría y subcategoría
-     */
     public List<Course> getCoursesByCategoryAndSubcategory(Long categoryId, Long subcategoryId) {
         Category category = categoryService.getCategoryById(categoryId)
                 .orElseThrow(() -> new IllegalArgumentException("Categoría no encontrada con ID: " + categoryId));

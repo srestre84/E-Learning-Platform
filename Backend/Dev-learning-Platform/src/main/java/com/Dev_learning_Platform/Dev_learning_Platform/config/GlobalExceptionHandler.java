@@ -14,18 +14,11 @@ import com.Dev_learning_Platform.Dev_learning_Platform.dtos.ErrorResponseDto;
 
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Manejador global de excepciones siguiendo Clean Architecture.
- * Centraliza el manejo de errores para mantener consistencia en las respuestas.
- */
+
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
-    /**
-     * Maneja errores de validación Bean Validation (@Valid).
-     * Convierte MethodArgumentNotValidException en respuestas estructuradas.
-     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handleValidationExceptions(
             MethodArgumentNotValidException ex, WebRequest request) {
@@ -44,9 +37,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
-    /**
-     * Maneja excepciones genéricas no capturadas.
-     */
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleGenericException(
             Exception ex, WebRequest request) {

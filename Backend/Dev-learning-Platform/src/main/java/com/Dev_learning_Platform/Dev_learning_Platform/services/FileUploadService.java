@@ -13,13 +13,7 @@ import com.Dev_learning_Platform.Dev_learning_Platform.config.FileUploadConfig;
 
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Servicio para manejo de carga de archivos.
- * Usa Oracle Cloud Object Storage en producción y simulación en tests.
- * 
- * @author Dev-Learning-Platform Team
- * @version 2.0
- */
+
 @Slf4j
 @Service
 public class FileUploadService {
@@ -52,13 +46,12 @@ public class FileUploadService {
         validateFile(file);
         
         String imageUrl;
-        
-        // En perfil de test, simular subida
+ 
         if ("test".equals(activeProfile)) {
             log.info("Perfil de test detectado, simulando subida de imagen");
             imageUrl = generateMockImageUrl(userId);
         }
-        // En producción, usar OCI Object Storage
+ 
         else if (ociStorageService != null && ociStorageService.isAvailable()) {
             log.info("Subiendo imagen a OCI Object Storage");
             imageUrl = ociStorageService.uploadProfileImage(file, userId);
@@ -71,22 +64,17 @@ public class FileUploadService {
         return imageUrl;
     }
 
-    /**
-     * Elimina una imagen de perfil.
-     */
     public void deleteProfileImage(String imageUrl) {
         if (imageUrl == null) {
             log.warn("URL nula para eliminación");
             return;
         }
-        
-        // En perfil de test, simular eliminación
+ 
         if ("test".equals(activeProfile)) {
             log.info("Perfil de test detectado, simulando eliminación de imagen: {}", imageUrl);
             return;
         }
-        
-        // En producción, usar OCI Object Storage
+
         if (ociStorageService != null && imageUrl.contains("objectstorage.") && imageUrl.contains("oraclecloud.com")) {
             log.info("Eliminando imagen de OCI Object Storage");
             ociStorageService.deleteProfileImage(imageUrl);
@@ -95,40 +83,30 @@ public class FileUploadService {
         }
     }
 
-    /**
-     * Genera una URL mock para tests.
-     */
     private String generateMockImageUrl(Long userId) {
         return String.format("https://mock-storage.example.com/profile-images/user_%d_%s.jpg", 
             userId, UUID.randomUUID().toString());
     }
 
-    /**
-     * Valida que el archivo sea una imagen válida según las configuraciones.
-     */
     private void validateFile(MultipartFile file) {
         var config = fileUploadConfig.getProfileImages();
-        
-        // Validación de archivo vacío
+
         if (file.isEmpty()) {
             throw new IllegalArgumentException("El archivo está vacío");
         }
-        
-        // Validación de tamaño
+
         if (file.getSize() > config.getMaxFileSize()) {
             throw new IllegalArgumentException(
                 String.format("El archivo excede el tamaño máximo permitido (%d MB)", 
                 config.getMaxFileSize() / (1024 * 1024))
             );
         }
-        
-        // Validación de nombre de archivo
+
         String filename = file.getOriginalFilename();
         if (filename == null || filename.trim().isEmpty()) {
             throw new IllegalArgumentException("Nombre de archivo inválido");
         }
-        
-        // Validación de extensión
+
         String extension = getFileExtension(filename).toLowerCase();
         if (!Arrays.asList(config.getAllowedExtensions()).contains(extension)) {
             throw new IllegalArgumentException(
@@ -136,8 +114,7 @@ public class FileUploadService {
                 Arrays.toString(config.getAllowedExtensions())
             );
         }
-        
-        // Validación de MIME type
+
         String contentType = file.getContentType();
         if (contentType == null || !Arrays.asList(config.getAllowedMimeTypes()).contains(contentType)) {
             throw new IllegalArgumentException(
@@ -147,9 +124,6 @@ public class FileUploadService {
         }
     }
     
-    /**
-     * Extrae la extensión del archivo de forma segura.
-     */
     private String getFileExtension(String filename) {
         int lastDotIndex = filename.lastIndexOf('.');
         if (lastDotIndex == -1) {

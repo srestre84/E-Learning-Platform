@@ -19,9 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.Dev_learning_Platform.Dev_learning_Platform.dtos.UserRegisterDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-/**
- * Tests para UserController con manejo de datos únicos y duplicados
- */
+
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")

@@ -9,10 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * DTO para registro de usuario con validaciones Bean Validation.
- * Aplica las mejores prácticas de validación según Clean Code.
- */
+
 @Getter
 @Setter
 public class UserRegisterDto {
@@ -37,13 +34,6 @@ public class UserRegisterDto {
     @NotNull(message = "El rol es obligatorio")
     private User.Role role;
 
-    /**
-     * Convierte el DTO a entidad User.
-     * Implementa el patrón Builder implícito para crear User.
-     * 
-     * @param dto DTO con los datos del usuario
-     * @return User entidad para persistir
-     */
     public static User toEntity(UserRegisterDto dto) {
         User user = new User();
         user.setUserName(dto.getUserName());
