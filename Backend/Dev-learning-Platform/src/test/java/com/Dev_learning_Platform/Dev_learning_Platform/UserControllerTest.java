@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Transactional 
+@Transactional
 public class UserControllerTest {
 
     @Autowired
@@ -38,23 +38,21 @@ public class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        
         uniqueTimestamp = String.valueOf(Instant.now().toEpochMilli());
     }
 
     @Test
     @DisplayName("Debe registrar usuario nuevo exitosamente")
     void registerUser_withUniqueData_shouldReturnOk() throws Exception {
-        
         UserRegisterDto dto = createUniqueUserDto("nuevo.usuario");
 
-       
         mockMvc.perform(post("/api/users/register")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(dto)))
-                .andDo(print()) // Imprime detalles de request/response para debug
+                .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").exists());
+                .andExpect(jsonPath("$.email").value(dto.getEmail()))
+                .andExpect(jsonPath("$.id").exists());
 
         System.out.println("✅ Registro de usuario nuevo exitoso con email: " + dto.getEmail());
     }
@@ -62,23 +60,22 @@ public class UserControllerTest {
     @Test
     @DisplayName("Debe fallar al registrar usuario duplicado")
     void registerUser_withDuplicateEmail_shouldReturnConflict() throws Exception {
-        
         UserRegisterDto originalUser = createUniqueUserDto("usuario.duplicado");
-        
+
         mockMvc.perform(post("/api/users/register")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(originalUser)))
                 .andExpect(status().isOk());
 
-        
+        // Intentar registrar el mismo email
         UserRegisterDto duplicateUser = createUniqueUserDto("usuario.duplicado");
-        
-        
+        duplicateUser.setEmail(originalUser.getEmail()); // Fuerza el email duplicado
+
         mockMvc.perform(post("/api/users/register")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(duplicateUser)))
                 .andDo(print())
-                .andExpect(status().isConflict()) // 409 para conflictos
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error").exists());
 
         System.out.println("✅ Manejo correcto de email duplicado: " + duplicateUser.getEmail());
@@ -87,7 +84,6 @@ public class UserControllerTest {
     @Test
     @DisplayName("Debe fallar con datos inválidos")
     void registerUser_withInvalidData_shouldReturnBadRequest() throws Exception {
-        
         UserRegisterDto invalidDto = new UserRegisterDto();
         invalidDto.setUserName(""); // Nombre vacío
         invalidDto.setLastName("");
@@ -95,12 +91,11 @@ public class UserControllerTest {
         invalidDto.setPassword("123"); // Password muy corto
         invalidDto.setRole(com.Dev_learning_Platform.Dev_learning_Platform.models.User.Role.STUDENT);
 
-        
         mockMvc.perform(post("/api/users/register")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(invalidDto)))
                 .andDo(print())
-                .andExpect(status().isBadRequest()) // 400 para datos inválidos
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors").exists());
 
         System.out.println("✅ Validación correcta de datos inválidos");
@@ -109,7 +104,6 @@ public class UserControllerTest {
     @Test
     @DisplayName("Debe fallar con email null")
     void registerUser_withNullEmail_shouldReturnBadRequest() throws Exception {
-       
         UserRegisterDto dto = new UserRegisterDto();
         dto.setUserName("usuario");
         dto.setLastName("apellido");
@@ -117,12 +111,12 @@ public class UserControllerTest {
         dto.setPassword("password123");
         dto.setRole(com.Dev_learning_Platform.Dev_learning_Platform.models.User.Role.STUDENT);
 
-        
         mockMvc.perform(post("/api/users/register")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(dto)))
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors").exists());
 
         System.out.println("✅ Validación correcta de email null");
     }
