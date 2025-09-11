@@ -1,39 +1,37 @@
 package com.Dev_learning_Platform.Dev_learning_Platform.services;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
-import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.Dev_learning_Platform.Dev_learning_Platform.config.FileUploadConfig;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Servicio para manejo de carga de archivos.
- * Implementa validaciones robustas y está preparado para migración a Oracle Cloud Object Storage.
+ * Usa Oracle Cloud Object Storage en producción.
  * 
  * @author Dev-Learning-Platform Team
- * @version 1.0
+ * @version 2.0
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class FileUploadService {
     
     private final FileUploadConfig fileUploadConfig;
+    private final OciStorageService ociStorageService;
     
-    @Value("${server.url:http://localhost:8080}")
-    private String serverUrl;
-    
+    // Constructor que hace OciStorageService opcional
+    public FileUploadService(FileUploadConfig fileUploadConfig, 
+                           @Autowired(required = false) OciStorageService ociStorageService) {
+        this.fileUploadConfig = fileUploadConfig;
+        this.ociStorageService = ociStorageService;
+    }
+
     /**
      * Sube una imagen de perfil y retorna la URL de acceso.
      * 
@@ -48,44 +46,39 @@ public class FileUploadService {
         
         validateFile(file);
         
-        String imageUrl = saveFileToFileSystem(file, userId);
+        String imageUrl;
+        
+        // Solo usar OCI Object Storage en producción
+        if (ociStorageService != null && ociStorageService.isAvailable()) {
+            log.info("Subiendo imagen a OCI Object Storage");
+            imageUrl = ociStorageService.uploadProfileImage(file, userId);
+        } else {
+            log.error("OCI Object Storage no está disponible. Verificar configuración.");
+            throw new IOException("Servicio de almacenamiento no disponible. Contactar al administrador.");
+        }
         
         log.info("Imagen de perfil subida exitosamente: {}", imageUrl);
         return imageUrl;
     }
-    
+
     /**
-     * Guarda el archivo en el sistema de archivos local.
+     * Elimina una imagen de perfil.
      */
-    private String saveFileToFileSystem(MultipartFile file, Long userId) throws IOException {
-        var config = fileUploadConfig.getProfileImages();
-        
-        // Crear directorio si no existe
-        Path uploadDir = Paths.get(config.getPath());
-        if (!Files.exists(uploadDir)) {
-            Files.createDirectories(uploadDir);
-            log.info("Directorio creado: {}", uploadDir);
+    public void deleteProfileImage(String imageUrl) {
+        if (imageUrl == null) {
+            log.warn("URL nula para eliminación");
+            return;
         }
         
-        // Generar nombre único para evitar colisiones
-        String originalFilename = file.getOriginalFilename();
-        String extension = getFileExtension(originalFilename);
-        String filename = String.format("user_%d_%s.%s", 
-            userId, UUID.randomUUID().toString(), extension);
-        
-        // Guardar archivo
-        Path filePath = uploadDir.resolve(filename);
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-        
-        // Construir URL usando la configuración del servidor
-        String baseUrl = config.getBaseUrl();
-        if (baseUrl == null || baseUrl.isEmpty()) {
-            baseUrl = serverUrl + "/uploads/profiles";
+        // Solo usar OCI Object Storage
+        if (ociStorageService != null && imageUrl.contains("objectstorage.") && imageUrl.contains("oraclecloud.com")) {
+            log.info("Eliminando imagen de OCI Object Storage");
+            ociStorageService.deleteProfileImage(imageUrl);
+        } else {
+            log.warn("URL no válida para OCI Object Storage o servicio no disponible: {}", imageUrl);
         }
-        
-        return baseUrl + "/" + filename;
     }
-    
+
     /**
      * Valida que el archivo sea una imagen válida según las configuraciones.
      */
@@ -139,37 +132,5 @@ public class FileUploadService {
             throw new IllegalArgumentException("El archivo debe tener una extensión");
         }
         return filename.substring(lastDotIndex + 1);
-    }
-    
-    /**
-     * Elimina una imagen de perfil del sistema de archivos.
-     */
-    public void deleteProfileImage(String imageUrl) {
-        var config = fileUploadConfig.getProfileImages();
-        
-        if (imageUrl == null) {
-            log.warn("URL nula para eliminación");
-            return;
-        }
-        
-        // Verificar si la URL contiene el patrón de uploads/profiles
-        if (!imageUrl.contains("/uploads/profiles/")) {
-            log.warn("URL no válida para eliminación: {}", imageUrl);
-            return;
-        }
-        
-        try {
-            // Extraer solo el nombre del archivo
-            String filename = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
-            Path filePath = Paths.get(config.getPath(), filename);
-            
-            if (Files.deleteIfExists(filePath)) {
-                log.info("Imagen eliminada exitosamente: {}", imageUrl);
-            } else {
-                log.warn("Imagen no encontrada para eliminación: {}", imageUrl);
-            }
-        } catch (IOException e) {
-            log.error("Error al eliminar imagen: {}", imageUrl, e);
-        }
     }
 }
