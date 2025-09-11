@@ -2,8 +2,10 @@ package com.Dev_learning_Platform.Dev_learning_Platform.services;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Servicio para manejo de carga de archivos.
- * Usa Oracle Cloud Object Storage en producción.
+ * Usa Oracle Cloud Object Storage en producción y simulación en tests.
  * 
  * @author Dev-Learning-Platform Team
  * @version 2.0
@@ -24,6 +26,9 @@ public class FileUploadService {
     
     private final FileUploadConfig fileUploadConfig;
     private final OciStorageService ociStorageService;
+    
+    @Value("${spring.profiles.active:}")
+    private String activeProfile;
     
     // Constructor que hace OciStorageService opcional
     public FileUploadService(FileUploadConfig fileUploadConfig, 
@@ -48,8 +53,13 @@ public class FileUploadService {
         
         String imageUrl;
         
-        // Solo usar OCI Object Storage en producción
-        if (ociStorageService != null && ociStorageService.isAvailable()) {
+        // En perfil de test, simular subida
+        if ("test".equals(activeProfile)) {
+            log.info("Perfil de test detectado, simulando subida de imagen");
+            imageUrl = generateMockImageUrl(userId);
+        }
+        // En producción, usar OCI Object Storage
+        else if (ociStorageService != null && ociStorageService.isAvailable()) {
             log.info("Subiendo imagen a OCI Object Storage");
             imageUrl = ociStorageService.uploadProfileImage(file, userId);
         } else {
@@ -70,13 +80,27 @@ public class FileUploadService {
             return;
         }
         
-        // Solo usar OCI Object Storage
+        // En perfil de test, simular eliminación
+        if ("test".equals(activeProfile)) {
+            log.info("Perfil de test detectado, simulando eliminación de imagen: {}", imageUrl);
+            return;
+        }
+        
+        // En producción, usar OCI Object Storage
         if (ociStorageService != null && imageUrl.contains("objectstorage.") && imageUrl.contains("oraclecloud.com")) {
             log.info("Eliminando imagen de OCI Object Storage");
             ociStorageService.deleteProfileImage(imageUrl);
         } else {
             log.warn("URL no válida para OCI Object Storage o servicio no disponible: {}", imageUrl);
         }
+    }
+
+    /**
+     * Genera una URL mock para tests.
+     */
+    private String generateMockImageUrl(Long userId) {
+        return String.format("https://mock-storage.example.com/profile-images/user_%d_%s.jpg", 
+            userId, UUID.randomUUID().toString());
     }
 
     /**
