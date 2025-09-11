@@ -8,6 +8,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,6 +30,9 @@ import lombok.extern.slf4j.Slf4j;
 public class FileUploadService {
     
     private final FileUploadConfig fileUploadConfig;
+    
+    @Value("${server.url:http://localhost:8080}")
+    private String serverUrl;
     
     /**
      * Sube una imagen de perfil y retorna la URL de acceso.
@@ -73,7 +77,13 @@ public class FileUploadService {
         Path filePath = uploadDir.resolve(filename);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
         
-        return config.getBaseUrl() + "/" + filename;
+        // Construir URL usando la configuración del servidor
+        String baseUrl = config.getBaseUrl();
+        if (baseUrl == null || baseUrl.isEmpty()) {
+            baseUrl = serverUrl + "/uploads/profiles";
+        }
+        
+        return baseUrl + "/" + filename;
     }
     
     /**
@@ -137,13 +147,20 @@ public class FileUploadService {
     public void deleteProfileImage(String imageUrl) {
         var config = fileUploadConfig.getProfileImages();
         
-        if (imageUrl == null || !imageUrl.startsWith(config.getBaseUrl())) {
+        if (imageUrl == null) {
+            log.warn("URL nula para eliminación");
+            return;
+        }
+        
+        // Verificar si la URL contiene el patrón de uploads/profiles
+        if (!imageUrl.contains("/uploads/profiles/")) {
             log.warn("URL no válida para eliminación: {}", imageUrl);
             return;
         }
         
         try {
-            String filename = imageUrl.substring(config.getBaseUrl().length() + 1);
+            // Extraer solo el nombre del archivo
+            String filename = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
             Path filePath = Paths.get(config.getPath(), filename);
             
             if (Files.deleteIfExists(filePath)) {

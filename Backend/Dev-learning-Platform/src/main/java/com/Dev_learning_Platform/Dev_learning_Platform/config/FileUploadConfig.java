@@ -33,8 +33,9 @@ public class FileUploadConfig {
         
         /**
          * URL base para acceder a las imágenes.
+         * Se configura dinámicamente desde application.properties
          */
-        private String baseUrl = "http://localhost:8080/uploads/profiles";
+        private String baseUrl;
         
         /**
          * Tamaño máximo permitido para archivos (en bytes).
