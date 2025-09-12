@@ -23,7 +23,7 @@ jobs:
     - name: Build with Maven
       run: |
         cd Backend/Dev-learning-Platform
-        ./mvnw test -Dspring.profiles.active=dev
+        ./mvnw test -Dspring.profiles.active=test
     
     - name: Deploy to OCI VM
       if: success()
