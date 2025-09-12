@@ -28,9 +28,12 @@ jobs:
         restore-keys: ${{ runner.os }}-m2
     
     - name: Run Tests
+      env:
+        JWT_SECRET_KEY: testSecretKeyForCITestingPurposesOnly123456789
+        JWT_EXPIRATION_TIME: 86400000
       run: |
         cd Backend/Dev-learning-Platform
-        ./mvnw clean test -Dspring.profiles.active=test -q
+        ./mvnw clean test -Dspring.profiles.active=test -q -Dlogging.level.org.springframework.boot.autoconfigure=OFF
     
     - name: Deploy to OCI VM
       if: success()
