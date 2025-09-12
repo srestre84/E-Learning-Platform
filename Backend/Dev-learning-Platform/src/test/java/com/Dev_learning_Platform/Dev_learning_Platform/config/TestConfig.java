@@ -35,4 +35,5 @@ public class TestConfig {
     public AuthenticationDetailsProvider mockAuthenticationDetailsProvider() {
         return Mockito.mock(AuthenticationDetailsProvider.class);
     }
+
 }
