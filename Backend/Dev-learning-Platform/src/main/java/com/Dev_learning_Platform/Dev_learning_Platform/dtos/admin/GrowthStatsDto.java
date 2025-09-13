@@ -1,23 +1,18 @@
 package com.Dev_learning_Platform.Dev_learning_Platform.dtos.admin;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * DTO para estadísticas de crecimiento
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class GrowthStatsDto {
-    
-    private Double userGrowthPercentage;
-    private Double courseGrowthPercentage;
-    private Double enrollmentGrowthPercentage;
-    private Double revenueGrowthPercentage;
+    private Double userGrowthRate;
+    private Double enrollmentGrowthRate;
+    private Double revenueGrowthRate;
     private Long newUsersThisMonth;
-    private Long newCoursesThisMonth;
     private Long newEnrollmentsThisMonth;
-    private Double averageDailyActiveUsers;
 }

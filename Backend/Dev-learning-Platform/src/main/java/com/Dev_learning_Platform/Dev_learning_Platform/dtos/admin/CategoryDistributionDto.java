@@ -4,15 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.math.BigDecimal;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RevenueStatsDto {
-    private BigDecimal totalRevenue;
-    private BigDecimal monthlyRevenue;
-    private BigDecimal yearlyRevenue;
-    private Long totalTransactions;
+public class CategoryDistributionDto {
+    private Map<String, Long> coursesByCategory;
+    private Map<String, Long> enrollmentsByCategory;
 }
