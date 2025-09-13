@@ -2,22 +2,69 @@ import api from './api';
 
 const createCourse = async (courseData) => {
   try {
-    const response = await api.post('/courses', courseData, {
+    console.log('=== COURSE SERVICE: Enviando datos al backend ===');
+    console.log('URL:', '/api/courses');
+    console.log('Datos:', courseData);
+    console.log('Headers:', { 'Content-Type': 'application/json' });
+
+    const response = await api.post('/api/courses', courseData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
+        'Content-Type': 'application/json'
       }
     });
+
+    console.log('=== COURSE SERVICE: Respuesta exitosa ===');
+    console.log('Status:', response.status);
+    console.log('Data:', response.data);
+
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'No se pudo crear el curso. Por favor, inténtalo de nuevo.');
+    console.error('=== COURSE SERVICE: Error al crear curso ===');
+    console.error('Status:', error.response?.status);
+    console.error('Status Text:', error.response?.statusText);
+    console.error('Error Data:', error.response?.data);
+    
+    // EXPANDIR ERRORES ESPECÍFICOS
+    if (error.response?.data?.errors) {
+      console.error('=== ERRORES DE VALIDACIÓN ESPECÍFICOS ===');
+      error.response.data.errors.forEach((err, index) => {
+        console.error(`Error ${index + 1}:`, err);
+      });
+    }
+    
+    console.error('Error Message:', error.message);
+    console.error('Full Error:', error);
+
+    // Extraer mensaje de error más específico
+    let errorMessage = 'No se pudo crear el curso. Por favor, inténtalo de nuevo.';
+    
+    if (error.response?.data) {
+      if (typeof error.response.data === 'string') {
+        errorMessage = error.response.data;
+      } else if (error.response.data.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response.data.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response.data.errors) {
+        // Si hay errores de validación, mostrarlos
+        const validationErrors = error.response.data.errors;
+        if (Array.isArray(validationErrors)) {
+          errorMessage = validationErrors.map(err => err.message || err).join('; ');
+        } else {
+          errorMessage = JSON.stringify(validationErrors);
+        }
+      }
+    }
+
+    throw new Error(errorMessage);
   }
 };
 
 const updateCourse = async (id, courseData) => {
   try {
-    const response = await api.put(`/courses/${id}`, courseData, {
+    const response = await api.put(`/api/courses/${id}`, courseData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
+        'Content-Type': 'application/json'
       }
     });
     return response.data;
@@ -52,7 +99,7 @@ const courseService = {
    */
   async getCourseById(courseId) {
     try {
-      const response = await api.get(`/courses/${courseId}`);
+      const response = await api.get(`/api/courses/${courseId}`);
       return response.data;
     } catch (error) {
       console.error(`Error al obtener los detalles del curso (ID: ${courseId}):`, error);

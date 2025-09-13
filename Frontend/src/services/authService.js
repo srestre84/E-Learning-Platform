@@ -23,6 +23,15 @@ const isAuthenticated = () => {
  */
 const register = async ({ firstName, lastName, email, password, role = 'STUDENT' }) => {
   try {
+    console.log('=== REGISTRO: Datos enviados al backend ===');
+    console.log({
+      userName: firstName,
+      lastName,
+      email,
+      password: '***',
+      role
+    });
+
     const response = await api.post('/api/users/register', {
       userName: firstName,
       lastName,
@@ -31,13 +40,19 @@ const register = async ({ firstName, lastName, email, password, role = 'STUDENT'
       role
     });
 
+    console.log('=== REGISTRO: Respuesta del backend ===');
+    console.log('Response status:', response.status);
+    console.log('Response data:', response.data);
+
     // Si el registro es exitoso, hacemos login automáticamente
     if (response.data) {
+      console.log('=== REGISTRO: Haciendo auto-login ===');
       return await login({ email, password });
     }
     
     return response.data;
   } catch (error) {
+    console.error('=== REGISTRO: Error ===', error);
     const errorMessage = error.response?.data?.message || 'Error al registrar el usuario';
     throw new Error(errorMessage);
   }
@@ -52,13 +67,25 @@ const register = async ({ firstName, lastName, email, password, role = 'STUDENT'
  */
 const login = async ({ email, password }) => {
   try {
+    console.log('=== LOGIN: Enviando credenciales ===');
+    console.log({ email, password: '***' });
+
     const response = await api.post('/auth/login', { email, password });
+    
+    console.log('=== LOGIN: Respuesta del backend ===');
+    console.log('Response status:', response.status);
+    console.log('Response data:', response.data);
     
     if (!response.data?.token) {
       throw new Error('No se recibió el token de autenticación');
     }
 
     const { token, refreshToken, user } = response.data;
+    
+    console.log('=== LOGIN: Datos extraídos ===');
+    console.log('Token:', token ? '***' + token.slice(-10) : 'No token');
+    console.log('User data:', user);
+    console.log('User role:', user?.role);
     
     // Guardar tokens y datos del usuario
     localStorage.setItem('token', token);
@@ -73,6 +100,9 @@ const login = async ({ email, password }) => {
       role: user?.role || response.data.role,
       isActive: user?.isActive ?? true
     };
+    
+    console.log('=== LOGIN: Datos del usuario final ===');
+    console.log('userData:', userData);
     
     localStorage.setItem('user', JSON.stringify(userData));
     
@@ -111,13 +141,22 @@ const getCurrentUser = async () => {
     // Primero intentamos obtener los datos del localStorage
     const userData = localStorage.getItem('user');
     if (userData) {
-      return JSON.parse(userData);
+      const parsedUser = JSON.parse(userData);
+      console.log('=== USUARIO DESDE LOCALSTORAGE ===');
+      console.log('Usuario:', parsedUser);
+      console.log('Rol:', parsedUser.role);
+      return parsedUser;
     }
 
     // Si no hay datos en localStorage, los solicitamos al servidor
+    console.log('=== SOLICITANDO PERFIL AL SERVIDOR ===');
     const response = await api.get('/api/users/profile');
     
     if (response.data) {
+      console.log('=== RESPUESTA DEL SERVIDOR ===');
+      console.log('Datos del servidor:', response.data);
+      console.log('Rol del servidor:', response.data.role);
+      
       // Guardamos los datos en localStorage para futuras solicitudes
       localStorage.setItem('user', JSON.stringify(response.data));
       return response.data;
@@ -125,6 +164,7 @@ const getCurrentUser = async () => {
     
     return null;
   } catch (error) {
+    console.error('=== ERROR EN getCurrentUser ===', error);
     // Si hay un error (por ejemplo, token inválido), cerramos la sesión
     logout();
     return null;

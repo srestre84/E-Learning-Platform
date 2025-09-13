@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import courseServiceModule from '@/services/courseService';
+import { useAuth } from '@/contexts/AuthContext';
 
 import { toast } from 'react-toastify';
 import {
@@ -28,6 +29,7 @@ const { courseService } = courseServiceModule;
 const CreateCourse = ({ isEditing = false }) => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { user } = useAuth();
   const [activePlayerId, setActivePlayerId] = useState(null);
 
   const [formData, setFormData] = useState({
@@ -121,42 +123,107 @@ const CreateCourse = ({ isEditing = false }) => {
     setIsSubmitting(true);
 
     try {
-      const formDataToSend = new FormData();
+      // Debug: Verificar usuario actual
+      console.log('=== DEBUG USUARIO ACTUAL ===');
+      console.log('Usuario completo:', user);
+      console.log('Rol del usuario:', user?.role);
+      console.log('ID del usuario:', user?.id);
+      console.log('Token desde localStorage:', localStorage.getItem('token'));
       
-      // Agregar campos básicos
+      // Verificar que el usuario tenga permisos
+      if (!user) {
+        throw new Error('Usuario no autenticado');
+      }
+      
+      if (user.role !== 'INSTRUCTOR' && user.role !== 'ADMIN') {
+        console.error('Rol inválido para crear cursos:', user.role);
+        throw new Error(`No tienes permisos para crear cursos. Tu rol actual es: ${user.role}. Necesitas rol de INSTRUCTOR o ADMIN.`);
+      }
+
+      console.log('✅ Usuario tiene permisos para crear cursos');
+
+            // Extraer URLs de YouTube de los módulos/lecciones
+      const youtubeUrls = [];
+      formData.modules.forEach(module => {
+        module.lessons.forEach(lesson => {
+          if (lesson.youtubeUrl && lesson.youtubeUrl.trim()) {
+            // Limpiar URL de YouTube para que coincida con el regex del backend
+            let cleanUrl = lesson.youtubeUrl.trim();
+            
+            // Si contiene parámetros adicionales, extraer solo el ID del video
+            const youtubeMatch = cleanUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+            if (youtubeMatch) {
+              cleanUrl = `https://www.youtube.com/watch?v=${youtubeMatch[1]}`;
+            }
+            
+            console.log('URL original:', lesson.youtubeUrl);
+            console.log('URL limpia:', cleanUrl);
+            youtubeUrls.push(cleanUrl);
+          }
+        });
+      });
+
+      // Calcular horas estimadas basándose en el número de videos
+      const estimatedHours = Math.max(1, Math.ceil(youtubeUrls.length * 0.5)); // 30 min por video como estimación
+
+      // Mapeo de categorías
+      const categoryMap = {
+        'programming': { categoryId: 1, subcategoryId: 1 },
+        'design': { categoryId: 2, subcategoryId: 2 },
+        'business': { categoryId: 3, subcategoryId: 3 },
+        'marketing': { categoryId: 4, subcategoryId: 4 },
+        'photography': { categoryId: 5, subcategoryId: 5 },
+        'music': { categoryId: 6, subcategoryId: 6 }
+      };
+
+      const selectedCategory = categoryMap[formData.category] || { categoryId: 1, subcategoryId: 1 };
+
+      // Datos según formato de CourseCreateDto
       const courseData = {
         title: formData.title,
         description: formData.description,
-        category: formData.category,
-        price: parseFloat(formData.price) || 0,
-        level: formData.level,
-        modules: formData.modules.map(module => ({
-          ...module,
-          lessons: module.lessons.map(lesson => ({
-            ...lesson,
-            // Asegurar que solo se envíen los campos necesarios
-            video: undefined, // No enviar el objeto completo del video
-            videoUrl: lesson.video?.url || '',
-            duration: parseInt(lesson.duration) || 0,
-            resources: lesson.resources || []
-          }))
-        }))
+        shortDescription: formData.description.length > 255 
+          ? formData.description.substring(0, 252) + '...' 
+          : formData.description,
+        instructorId: user?.id || 1, // Usar ID del usuario autenticado
+        categoryId: selectedCategory.categoryId,
+        subcategoryId: selectedCategory.subcategoryId,
+        youtubeUrls: youtubeUrls.length > 0 ? youtubeUrls : [], // Asegurar que sea un array
+        thumbnailUrl: null, // Por ahora null hasta que se implemente subida de imágenes correcta
+        price: parseFloat(formData.price) || 0.0, // Asegurar que sea número decimal
+        isPremium: parseFloat(formData.price) > 0,
+        isPublished: false, // Por defecto como borrador
+        isActive: true,
+        estimatedHours: estimatedHours || 1 // Valor por defecto si no se especifica
       };
 
-      // Agregar la imagen si existe
-      if (formData.image) {
-        formDataToSend.append('image', formData.image);
-      }
-      
-      // Agregar el resto de los datos como JSON
-      formDataToSend.append('data', JSON.stringify(courseData));
+      console.log('=== DATOS DE VALIDACIÓN ===');
+      console.log('Usuario completo:', user);
+      console.log('ID del instructor:', user?.id);
+      console.log('Rol del usuario:', user?.role);
+      console.log('Email del usuario:', user?.email);
+      console.log('=== DATOS DEL CURSO A ENVIAR ===');
+      console.log('courseData:', JSON.stringify(courseData, null, 2));
+      console.log('=== VALIDACIONES ===');
+      console.log('Title valid:', !!courseData.title && courseData.title.length <= 200);
+      console.log('Description valid:', !!courseData.description && courseData.description.length <= 1000);
+      console.log('InstructorId valid:', !!courseData.instructorId && typeof courseData.instructorId === 'number');
+      console.log('CategoryId valid:', !!courseData.categoryId && typeof courseData.categoryId === 'number');
+      console.log('SubcategoryId valid:', !!courseData.subcategoryId && typeof courseData.subcategoryId === 'number');
+      console.log('Price valid:', typeof courseData.price === 'number' && courseData.price >= 0);
+      console.log('EstimatedHours valid:', typeof courseData.estimatedHours === 'number' && courseData.estimatedHours >= 1);
+      console.log('YouTube URLs:', courseData.youtubeUrls);
+      console.log('YouTube URLs válidas:', courseData.youtubeUrls.every(url => 
+        /^https:\/\/(?:www\.)?youtube\.com\/watch\?v=[a-zA-Z0-9_-]+$/.test(url)
+      ));
+      console.log('ThumbnailUrl:', courseData.thumbnailUrl);
 
       // Llamada al servicio
       if (isEditing && id) {
-        await courseService.updateCourse(id, formDataToSend);
+        await courseService.updateCourse(id, courseData);
         toast.success('¡Curso actualizado exitosamente!');
       } else {
-        await courseService.createCourse(formDataToSend);
+        await courseService.createCourse(courseData);
         toast.success('¡Curso creado exitosamente!');
       }
 

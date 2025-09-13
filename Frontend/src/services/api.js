@@ -84,6 +84,16 @@ api.interceptors.response.use(
       );
     }
 
+    // ⚠️ Error 400 - Bad Request (errores de validación)
+    if (status === 400) {
+      console.log('=== API INTERCEPTOR: Error 400 ===');
+      console.log('Data:', data);
+      console.log('Original Error:', error);
+      
+      // Preservar el error original para que el service pueda manejarlo
+      return Promise.reject(error);
+    }
+
     // ⚠️ Otros errores comunes
     let errorMessage = data?.message || "Ocurrió un error inesperado";
     if (status === 403) errorMessage = "No tienes permiso para esta acción";
