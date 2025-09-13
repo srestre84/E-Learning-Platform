@@ -9,80 +9,123 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children, onLogout }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [onLogoutCallback, setOnLogoutCallback] = useState(() => onLogout);
   const [error, setError] = useState(null);
+  const [onLogoutCallback, setOnLogoutCallback] = useState(() => onLogout);
 
-  // Set a callback to be called on logout 
+  // Callback para logout personalizado
   const setLogoutCallback = useCallback((callback) => {
     setOnLogoutCallback(() => callback);
   }, []);
 
-  // Set up response interceptors
+  // Configurar interceptores de respuesta
   useEffect(() => {
     const handleLogout = () => {
       setUser(null);
-      if (onLogoutCallback) {
-        onLogoutCallback();
-      }
+      if (onLogoutCallback) onLogoutCallback();
     };
-
-    // Configure interceptors with the logout handler
     setupResponseInterceptors(handleLogout);
   }, [onLogoutCallback]);
 
-  // Check authentication status on load
+  // Verificar autenticación al cargar el contexto
   useEffect(() => {
     let isMounted = true;
-    
+
     const checkAuth = async () => {
       if (!isMounted) return;
-      
+      setLoading(true);
+
       try {
-        setLoading(true);
-        
-        // Run token validation and user fetch in parallel
-        const [isTokenValid, currentUser] = await Promise.all([
-          authService.validateToken().catch(() => false),
-          authService.getCurrentUser().catch(() => null)
-        ]);
-        
-        if (!isMounted) return;
-        
-        if (isTokenValid && currentUser) {
-          setUser(currentUser);
-          setError(null);
-        } else {
-          // If token is not valid, clear the state
-          setUser(null);
+        const token = authService.getToken();
+        console.log('Token encontrado en localStorage:', token ? '***' + token.slice(-10) : 'No hay token');
+
+
+        if (!token) {
+          setLoading(false);
+          return;
+        }
+
+        // Validar token con servidor usando la función optimizada
+        const { isValid } = await authService.validateToken(token);
+
+        if (!isValid) {
+          console.log('Token inválido según el servidor, cerrando sesión...');
           authService.logout();
+          setUser(null);
+        } else {
+          // Token válido, obtener datos del usuario
+          const userData = await authService.getCurrentUser();
+          if (isMounted) setUser(userData);
         }
       } catch (error) {
-        if (isMounted) {
-          console.error("Error checking auth status:", error);
-          setError(error.response?.data?.message || "Error verifying authentication");
-          setUser(null);
-          authService.logout();
-        }
+        console.error('Error al validar token:', error);
+        setError('Error al verificar la sesión');
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     };
-    
+
     checkAuth();
-    
+
     return () => {
-      isMounted = false; // Prevent state updates after unmount
+      isMounted = false;
     };
   }, []);
 
-  const register = useCallback(async (userData) => {
+  // Login
+  const login = useCallback(async (userData) => {
+    setLoading(true);
+    setError(null);
+
     try {
-      setLoading(true);
+      const { token, user } = userData;
+      if (!token || !user) throw new Error('Datos de usuario inválidos');
+
+      setUser(user);
+      authService.setToken(token);
+
+      // Actualizar headers de axios
+      const api = (await import('@/services/api')).default;
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+      return { success: true, data: user, token };
+    } catch (error) {
+      console.error('Error al iniciar sesión:', error);
+      setError(error.message || 'Error de autenticación');
+      authService.logout();
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Logout
+  const logout = useCallback(async (options = {}) => {
+    try {
+      await authService.logout();
+      setUser(null);
       setError(null);
-      
-      // Registrar al usuario
+
+      let redirectTo = '/authentication/login';
+      if (options.redirectTo) redirectTo = options.redirectTo;
+      else if (onLogoutCallback) {
+        const result = onLogoutCallback();
+        if (result) redirectTo = result;
+      }
+
+      if (options.redirect !== false && redirectTo) window.location.href = redirectTo;
+      return { success: true };
+    } catch (error) {
+      console.error('Error durante logout:', error);
+      return { success: false, error };
+    }
+  }, [onLogoutCallback]);
+
+  // Registro
+  const register = useCallback(async (userData) => {
+    setLoading(true);
+    setError(null);
+
+    try {
       const response = await authService.register({
         firstName: userData.firstName,
         lastName: userData.lastName,
@@ -90,15 +133,12 @@ export const AuthProvider = ({ children, onLogout }) => {
         password: userData.password,
         role: userData.role || 'STUDENT'
       });
-      
-      if (response) {
-        return { success: true, data: response };
-      }
-      
+
+      if (response) return { success: true, data: response };
       return { success: false, error: 'No se pudo completar el registro' };
     } catch (error) {
-      console.error("Registration error:", error);
-      const errorMessage = error.response?.data?.message || "Registration error. Please try again.";
+      console.error('Error de registro:', error);
+      const errorMessage = 'Error al registrar el usuario';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -106,91 +146,42 @@ export const AuthProvider = ({ children, onLogout }) => {
     }
   }, []);
 
-  const login = useCallback(async (email, password) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await authService.login({ email, password });
-      setUser(response);
-      return { success: true, data: response };
-    } catch (error) {
-      console.error("Login error:", error);
-      const errorMessage = error.response?.data?.message || "Authentication error. Please check your credentials.";
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const logout = useCallback(async (options = {}) => {
-    try {
-      // Clear authentication state
-      await authService.logout();
-      setUser(null);
-      setError(null);
-      
-      // Get redirect path from callback if it exists
-      let redirectTo = '/auth';
-      if (onLogoutCallback) {
-        const result = onLogoutCallback();
-        if (result) {
-          redirectTo = result;
-        }
-      }
-      
-      // Redirect after clearing state
-      if (options.redirect !== false) {
-        if (redirectTo) {
-          window.location.href = redirectTo;
-        }
-      }
-      
-      return { success: true };
-    } catch (error) {
-      console.error('Error during logout:', error);
-      return { success: false, error };
-    }
-  }, [onLogoutCallback]);
-
+  // Permisos
   const hasPermission = (permission) => {
     if (!user) return false;
     return ROLE_PERMISSIONS[user.role]?.[permission] ?? false;
   };
 
-  // Get authenticated user's profile
+  // Fetch profile
   const fetchProfile = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
     try {
-      setLoading(true);
-      setError(null);
-      
       const profile = await authService.getCurrentUser();
       setUser(profile);
       return profile;
     } catch (error) {
       console.error('Error fetching profile:', error);
-      const errorMessage = error.response?.data?.message || "Error loading user profile";
-      setError(errorMessage);
+      setError('Error al cargar perfil');
       throw error;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Update user profile
+  // Update profile
   const updateProfile = useCallback(async (updates) => {
+    setLoading(true);
+    setError(null);
+
     try {
-      setLoading(true);
-      setError(null);
-      
       const updatedProfile = await authService.updateProfile(updates);
       setUser(prev => ({ ...prev, ...updatedProfile }));
       return updatedProfile;
     } catch (error) {
       console.error('Error updating profile:', error);
-      const errorMessage = error.response?.data?.message || "Error updating profile";
-      setError(errorMessage);
+      setError('Error al actualizar perfil');
       throw error;
     } finally {
       setLoading(false);
@@ -215,17 +206,15 @@ export const AuthProvider = ({ children, onLogout }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading ? children : null}
+      {loading ? <div>Cargando...</div> : children}
     </AuthContext.Provider>
   );
 };
 
-// Custom hook to use the auth context
+// Hook personalizado para usar AuthContext
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth debe usarse dentro de AuthProvider');
   return context;
 };
 
