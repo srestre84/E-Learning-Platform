@@ -123,7 +123,7 @@ export default function RegisterForm() {
         } else {
           // Si no hay auto-login, redirigir al login
           setTimeout(() => {
-            navigate('/authentication/login', { state: { from: 'register' } });
+            navigate('/auth', { state: { from: 'register' } });
           }, 1500);
         }
       } else {

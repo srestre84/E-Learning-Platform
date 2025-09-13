@@ -52,7 +52,7 @@ const ProtectedRoute = ({
 
   // Not authenticated
   if (!isAuthenticated) {
-    return <Navigate to="/authentication/login" state={{ from: location }} replace />;
+    return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   // Check role permissions

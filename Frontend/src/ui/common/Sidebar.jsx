@@ -114,7 +114,8 @@ const Sidebar = () => {
 
 
   const handleLogout = async () => {
-    await logout({ redirect: true, redirectTo: "/authentication/login" });
+    console.log('=== SIDEBAR: Iniciando logout ===');
+    await logout({ redirect: true, redirectTo: "/" });
     showNotification("¡Hasta luego!", "success");
   };
 

@@ -93,7 +93,10 @@ export default defineConfig(({ mode }) => {
       hmr: { overlay: false },
       proxy: {
         '/api': backendProxyConfig,
-        '/auth': backendProxyConfig
+        // Rutas específicas de autenticación que van al backend
+        '/auth/login': backendProxyConfig,
+        '/auth/validate': backendProxyConfig,
+        // La ruta '/auth' sola (sin subrutas) es del frontend
       }
     },
 

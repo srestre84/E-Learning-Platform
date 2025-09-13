@@ -121,14 +121,22 @@ const login = async ({ email, password }) => {
  * @returns {void}
  */
 const logout = () => {
+  console.log('=== LOGOUT: Iniciando logout ===');
+  console.log('Ubicación actual:', window.location.pathname);
+  
   // Limpiar datos de autenticación
   localStorage.removeItem('token');
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('user');
   
-  // Redirigir al login
-  if (window.location.pathname !== '/authentication/login' && window.location.pathname !== '/auth') {
-    window.location.href = '/auth';
+  console.log('=== LOGOUT: Datos limpiados del localStorage ===');
+  
+  // Redirigir al login solo si no estamos ya en la página de inicio
+  if (window.location.pathname !== '/') {
+    console.log('=== LOGOUT: Redirigiendo a / ===');
+    window.location.href = '/';
+  } else {
+    console.log('=== LOGOUT: Ya estamos en /, no redirigir ===');
   }
 };
 

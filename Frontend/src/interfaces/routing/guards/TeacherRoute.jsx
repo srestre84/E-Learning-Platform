@@ -49,7 +49,7 @@ const TeacherRoute = ({ children }) => {
                 Reintentar
               </button>
               <a
-                href="/authentication/login"
+                href="/auth"
                 className="text-center text-sm font-medium text-red-600 hover:text-red-500"
               >
                 Volver al inicio de sesión
@@ -75,7 +75,7 @@ const TeacherRoute = ({ children }) => {
             <p className="text-gray-600">Redirigiendo al inicio de sesión...</p>
           </div>
         </div>
-        <Navigate to="/authentication/login" state={{ from: location }} replace />
+        <Navigate to="/auth" state={{ from: location }} replace />
       </div>
     );
   }

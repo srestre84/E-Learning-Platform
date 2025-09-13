@@ -101,18 +101,26 @@ export const AuthProvider = ({ children, onLogout }) => {
   // Logout
   const logout = useCallback(async (options = {}) => {
     try {
-      await authService.logout();
+      console.log('=== AUTH CONTEXT: Iniciando logout ===');
+      console.log('Options:', options);
+      
+      // authService.logout() no es asíncrono, pero limpia los datos
+      authService.logout();
       setUser(null);
       setError(null);
 
-      let redirectTo = '/auth';
+      let redirectTo = '/';
       if (options.redirectTo) redirectTo = options.redirectTo;
       else if (onLogoutCallback) {
         const result = onLogoutCallback();
         if (result) redirectTo = result;
       }
 
-      if (options.redirect !== false && redirectTo) window.location.href = redirectTo;
+      console.log('=== AUTH CONTEXT: Redirigiendo a ===', redirectTo);
+      if (options.redirect !== false && redirectTo) {
+        window.location.href = redirectTo;
+      }
+      
       return { success: true };
     } catch (error) {
       console.error('Error durante logout:', error);
