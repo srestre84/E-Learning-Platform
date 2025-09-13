@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { courseService } from '@/services/courseService';
+import courseServiceModule from '@/services/courseService';
+
 import { toast } from 'react-toastify';
 import {
   PlusIcon,
@@ -21,6 +22,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { useYoutubePlayer } from '@/shared/hooks/useYoutubePlayer';
 import { YoutubePlayer } from '@/shared/hooks/useYoutubePlayer';
+
+const { courseService } = courseServiceModule;
 
 const CreateCourse = ({ isEditing = false }) => {
   const navigate = useNavigate();
@@ -797,7 +800,7 @@ const CreateCourse = ({ isEditing = false }) => {
                                           </div>
                                         </div>
                                         <div className="w-full h-full relative" style={{
-                                          paddingBottom: '56.25%', /* 16:9 Aspect Ratio */
+                                          paddingBottom: '56.25%' /* 16:9 Aspect Ratio */,
                                           height: 0,
                                           overflow: 'hidden'
                                         }}>

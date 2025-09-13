@@ -40,7 +40,7 @@ const withSuspense = (Component, minDelay = 0) => (props) => {
 const lazyLoad = (importFn) => withSuspense(lazy(importFn));
 
 // importar paginas con lazy 
-const LandingPage = lazy(() => import("@/features/marketing/pages/home"));
+const LandingPage = lazy(() => import("@/features/marketing/pages/Home"));
 const LoginPage = lazy(() => import("@/features/auth/pages/LoginPage"))
 const RegisterPage = lazy(() => import("@/features/auth/pages/RegisterPage"))
 const CatalogoCursos = lazy(() => import("@/features/marketing/pages/CatalogoCursos"));
