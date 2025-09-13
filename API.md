@@ -45,7 +45,7 @@
 #### Response de Error (401 Unauthorized):
 ```json
 {
-  "message": "Las credenciales proporcionadas son incorrectas",
+  "message": "Credenciales inválidas",
   "error": "INVALID_CREDENTIALS",
   "status": 401,
   "timestamp": "2025-01-01T10:00:00",
@@ -56,7 +56,7 @@
 #### Response de Usuario Inactivo (403 Forbidden):
 ```json
 {
-  "message": "Tu cuenta está temporalmente inactiva",
+  "message": "Usuario inactivo",
   "error": "USER_INACTIVE",
   "status": 403,
   "timestamp": "2025-01-01T10:00:00",
@@ -127,8 +127,16 @@
 }
 ```
 
-#### Nota Importante:
-Si el email ya existe, retorna el usuario existente (200 OK) en lugar de crear uno nuevo.
+#### Response de Error (409 Conflict):
+```json
+{
+  "message": "El email ya está registrado en el sistema",
+  "error": "EMAIL_ALREADY_EXISTS",
+  "status": 409,
+  "timestamp": "2025-01-01T10:00:00",
+  "path": "/api/users/register"
+}
+```
 
 ### 4. Obtener Usuario por ID
 **Endpoint:** `GET /api/users/{id}`  
@@ -292,8 +300,8 @@ Si el email ya existe, retorna el usuario existente (200 OK) en lugar de crear u
 ```
 
 #### Validaciones:
-- **userName:** Requerido, 2-50 caracteres, solo letras y espacios
-- **lastName:** Requerido, 2-50 caracteres, solo letras y espacios
+- **userName:** Requerido, 2-20 caracteres, solo letras y espacios
+- **lastName:** Requerido, 2-20 caracteres, solo letras y espacios
 - **email:** Requerido, formato email válido, máximo 100 caracteres, único
 - **profileImageUrl:** Opcional, máximo 500 caracteres, URL válida de imagen
 
@@ -328,7 +336,7 @@ Si el email ya existe, retorna el usuario existente (200 OK) en lugar de crear u
   "errors": [
     {
       "field": "userName",
-      "message": "El nombre debe tener entre 2 y 50 caracteres"
+      "message": "El nombre debe tener entre 2 y 20 caracteres"
     },
     {
       "field": "email",
@@ -355,6 +363,8 @@ Si el email ya existe, retorna el usuario existente (200 OK) en lugar de crear u
   "description": "Aprende Java desde cero con ejemplos prácticos y proyectos reales.",
   "shortDescription": "Curso introductorio de Java para principiantes",
   "instructorId": 2,
+  "categoryId": 1,
+  "subcategoryId": 3,
   "youtubeUrls": [
     "https://www.youtube.com/watch?v=abc123",
     "https://www.youtube.com/watch?v=def456"
@@ -373,6 +383,8 @@ Si el email ya existe, retorna el usuario existente (200 OK) en lugar de crear u
 - **description:** Requerido, máximo 1000 caracteres
 - **shortDescription:** Opcional, máximo 255 caracteres
 - **instructorId:** Requerido, debe existir
+- **categoryId:** Requerido, debe existir
+- **subcategoryId:** Requerido, debe existir y pertenecer a la categoría
 - **youtubeUrls:** Opcional, formato YouTube válido
 - **thumbnailUrl:** Opcional, URL de imagen válida
 - **price:** Requerido, no negativo, máximo 6 dígitos enteros y 2 decimales
@@ -391,6 +403,14 @@ Si el email ya existe, retorna el usuario existente (200 OK) en lugar de crear u
     "lastName": "García",
     "email": "maria.garcia@example.com",
     "role": "INSTRUCTOR"
+  },
+  "category": {
+    "id": 1,
+    "name": "Programación"
+  },
+  "subcategory": {
+    "id": 3,
+    "name": "Backend"
   },
   "youtubeUrls": [
     "https://www.youtube.com/watch?v=abc123",
@@ -678,6 +698,113 @@ Sin contenido en el cuerpo de la respuesta
 - Todas las inscripciones asociadas al curso cambian su estado a `DROPPED`
 - Esta operación es irreversible sin intervención administrativa
 
+### 16. Cursos por Categoría
+**Endpoint:** `GET /api/courses/category/{categoryId}`  
+**Descripción:** Obtiene todos los cursos activos y publicados de una categoría específica  
+**Acceso:** Público  
+
+#### Path Parameters:
+- **categoryId:** ID de la categoría (requerido)
+
+#### Response Exitoso (200 OK):
+```json
+[
+  {
+    "id": 1,
+    "title": "Curso de Java Básico",
+    "description": "Aprende Java desde cero con ejemplos prácticos.",
+    "shortDescription": "Curso introductorio de Java",
+    "instructor": {
+      "id": 2,
+      "userName": "María",
+      "lastName": "García"
+    },
+    "category": {
+      "id": 1,
+      "name": "Programación"
+    },
+    "thumbnailUrl": "https://example.com/images/java-course.jpg",
+    "price": 99.99,
+    "isPremium": true,
+    "estimatedHours": 20,
+    "createdAt": "2025-01-01T10:00:00.000+00:00"
+  }
+]
+```
+
+### 17. Cursos por Subcategoría
+**Endpoint:** `GET /api/courses/subcategory/{subcategoryId}`  
+**Descripción:** Obtiene todos los cursos activos y publicados de una subcategoría específica  
+**Acceso:** Público  
+
+#### Path Parameters:
+- **subcategoryId:** ID de la subcategoría (requerido)
+
+#### Response Exitoso (200 OK):
+```json
+[
+  {
+    "id": 1,
+    "title": "Curso de Java Básico",
+    "description": "Aprende Java desde cero con ejemplos prácticos.",
+    "shortDescription": "Curso introductorio de Java",
+    "instructor": {
+      "id": 2,
+      "userName": "María",
+      "lastName": "García"
+    },
+    "subcategory": {
+      "id": 3,
+      "name": "Backend"
+    },
+    "thumbnailUrl": "https://example.com/images/java-course.jpg",
+    "price": 99.99,
+    "isPremium": true,
+    "estimatedHours": 20,
+    "createdAt": "2025-01-01T10:00:00.000+00:00"
+  }
+]
+```
+
+### 18. Cursos por Categoría y Subcategoría
+**Endpoint:** `GET /api/courses/category/{categoryId}/subcategory/{subcategoryId}`  
+**Descripción:** Obtiene todos los cursos activos y publicados de una categoría y subcategoría específicas  
+**Acceso:** Público  
+
+#### Path Parameters:
+- **categoryId:** ID de la categoría (requerido)
+- **subcategoryId:** ID de la subcategoría (requerido)
+
+#### Response Exitoso (200 OK):
+```json
+[
+  {
+    "id": 1,
+    "title": "Curso de Java Básico",
+    "description": "Aprende Java desde cero con ejemplos prácticos.",
+    "shortDescription": "Curso introductorio de Java",
+    "instructor": {
+      "id": 2,
+      "userName": "María",
+      "lastName": "García"
+    },
+    "category": {
+      "id": 1,
+      "name": "Programación"
+    },
+    "subcategory": {
+      "id": 3,
+      "name": "Backend"
+    },
+    "thumbnailUrl": "https://example.com/images/java-course.jpg",
+    "price": 99.99,
+    "isPremium": true,
+    "estimatedHours": 20,
+    "createdAt": "2025-01-01T10:00:00.000+00:00"
+  }
+]
+```
+
 ## 🔒 Autenticación JWT
 
 ### Headers Requeridos para Endpoints Protegidos
@@ -728,8 +855,8 @@ Content-Type: application/json
 ### Actualización de Perfil (UpdateProfileDto)
 ```json
 {
-  "userName": "string (2-50 chars, letters and spaces only)",
-  "lastName": "string (2-50 chars, letters and spaces only)",
+  "userName": "string (2-20 chars, letters and spaces only)",
+  "lastName": "string (2-20 chars, letters and spaces only)",
   "email": "string (email format, max 100 chars, unique)",
   "profileImageUrl": "string (optional, max 500 chars, valid image URL)"
 }
@@ -875,6 +1002,8 @@ curl -X POST http://localhost:8080/api/courses \
     "description": "Aprende Java desde cero con ejemplos prácticos y proyectos reales.",
     "shortDescription": "Curso introductorio de Java para principiantes",
     "instructorId": 2,
+    "categoryId": 1,
+    "subcategoryId": 3,
     "youtubeUrls": [
       "https://www.youtube.com/watch?v=abc123"
     ],
@@ -948,6 +1077,24 @@ curl -X DELETE http://localhost:8080/api/courses/1 \
   -H "Content-Type: application/json"
 ```
 
+### 16. Obtener Cursos por Categoría (cURL)
+```bash
+curl -X GET http://localhost:8080/api/courses/category/1 \
+  -H "Content-Type: application/json"
+```
+
+### 17. Obtener Cursos por Subcategoría (cURL)
+```bash
+curl -X GET http://localhost:8080/api/courses/subcategory/3 \
+  -H "Content-Type: application/json"
+```
+
+### 18. Obtener Cursos por Categoría y Subcategoría (cURL)
+```bash
+curl -X GET http://localhost:8080/api/courses/category/1/subcategory/3 \
+  -H "Content-Type: application/json"
+```
+
 ## 📱 Integración con Frontend
 
 ### Flujo de Autenticación Recomendado
@@ -1017,6 +1164,9 @@ const fetchProtectedData = async () => {
 - `POST /api/users/register` - Registro de usuario
 - `GET /api/courses` - Catálogo público de cursos
 - `GET /api/courses/{id}` - Detalle del curso
+- `GET /api/courses/category/{categoryId}` - Cursos por categoría
+- `GET /api/courses/subcategory/{subcategoryId}` - Cursos por subcategoría
+- `GET /api/courses/category/{categoryId}/subcategory/{subcategoryId}` - Cursos por categoría y subcategoría
 - `GET /h2-console/**` - Consola H2 (solo desarrollo)
 - `GET /actuator/health` - Health check
 
