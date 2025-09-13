@@ -5,8 +5,8 @@ import { Input } from '@/ui/input';
 import { Label } from '@/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/ui/avatar';
 import { Pencil, Save, X, User, Mail, Briefcase, RefreshCw, AlertCircle, EyeOff, Eye } from 'lucide-react';
-import { useAuth } from '../../../contexts/AuthContext';
-import mockAuthService from '../../../interfaces/api/__mocks__/mockAuthService';
+import { useAuth } from '@/contexts/AuthContext';
+
 
 // Componente para editar el perfil con rol de estudiante
 export default function StudentProfileEditor() {
