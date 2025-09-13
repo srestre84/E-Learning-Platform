@@ -5,9 +5,11 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,7 +48,6 @@ public class CourseController {
         return ResponseEntity.ok(course);
     }
 
-
     @GetMapping("/instructor/{instructorId}")
     @PreAuthorize("hasRole('ADMIN') or (hasRole('INSTRUCTOR') and #instructorId == authentication.principal.id)")
     public ResponseEntity<List<Course>> getCoursesByInstructor(@PathVariable Long instructorId) {
@@ -54,11 +55,64 @@ public class CourseController {
         return ResponseEntity.ok(courses);
     }
 
-
     @GetMapping("/admin/active")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Course>> getAllActiveCourses() {
         List<Course> courses = courseService.getAllActiveCourses();
         return ResponseEntity.ok(courses);
+    }
+
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<Course>> getCoursesByCategory(@PathVariable Long categoryId) {
+        try {
+            List<Course> courses = courseService.getCoursesByCategory(categoryId);
+            return ResponseEntity.ok(courses);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/subcategory/{subcategoryId}")
+    public ResponseEntity<List<Course>> getCoursesBySubcategory(@PathVariable Long subcategoryId) {
+        try {
+            List<Course> courses = courseService.getCoursesBySubcategory(subcategoryId);
+            return ResponseEntity.ok(courses);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/category/{categoryId}/subcategory/{subcategoryId}")
+    public ResponseEntity<List<Course>> getCoursesByCategoryAndSubcategory(
+            @PathVariable Long categoryId, 
+            @PathVariable Long subcategoryId) {
+        try {
+            List<Course> courses = courseService.getCoursesByCategoryAndSubcategory(categoryId, subcategoryId);
+            return ResponseEntity.ok(courses);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PutMapping("/{courseId}")
+    @PreAuthorize("hasRole('INSTRUCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<Course> updateCourse(
+            @PathVariable Long courseId,
+            @Valid @RequestBody CourseCreateDto courseDto) {
+        Course updatedCourse = courseService.updateCourse(courseId, courseDto);
+        return ResponseEntity.ok(updatedCourse);
+    }
+
+    @DeleteMapping("/{courseId}")
+    @PreAuthorize("hasRole('INSTRUCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteCourse(@PathVariable Long courseId) {
+        courseService.deleteCourse(courseId);
+        return ResponseEntity.noContent().build();
     }
 }

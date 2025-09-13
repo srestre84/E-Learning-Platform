@@ -33,6 +33,12 @@ public class CourseCreateDto {
     @NotNull(message = "El ID del instructor es obligatorio")
     private Long instructorId;
     
+    @NotNull(message = "El ID de la categoría es obligatorio")
+    private Long categoryId;
+    
+    @NotNull(message = "El ID de la subcategoría es obligatorio")
+    private Long subcategoryId;
+    
     private List<@Pattern(regexp = "^https://(?:www\\.)?youtube\\.com/watch\\?v=[a-zA-Z0-9_-]+$", 
                          message = "URL de YouTube inválida") String> youtubeUrls;
     

@@ -6,7 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import com.Dev_learning_Platform.Dev_learning_Platform.models.Category;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Course;
+import com.Dev_learning_Platform.Dev_learning_Platform.models.Subcategory;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.User;
 
 
@@ -22,18 +24,18 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     List<Course> findPublicCoursesOrderByCreatedAtDesc();
     List<Course> findByInstructorAndIsActive(User instructor, boolean isActive);
     
-    /**
-     * Obtiene todos los cursos de una categoría específica.
-     */
-    List<Course> findByCategoryId(Long categoryId);
+    // Métodos para búsqueda por categoría y subcategoría
+    List<Course> findByCategoryAndIsActiveAndIsPublished(Category category, boolean isActive, boolean isPublished);
+    List<Course> findBySubcategoryAndIsActiveAndIsPublished(Subcategory subcategory, boolean isActive, boolean isPublished);
+    List<Course> findByCategoryAndSubcategoryAndIsActiveAndIsPublished(Category category, Subcategory subcategory, boolean isActive, boolean isPublished);
     
-    /**
-     * Obtiene todos los cursos publicados de una categoría específica.
-     */
-    List<Course> findByCategoryIdAndIsPublishedTrue(Long categoryId);
+    // Métodos para búsqueda con ordenamiento
+    @Query("SELECT c FROM Course c WHERE c.category = :category AND c.isActive = true AND c.isPublished = true ORDER BY c.createdAt DESC")
+    List<Course> findByCategoryOrderByCreatedAtDesc(Category category);
     
-    /**
-     * Obtiene todos los cursos de una categoría específica para un instructor.
-     */
-    List<Course> findByCategoryIdAndInstructor(Long categoryId, User instructor);
+    @Query("SELECT c FROM Course c WHERE c.subcategory = :subcategory AND c.isActive = true AND c.isPublished = true ORDER BY c.createdAt DESC")
+    List<Course> findBySubcategoryOrderByCreatedAtDesc(Subcategory subcategory);
+    
+    @Query("SELECT c FROM Course c WHERE c.category = :category AND c.subcategory = :subcategory AND c.isActive = true AND c.isPublished = true ORDER BY c.createdAt DESC")
+    List<Course> findByCategoryAndSubcategoryOrderByCreatedAtDesc(Category category, Subcategory subcategory);
 }
