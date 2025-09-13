@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useYoutubePlayer } from "@/shared/hooks/useYoutubePlayer";
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { courseService } from '@/services/courseService';
+import { toast } from 'react-toastify';
 import {
   PlusIcon,
   ArrowLeftIcon,
@@ -15,12 +16,13 @@ import {
   StarIcon,
   UsersIcon,
   CheckCircleIcon,
-  XMarkIcon
+  XMarkIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
-import { duration } from '@mui/material';
+import { useYoutubePlayer } from '@/shared/hooks/useYoutubePlayer';
 import { YoutubePlayer } from '@/shared/hooks/useYoutubePlayer';
 
-const NewCourse = ({ isEditing = false }) => {
+const CreateCourse = ({ isEditing = false }) => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [activePlayerId, setActivePlayerId] = useState(null);
@@ -63,53 +65,31 @@ const NewCourse = ({ isEditing = false }) => {
 
   // Cargar datos del curso si estamos en modo edición
   useEffect(() => {
-    if (isEditing && id) {
-      // Aquí iría la llamada a la API para obtener los datos del curso
-      const fetchCourse = async () => {
-        try {
-          // Simulamos una llamada a la API
-          // const response = await api.get(`/courses/${id}`);
-          // setFormData(response.data);
+    const fetchCourse = async () => {
+      if (!isEditing || !id) return;
+      
+      try {
+        const courseData = await courseService.getCourseById(id);
+        setFormData({
+          ...courseData,
+          // Asegurar que los módulos y lecciones tengan los campos requeridos
+          modules: courseData.modules?.map(module => ({
+            ...module,
+            lessons: module.lessons?.map(lesson => ({
+              ...lesson,
+              video: lesson.video || null,
+              resources: lesson.resources || [],
+              completed: false
+            })) || []
+          })) || []
+        });
+      } catch (error) {
+        console.error('Error al cargar el curso:', error);
+        toast.error('Error al cargar el curso. Por favor, inténtalo de nuevo.');
+      }
+    };
 
-          // Datos de ejemplo para la demo
-          setFormData({
-            title: 'Curso de Ejemplo',
-            description: 'Este es un curso de ejemplo para demostrar la funcionalidad de edición.',
-            category: 'programming',
-            price: '49.99',
-            level: 'beginner',
-            image: null,
-            preview: 'https://via.placeholder.com/1280x720',
-            modules: [
-              {
-                id: 1,
-                title: 'Introducción al Curso',
-                description: 'Aprende los conceptos básicos',
-                lessons: [
-                  {
-                    id: 1,
-                    title: 'Bienvenida',
-                    type: 'video',
-                    video: {
-                      preview: 'https://example.com/video-preview.mp4',
-                      name: 'bienvenida.mp4',
-                      duration: 5
-                    },
-                    duration: 5,
-                    resources: []
-                  }
-                ]
-              }
-            ]
-          });
-        } catch (error) {
-          console.error('Error al cargar el curso:', error);
-          // Mostrar mensaje de error
-        }
-      };
-
-      fetchCourse();
-    }
+    fetchCourse();
   }, [isEditing, id]);
 
   const handleChange = (e) => {
@@ -139,52 +119,49 @@ const NewCourse = ({ isEditing = false }) => {
 
     try {
       const formDataToSend = new FormData();
-
+      
       // Agregar campos básicos
-      formDataToSend.append('title', formData.title);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('category', formData.category);
-      formDataToSend.append('price', formData.price);
-      formDataToSend.append('level', formData.level);
+      const courseData = {
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        price: parseFloat(formData.price) || 0,
+        level: formData.level,
+        modules: formData.modules.map(module => ({
+          ...module,
+          lessons: module.lessons.map(lesson => ({
+            ...lesson,
+            // Asegurar que solo se envíen los campos necesarios
+            video: undefined, // No enviar el objeto completo del video
+            videoUrl: lesson.video?.url || '',
+            duration: parseInt(lesson.duration) || 0,
+            resources: lesson.resources || []
+          }))
+        }))
+      };
 
-      // Agregar imagen si existe
+      // Agregar la imagen si existe
       if (formData.image) {
         formDataToSend.append('image', formData.image);
       }
+      
+      // Agregar el resto de los datos como JSON
+      formDataToSend.append('data', JSON.stringify(courseData));
 
-      // Agregar módulos y lecciones
-      formDataToSend.append('modules', JSON.stringify(formData.modules));
-
-      // Determinar la URL y el método HTTP según si es edición o creación
-      const url = isEditing && id
-        ? `/api/courses/${id}`
-        : '/api/courses';
-
-      const method = isEditing ? 'PUT' : 'POST';
-
-      // Llamada a la API
-      // const response = await fetch(url, {
-      //   method,
-      //   body: formDataToSend,
-      //   headers: {
-      //     'Accept': 'application/json',
-      //   },
-      // });
-
-      // if (!response.ok) throw new Error('Error al guardar el curso');
-
-      // Simulamos un retraso de red
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Llamada al servicio
+      if (isEditing && id) {
+        await courseService.updateCourse(id, formDataToSend);
+        toast.success('¡Curso actualizado exitosamente!');
+      } else {
+        await courseService.createCourse(formDataToSend);
+        toast.success('¡Curso creado exitosamente!');
+      }
 
       // Redirigir después de guardar
       navigate('/teacher/courses');
-
-      // Mostrar notificación de éxito
-      alert(`Curso ${isEditing ? 'actualizado' : 'creado'} exitosamente!`);
-
     } catch (error) {
-      console.error('Error:', error);
-      alert(`Error al ${isEditing ? 'actualizar' : 'crear'} el curso. Por favor, inténtalo de nuevo.`);
+      console.error('Error al guardar el curso:', error);
+      toast.error(error.message || 'Ocurrió un error al guardar el curso');
     } finally {
       setIsSubmitting(false);
     }
@@ -192,13 +169,14 @@ const NewCourse = ({ isEditing = false }) => {
 
   // Calcular estadísticas del curso
   const getTotalLessons = () => {
-    return formData.modules.reduce((total, module) => total + module.lessons.length, 0);
+    return formData.modules?.reduce((total, module) => 
+      total + (module.lessons?.length || 0), 0) || 0;
   };
 
   const getTotalDuration = () => {
-    return formData.modules.reduce((total, module) =>
-      total + module.lessons.reduce((moduleTotal, lesson) => moduleTotal + (lesson.duration || 0), 0), 0
-    );
+    return formData.modules?.reduce((total, module) =>
+      total + (module.lessons?.reduce((moduleTotal, lesson) => 
+        moduleTotal + (parseInt(lesson.duration) || 0), 0) || 0), 0) || 0;
   };
 
   const addModule = () => {
@@ -1090,4 +1068,4 @@ const NewCourse = ({ isEditing = false }) => {
   );
 };
 
-export default NewCourse;
+export default React.memo(CreateCourse);
