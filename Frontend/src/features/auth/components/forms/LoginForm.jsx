@@ -1,139 +1,122 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/shared/hooks/useAuth";
-import { useNotification } from "@/contexts/NotificationContext";
-import { useAsync } from "@/shared/hooks/useAsync";
-import Button from "@/components/Button";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/ui/Button";
+import { toast } from 'sonner';
 import FormInput from "@/ui/FormInput";
-import api from '@/services/apiService';
-
-// Función para manejar el login con la API real
-async function loginUser({ email, password }) {
-  try {
-    console.log('Iniciando sesión con:', { email });
-    const response = await api.login(email, password);
-    console.log('Respuesta del servidor (login):', response);
-    
-    // Si el login es exitoso, devolvemos los datos del usuario
-    if (response && response.user) {
-      return response.user;
-    }
-    
-    throw new Error('No se pudo iniciar sesión. Por favor, verifica tus credenciales.');
-  } catch (error) {
-    console.error('Error en loginUser:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status
-    });
-    throw error;
-  }
-}
+import api from '@/services/api';
+import { Loader2 } from 'lucide-react';
 
 export default function LoginForm() {
   const navigate = useNavigate();
-  const location = useLocation();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { showNotification } = useNotification();
-  const { login, isAuthenticated, role } = useAuth();
-
-  // Usamos useAsync para manejar el estado de la petición
-  const { 
-    execute: handleLogin, 
-    isLoading, 
-    error 
-  } = useAsync(loginUser, {
-    onSuccess: async (userData) => {
-      try {
-        // Usar la función de login del contexto de autenticación
-        await login(userData.email, userData.password);
-        showNotification('Inicio de sesión exitoso', 'success');
-        
-        // La redirección se manejará automáticamente por el efecto que verifica isAuthenticated
-      } catch (err) {
-        console.error('Error en login:', err);
-        showNotification(err.response?.data?.message || err.message || 'Error al iniciar sesión', 'error');
-      }
-    },
-    onError: (error) => {
-      console.error('Error en autenticación:', error);
-      showNotification(error.response?.data?.message || error.message || 'Error al iniciar sesión', 'error');
-    }
-  });
-
-  // Redirect if already logged in
-  useEffect(() => {
-    if (isAuthenticated) {
-      const from = location.state?.from?.pathname;
-      if (from && from !== '/login') {
-        navigate(from, { replace: true });
-        return;
-      }
-      // Redirige según el rol
-      switch (role) {
-        case 'admin':
-          navigate('/admin', { replace: true });
-          break;
-        case 'teacher':
-          navigate('/teacher/dashboard', { replace: true });
-          break;
-        case 'student':
-        default:
-          navigate('/dashboard', { replace: true });
-          break;
-      }
-    }
-  }, [isAuthenticated, role, navigate, location.state]);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
-      showNotification('Por favor ingresa tu correo y contraseña', 'error');
-      return;
-    }
-    
+    setError(null);
+    setIsLoading(true);
+
     try {
-      const response = await handleLogin({ email, password });
-      console.log('Login response:', response);
-    } catch (error) {
-      // Los errores ya se manejan en el onError de useAsync
-      console.error('Error en el formulario:', error);
+      // Validación básica
+      if (!email.includes("@")) throw new Error("Correo inválido");
+      if (password.length < 8) throw new Error("La contraseña debe tener al menos 8 caracteres");
+
+      // Llamada al backend
+      const response = await api.post("/auth/login", { email: email.trim(), password, rememberMe });
+
+      if (!response.data.token) throw new Error("No se recibió el token de autenticación");
+
+      const userData = {
+        token: response.data.token,
+        user: {
+          id: response.data.userId,
+          name: response.data.userName,
+          email: response.data.email,
+          role: response.data.role,
+          isActive: response.data.isActive
+        }
+      };
+
+      // Loguear al usuario mediante AuthContext
+      const loginResult = await login(userData);
+
+      if (loginResult.success) {
+        toast.success("¡Inicio de sesión exitoso!");
+
+        // Redirigir según rol (mapear 'instructor' a 'teacher' para compatibilidad)
+        const role = response.data.role.toLowerCase();
+        if (role === "admin") {
+          navigate("/admin/dashboard");
+        } else if (role === "teacher" || role === "instructor") {
+          navigate("/teacher/dashboard");
+        } else {
+          navigate("/dashboard");
+        }
+      } else {
+        throw new Error(loginResult.error || "Error al iniciar sesión");
+      }
+
+    } catch (err) {
+      console.error("Error en login:", err);
+      const msg = err.response?.data?.message || err.message || "Error al iniciar sesión";
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <FormInput
-          label="Correo electrónico"
-          type="email"
-          name="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="tu@correo.com"
-          required
-          disabled={isLoading}
-        />
-        <FormInput
-          label="Contraseña"
-          type="password"
-          name="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Contraseña"
-          required
-          disabled={isLoading}
-        />
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <FormInput
+        label="Correo electrónico"
+        type="email"
+        value={email}
+        onChange={e => setEmail(e.target.value)}
+        placeholder="tu@correo.com"
+        disabled={isLoading}
+        autoFocus
+        autoComplete="username"
+      />
 
-        <Button
-          type="submit"
-          className="w-full bg-red-500 text-white py-3 rounded-lg hover:bg-gray-800 transition-colors duration-200 mt-4"
-          disabled={isLoading}
-        >
-          {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-        </Button>
-      </form>
-    </>
+      <FormInput
+        label="Contraseña"
+        type="password"
+        value={password}
+        onChange={e => setPassword(e.target.value)}
+        placeholder="••••••••"
+        disabled={isLoading}
+        autoComplete="current-password"
+      />
+
+      <div className="flex items-center justify-between">
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={e => setRememberMe(e.target.checked)}
+            className="h-4 w-4 text-red-500 rounded border-gray-300 focus:ring-red-500"
+          />
+          <span className="ml-2 text-sm text-gray-700">Recordarme</span>
+        </label>
+
+        <a href="/auth/forgot-password" className="text-sm font-medium text-red-500 hover:text-red-600">
+          ¿Olvidaste tu contraseña?
+        </a>
+      </div>
+
+      <Button
+        type="submit"
+        className="w-full flex justify-center py-3 px-4 text-white bg-red-500 rounded-md hover:bg-red-600"
+        disabled={isLoading}
+      >
+        {isLoading ? <><Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" />Iniciando sesión...</> : "Iniciar sesión"}
+      </Button>
+    </form>
   );
 }
