@@ -20,9 +20,15 @@ const withErrorHandling = (routes) => {
   }));
 };
 
+import RootLayout from '@/layouts/RootLayout';
+
 export const router = createBrowserRouter([
-  // Admin routes first to ensure they take precedence
+  // Main layout with title management
   {
+    element: <RootLayout />,
+    children: [
+      // Admin routes first to ensure they take precedence
+      {
     path: '/admin/*',
     element: (
       <ProtectedRoute allowedRoles={['admin']}>
@@ -35,18 +41,20 @@ export const router = createBrowserRouter([
         </Suspense>
       </ProtectedRoute>
     ),
-    children: adminRoutes[0].children
-  },
-  // Then public routes
-  ...withErrorHandling(publicRoutes),
-  // Then teacher routes
-  ...withErrorHandling(teacherRoutes),
-  // Then private routes
-  ...withErrorHandling(privateRoutes),
-  // Catch-all route - must be last
-  {
-    path: '*',
-    element: <Navigate to="/404" replace />
+        children: adminRoutes[0].children
+      },
+      // Then public routes
+      ...withErrorHandling(publicRoutes),
+      // Then teacher routes
+      ...withErrorHandling(teacherRoutes),
+      // Then private routes
+      ...withErrorHandling(privateRoutes),
+      // Catch-all route - must be last
+      {
+        path: '*',
+        element: <Navigate to="/404" replace />
+      }
+    ]
   }
 ], {
   future: {
