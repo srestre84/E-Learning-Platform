@@ -122,7 +122,7 @@ export default function PurchasedCourses() {
                   <Star className="h-3 w-3 mr-1 fill-current" />
                   {course.rating}
                 </div>
-                <div className="absolute bottom-2 left-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
+                <div className="absolute bottom-2 left-2 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded">
                   {course.category}
                 </div>
               </div>
