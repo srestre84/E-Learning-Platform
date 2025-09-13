@@ -4,6 +4,7 @@ import com.Dev_learning_Platform.Dev_learning_Platform.dtos.admin.AdminStatsDto;
 import com.Dev_learning_Platform.Dev_learning_Platform.services.AdminStatsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -12,23 +13,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/admin/stats")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class AdminStatsController {
 
     private final AdminStatsService adminStatsService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AdminStatsDto> getAdminStats() {
         return ResponseEntity.ok(adminStatsService.getAllStats());
-    }
-    
-    @GetMapping("/test")
-    public ResponseEntity<String> testEndpoint() {
-        return ResponseEntity.ok("Endpoint de estadísticas funcionando correctamente");
-    }
-
-    @GetMapping("/test-no-auth")
-    public ResponseEntity<String> testNoAuthEndpoint() {
-        return ResponseEntity.ok("Endpoint sin autorización funcionando correctamente");
     }
 }

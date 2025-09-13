@@ -49,10 +49,6 @@ public class Securityconfig {
                 // ✅ Herramientas de desarrollo
                 .requestMatchers("/h2-console/**").permitAll()      // H2 para desarrollo
                 .requestMatchers("/actuator/health").permitAll()    // Health check
-                .requestMatchers("/api/admin/test/no-auth").permitAll() // Endpoint de prueba sin auth
-                
-                // ✅ TEMPORAL: Endpoints de estadísticas para testing
-                .requestMatchers("/api/admin/stats/**").permitAll() // Stats sin auth para testing
 
                 // ✅ Todo lo demás requiere autenticación JWT
                 .anyRequest().authenticated()                       // Resto requiere JWT

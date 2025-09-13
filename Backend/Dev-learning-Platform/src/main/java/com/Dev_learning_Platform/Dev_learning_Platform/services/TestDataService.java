@@ -5,6 +5,7 @@ import com.Dev_learning_Platform.Dev_learning_Platform.repositories.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,8 +16,9 @@ import java.util.List;
 
 /**
  * Servicio para crear datos de prueba para las estadísticas administrativas
+ * Descomentado @Service solo para desarrollo/testing
  */
-@Service
+// @Service  // Deshabilitado para producción
 @RequiredArgsConstructor
 @Slf4j
 public class TestDataService implements CommandLineRunner {
@@ -26,6 +28,7 @@ public class TestDataService implements CommandLineRunner {
     private final SubcategoryRepository subcategoryRepository;
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
@@ -132,7 +135,7 @@ public class TestDataService implements CommandLineRunner {
         user.setUserName(userName);
         user.setLastName(lastName);
         user.setEmail(email);
-        user.setPassword(password); // En producción esto debería estar hasheado
+        user.setPassword(passwordEncoder.encode(password)); // Hashear la contraseña
         user.setRole(role);
         user.setActive(isActive);
         // createdAt y updatedAt se establecen automáticamente con @PrePersist
