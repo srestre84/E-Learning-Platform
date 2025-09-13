@@ -75,7 +75,7 @@ export default function CoursesPage() {
       ...prev,
       [filterName]: value
     }));
-    setCurrentPage(1); // Reset to first page when filters change
+    setCurrentPage(1); // 
   };
 
   const clearFilters = () => {
