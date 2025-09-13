@@ -23,7 +23,7 @@ export default function RoleBasedRedirect() {
   const currentPath = location.pathname;
 
   // Profesor: cualquier ruta que comience con /teacher es considerada válida
-  if (user.role === 'teacher') {
+  if (user.role === 'INSTRUCTOR' || user.role === 'teacher') {
     const isTeacherPath = currentPath.startsWith('/teacher');
     if (!isTeacherPath) {
       return <Navigate to="/teacher/dashboard" replace />;
@@ -31,7 +31,7 @@ export default function RoleBasedRedirect() {
   }
 
   // Admin: redirigir a /admin si no está ya en una ruta de admin
-  if (user.role === 'admin') {
+  if (user.role === 'ADMIN' || user.role === 'admin') {
     const isAdminPath = currentPath.startsWith('/admin');
     if (!isAdminPath) {
       return <Navigate to="/admin" replace />;
@@ -40,7 +40,7 @@ export default function RoleBasedRedirect() {
   }
 
   // Estudiante: cualquier ruta que comience con /student es considerada válida
-  if (user.role === 'student') {
+  if (user.role === 'STUDENT' || user.role === 'student') {
     const isStudentPath = (
       currentPath.startsWith('/dashboard') ||
       currentPath.startsWith('/mis-cursos') ||

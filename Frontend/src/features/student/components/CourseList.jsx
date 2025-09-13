@@ -1,4 +1,4 @@
-import { Button } from "@/ui/button";
+import { Button } from "@/ui/Button";
 import { Progress } from "@/ui/progress";
 import { Play, Star, Star as StarFilled } from "lucide-react";
 import { Badge } from "@/ui/badge";

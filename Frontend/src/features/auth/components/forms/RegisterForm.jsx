@@ -110,12 +110,22 @@ export default function RegisterForm() {
       });
 
       if (result && result.success) {
-        toast.success('¡Registro exitoso! Ya puedes iniciar sesión.');
+        toast.success('¡Registro exitoso! Bienvenido a EduPlatform.');
 
-        // Redirigir a la página de inicio de sesión
-        setTimeout(() => {
-          navigate('/auth', { state: { from: 'register' } });
-        }, 3000);
+        // Si hay auto-login, redirigir al dashboard según el rol
+        if (result.autoLogin) {
+          const role = roleMap[formData.accountType] || 'STUDENT';
+          const redirectPath = role === 'INSTRUCTOR' ? '/teacher/dashboard' : '/dashboard';
+          
+          setTimeout(() => {
+            navigate(redirectPath, { replace: true });
+          }, 1500);
+        } else {
+          // Si no hay auto-login, redirigir al login
+          setTimeout(() => {
+            navigate('/authentication/login', { state: { from: 'register' } });
+          }, 1500);
+        }
       } else {
         throw new Error(result.error || 'Error desconocido al registrar');
       }

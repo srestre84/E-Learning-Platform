@@ -33,7 +33,7 @@ const privateRoutes = [
   // Rutas de estudiante
   {
     element: (
-      <ProtectedRoute allowedRoles={['student']}>
+      <ProtectedRoute allowedRoles={['STUDENT', 'student']}>
         <AppLayout />
       </ProtectedRoute>
     ),
@@ -72,7 +72,7 @@ const privateRoutes = [
   {
     path: "/teacher/*",
     element: (
-      <ProtectedRoute allowedRoles={['teacher']}>
+      <ProtectedRoute allowedRoles={['INSTRUCTOR', 'teacher']}>
         <Navigate to="/teacher/dashboard" replace />
       </ProtectedRoute>
     )

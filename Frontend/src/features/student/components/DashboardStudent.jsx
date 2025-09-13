@@ -6,7 +6,7 @@ import { Button } from "@/ui/Button";
 import { Progress } from "@/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
-import { Input } from "@/ui/input";
+import { Input } from "@/ui/Input";
 import { Tabs, TabsList, TabsTrigger } from "@/ui/tabs";
 import { Skeleton } from "@/ui/skeleton";
 import { Search, BookOpen, Star, Star as StarFilled, Clock, Bell, ChevronRight } from "lucide-react";

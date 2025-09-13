@@ -134,11 +134,25 @@ export const AuthProvider = ({ children, onLogout }) => {
         role: userData.role || 'STUDENT'
       });
 
-      if (response) return { success: true, data: response };
+      // authService.register() hace auto-login, así que response ya contiene datos del usuario
+      if (response && response.id) {
+        // Establecer el usuario como autenticado
+        setUser(response);
+        
+        // Actualizar headers de axios
+        const token = authService.getToken();
+        if (token) {
+          const api = (await import('@/services/api')).default;
+          api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        }
+        
+        return { success: true, data: response, autoLogin: true };
+      }
+      
       return { success: false, error: 'No se pudo completar el registro' };
     } catch (error) {
       console.error('Error de registro:', error);
-      const errorMessage = 'Error al registrar el usuario';
+      const errorMessage = error.message || 'Error al registrar el usuario';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
