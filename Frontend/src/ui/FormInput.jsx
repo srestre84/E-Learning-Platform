@@ -15,7 +15,7 @@ const FormInput = forwardRef(({
 }, ref) => {
   const [showPassword, setShowPassword] = useState(false);
 
-  // Si es password, se cambia el tipo dinámicamente
+  // Cambiar dinámicamente el tipo de input para contraseñas
   const inputType = type === "password" && showPassword ? "text" : type;
 
   return (
