@@ -1,4 +1,4 @@
-import api, { setupAuthInterceptor } from "./api";
+import { setupAuthInterceptor } from "./authInterceptor";
 
 /**
  * Verifica si el usuario está autenticado
