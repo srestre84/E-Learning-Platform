@@ -42,13 +42,7 @@ export default function ErrorPage() {
             <RefreshCw className="mr-2 h-4 w-4" />
             Recargar página
           </Button>
-          <Button 
-            onClick={() => navigate('/')}
-            className="w-full sm:w-auto"
-          >
-            <Home className="mr-2 h-4 w-4" />
-            Volver al inicio
-          </Button>
+         
         </div>
       </div>
     </div>
