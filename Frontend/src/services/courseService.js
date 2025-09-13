@@ -1,6 +1,35 @@
 import api from './api';
 
+const createCourse = async (courseData) => {
+  try {
+    const response = await api.post('/courses', courseData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'No se pudo crear el curso. Por favor, inténtalo de nuevo.');
+  }
+};
+
+const updateCourse = async (id, courseData) => {
+  try {
+    const response = await api.put(`/courses/${id}`, courseData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'No se pudo actualizar el curso. Por favor, inténtalo de nuevo.');
+  }
+};
+
 const courseService = {
+
+  
+
   /**
    * Obtiene la lista de cursos con opciones de filtrado
    * @param {Object} filters - Filtros opcionales (search, category, level, etc.)
@@ -23,13 +52,16 @@ const courseService = {
    */
   async getCourseById(courseId) {
     try {
-      const response = await api.get(`/api/courses/${courseId}`);
+      const response = await api.get(`/courses/${courseId}`);
       return response.data;
     } catch (error) {
-      console.error(`Error al obtener los detalles del curso (ID: ${courseId}):`, error.message);
-      throw error;
+      console.error(`Error al obtener los detalles del curso (ID: ${courseId}):`, error);
+      throw new Error(error.response?.data?.message || 'No se pudo cargar el curso. Por favor, inténtalo de nuevo.');
     }
   },
+  
+  createCourse,
+  updateCourse,
 
   /**
    * Obtiene las categorías de cursos disponibles
@@ -76,4 +108,7 @@ const courseService = {
   },
 };
 
-export default courseService;
+export default {
+  courseService,
+  createCourse
+};
