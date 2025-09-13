@@ -32,49 +32,55 @@ export default function StudentProfileEditor() {
 
 
   //Utilizamos un useEffect para poder cargar los datos del usuario autenticado
-  useEffect(() => {
-    const loadProfile = async () => {
-      console.log('Loading profile for user:', user);
-      
-      if (!user) {
-        console.log('No user found in context');
-        setBanner({ type: 'error', message: 'No hay usuario autenticado' });
-        setLoading(false);
-        return;
-      }
-      
-      try {
-        setLoading(true);
-        setBanner({ type: '', message: '' }); // Limpiar errores previos
-        
-        const profile = await mockAuthService.getProfile();
-        console.log('Profile loaded from service:', profile);
-        
-        const profileData = {
-          userName: profile.name || '',
-          lastName: profile.lastName || '',
-          email: profile.email || '',
-          password: '', // No mostrar contraseña por seguridad
-          occupation: profile.occupation || '',
-          avatar: profile.avatar || '',
-        };
-        
-        console.log('Mapped profile data:', profileData);
-        setUserData(profileData);
-        setInitialData(profileData);
-      } catch (e) {
-        console.error('Error loading profile:', e);
-        setBanner({ 
-          type: 'error', 
-          message: e?.response?.data?.message || 'No se pudo cargar el perfil. Verifica que estés autenticado correctamente.' 
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+
+  const loadProfile = async () => {
+    console.log("Loading profile for user:", user);
+  
+    if (!user) {
+      console.log("No user found in context");
+      setBanner({ type: "error", message: "No hay usuario autenticado" });
+      setLoading(false);
+      return;
+    }
+  
+    try {
+      setLoading(true);
+      setBanner({ type: "", message: "" }); // Limpiar errores previos
+  
+      const response = await api.get("/users/profile");
+      console.log("Profile loaded from service:", response.data);
+  
+      // Mapeamos los datos de la API a nuestro state
+      const profileData = {
+        id: response.data.id,
+        userName: response.data.userName,
+        lastName: response.data.lastName,
+        email: response.data.email,
+        role: response.data.role,
+        isActive: response.data.isActive,
+      };
+  
+      setProfile(profileData);
+      console.log("Mapped profile data:", profileData);
+  
+      // Si tienes otros states relacionados
+      setUserData(profileData);
+      setInitialData(profileData);
+  
+    } catch (e) {
+      console.error("Error loading profile:", e);
+      setBanner({
+        type: "error",
+        message:
+          e?.response?.data?.message ||
+          "No se pudo cargar el perfil. Verifica que estés autenticado correctamente.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
     
-    loadProfile();
-  }, [user]);
 
   //Se agregan una funcion de para manejar los cambios en los formularios
 
