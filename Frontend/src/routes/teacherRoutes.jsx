@@ -1,124 +1,185 @@
 import { lazy, Suspense } from 'react';
-import { Navigate } from 'react-router-dom';
-import TeacherRoute from '@/interfaces/routing/guards/TeacherRoute';
-import TeacherDashboard from '@/features/teacher/components/TeacherDashboard';
-import TeacherDashboardHome from '@/features/teacher/components/TeacherDashboardHome';
-import TeacherAnalytics from '@/features/teacher/components/TeacherAnalytics';
-import TeacherMessages from '@/features/teacher/components/TeacherMessages';
-import TeacherSettings from '@/features/teacher/components/TeacherSettings';
-import VideoProductionGuide from '@/features/teacher/components/VideoProductionGuide';
+import { Navigate, Outlet } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import ErrorBoundary from '@/ui/common/ErrorBoundary';
 import AppLayout from '@/ui/layout/AppLayout';
 import ProtectedRoute from '@/interfaces/routing/guards/ProtectedRoute';
-import { Box, CircularProgress } from '@mui/material';
 
-// Componentes lazy
-const Courses = lazy(() => import('@/features/teacher/components/Courses'));
+// Lazy load all teacher components
+const TeacherDashboard = lazy(() => import('@/features/teacher/components/TeacherDashboard'));
+const TeacherDashboardHome = lazy(() => import('@/features/teacher/components/TeacherDashboardHome'));
+const AnalyticsDashboard = lazy(() => import('@/features/teacher/components/AnalyticsDashboard'));
+const TeacherMessages = lazy(() => import('@/features/teacher/components/TeacherMessages'));
 
-const Students = lazy(() => import('@/features/teacher/components/Students'));
-const Analytics = lazy(() => import('@/features/teacher/components/Analytics'));
-const CourseDetail = lazy(() => import('@/features/teacher/components/CourseDetail'));
+const VideoProductionGuide = lazy(() => import('@/features/teacher/components/VideoProductionGuide'));
 const TeacherCourses = lazy(() => import('@/features/teacher/components/TeacherCourses'));
 const CreateCourse = lazy(() => import('@/features/teacher/components/CreateCourse'));
 const EditCourse = lazy(() => import('@/features/teacher/components/EditCourse'));
-const TeacherStudents = lazy(() => import('@/features/teacher/components/TeacherStudents'));
-const Profile = lazy(() => import('@/features/student/components/StudentProfileEditor'));
+//importamo el componete para ver los estudiante inscritos en un curso
+const TeacherStudents = lazy(() => import('@/features/teacher/components/TeacherStudentsComponent'));
 
-// Componente de carga
+const CourseDetail = lazy(() => import('@/features/teacher/components/CourseDetail'));
+
+const TeacherProfile = lazy(() => import('@/features/teacher/components/TeacherProfileEditor'));
+const TeacherSettings = lazy(() => import('@/features/teacher/components/TeacherSettings'));
+
+// Loading component with consistent styling
 const LoadingFallback = () => (
-  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-    <CircularProgress />
-  </Box>
+  <div className="flex items-center justify-center min-h-[60vh]">
+    <div className="flex flex-col items-center gap-4">
+      <Loader2 className="h-10 w-10 animate-spin text-red-500" />
+      <p className="text-gray-600">Cargando contenido...</p>
+    </div>
+  </div>
+);
+
+// Error fallback component
+const ErrorFallback = ({ error, resetErrorBoundary }) => (
+  <div className="p-6 max-w-2xl mx-auto text-center">
+    <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+      <h3 className="text-lg font-medium text-red-800 mb-2">¡Algo salió mal!</h3>
+      <p className="text-red-600 mb-4">{error.message}</p>
+      <button
+        onClick={resetErrorBoundary}
+        className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+      >
+        Reintentar
+      </button>
+    </div>
+  </div>
+);
+
+// Wrapper component for lazy loading with error boundary and suspense
+const LazyComponent = ({ component: Component, ...props }) => (
+  <ErrorBoundary fallback={ErrorFallback}>
+    <Suspense fallback={<LoadingFallback />}>
+      <Component {...props} />
+    </Suspense>
+  </ErrorBoundary>
 );
 
 const teacherRoutes = [
   {
     element: (
-      <ProtectedRoute allowedRoles={['teacher']}>
+      <ProtectedRoute allowedRoles={['teacher', 'instructor']}>
         <AppLayout />
       </ProtectedRoute>
     ),
     children: [
       {
         path: '/teacher',
-        element: (
-          <TeacherRoute>
-            <TeacherDashboard />
-          </TeacherRoute>
-        ),
+        element: <Outlet />,
         children: [
           {
             index: true,
-            element: <Navigate to="dashboard" replace />,
+            element: <Navigate to="dashboard" replace />
           },
           {
             path: 'dashboard',
-            element: <TeacherDashboardHome />,
-          },
-          {
-            path: 'courses',
+            element: <LazyComponent component={TeacherDashboard} />,
             children: [
               {
                 index: true,
-                element: <TeacherCourses />,
-              },
-              {
-                path: 'new',
-                element: (
-                  <ErrorBoundary>
-                    <Suspense fallback={<LoadingFallback />}>
-                      <CreateCourse />
-                    </Suspense>
-                  </ErrorBoundary>
-                ),
-              },
-              {
-                path: ':id',
-                element: <CourseDetail />,
-              },
-              {
-                path: ':id/edit',
-                element: <EditCourse />,
-              },
-            ],
-          },
-          {
-            path: 'students',
-            children: [
-              {
-                index: true,
-                element: <Students />,
-              },
-              {
-                path: ':courseId',
-                element: <TeacherStudents />,
-              },
-            ],
-          },
-          {
-            path: 'analytics',
-            element: <TeacherAnalytics />,
-          },
-          {
-            path: 'messages',
-            element: <TeacherMessages />,
+                element: <LazyComponent component={TeacherDashboardHome} />
+              }
+            ]
           },
           {
             path: 'profile',
-            element: <Profile />,
+            element: <LazyComponent component={TeacherDashboard} />,
+            children: [
+              {
+                index: true,
+                element: <LazyComponent component={TeacherProfile} />
+              }
+            ]
+          },
+          {
+            path: 'courses',
+            element: <LazyComponent component={TeacherDashboard} />,
+            children: [
+              {
+                index: true,
+                element: <LazyComponent component={TeacherCourses} />
+              },
+              {
+                path: 'new',
+                element: <LazyComponent component={CreateCourse} />
+              },
+              {
+                path: ':id',
+                element: <LazyComponent component={CourseDetail} />,
+                children: [
+                  {
+                    path: 'edit',
+                    element: <LazyComponent component={EditCourse} />
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            path: 'students',
+            element: <LazyComponent component={TeacherDashboard} />,
+            children: [
+              {
+                index: true,
+                element: <LazyComponent component={TeacherStudents} />
+              },
+              {
+                path: ':courseId',
+                element: <LazyComponent component={TeacherStudents} />
+              }
+            ]
+          },
+          {
+            path: 'analytics',
+            element: <LazyComponent component={TeacherDashboard} />,
+            children: [
+              {
+                index: true,
+                element: <LazyComponent component={AnalyticsDashboard} />
+              }
+            ]
+          },
+          {
+            path: 'messages',
+            element: <LazyComponent component={TeacherDashboard} />,
+            children: [
+              {
+                index: true,
+                element: <LazyComponent component={TeacherMessages} />
+              }
+            ]
           },
           {
             path: 'settings',
-            element: <TeacherSettings />,
+            element: <LazyComponent component={TeacherDashboard} />,
+            children: [
+              {
+                index: true,
+                element: <LazyComponent component={TeacherSettings} />
+              }
+            ]
           },
           {
             path: 'video-guide',
-            element: <VideoProductionGuide />,
+            element: <LazyComponent component={TeacherDashboard} />,
+            children: [
+              {
+                index: true,
+                element: <LazyComponent component={VideoProductionGuide} />
+              }
+            ]
           },
-        ],
-      },
-    ],
-  },
+          {
+            path: '*',
+            element: <Navigate to="/teacher/dashboard" replace />
+          }
+        ]
+      }
+    ]
+  }
 ];
 
-export default teacherRoutes;
+export default teacherRoutes;   
