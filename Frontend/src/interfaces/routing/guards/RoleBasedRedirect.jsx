@@ -1,17 +1,28 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import useAuth from '@/shared/hooks/useAuth';
+import { useAuth } from '@/shared/hooks/useAuth';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function RoleBasedRedirect() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const location = useLocation();
 
+  // Si está cargando, mostramos un spinner
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  // Si no hay usuario, redirigir al login
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   const currentPath = location.pathname;
 
-  // Teacher: any /teacher path is considered valid
+  // Profesor: cualquier ruta que comience con /teacher es considerada válida
   if (user.role === 'teacher') {
     const isTeacherPath = currentPath.startsWith('/teacher');
     if (!isTeacherPath) {
@@ -19,7 +30,16 @@ export default function RoleBasedRedirect() {
     }
   }
 
-  // Student: allow only known student paths
+  // Admin: redirigir a /admin si no está ya en una ruta de admin
+  if (user.role === 'admin') {
+    const isAdminPath = currentPath.startsWith('/admin');
+    if (!isAdminPath) {
+      return <Navigate to="/admin" replace />;
+    }
+    return null; // Ya está en una ruta de admin
+  }
+
+  // Estudiante: cualquier ruta que comience con /student es considerada válida
   if (user.role === 'student') {
     const isStudentPath = (
       currentPath.startsWith('/dashboard') ||
@@ -33,6 +53,6 @@ export default function RoleBasedRedirect() {
     }
   }
 
-  // Already on a valid path for the role
+  // Usuario ya está en una ruta válida para su rol
   return null;
 }
