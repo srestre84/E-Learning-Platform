@@ -2,7 +2,7 @@
 import React, { createContext, useState, useEffect, useCallback, useContext } from "react";
 import { ROLE_PERMISSIONS } from "@/shared/constants/roles";
 import authService from "@/services/authService";
-import { setupResponseInterceptors } from "@/services/api";
+import { setupResponseInterceptors } from "@/services/authInterceptor";
 
 export const AuthContext = createContext();
 
