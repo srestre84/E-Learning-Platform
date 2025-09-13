@@ -1,5 +1,4 @@
-import api from "./api";
-//import { getUser as getStoredUser, setUser, removeUser } from './authStorage';
+import api from './api';
 
 /**
  * Obtiene los datos del usuario actualmente autenticado
@@ -8,19 +7,11 @@ import api from "./api";
  */
 const getCurrentUser = async (forceRefresh = false) => {
   try {
-    if (!forceRefresh) {
-      // Primero intentamos obtener los datos del almacenamiento local
-      const userData = getStoredUser();
-      if (userData) {
-        return userData;
-      }
-    }
-
-    // Si se fuerza la actualización o no hay datos locales, los solicitamos al servidor
+    // Llamada relativa, para que el proxy de Vite funcione
     const response = await api.get('/api/users/profile');
-    
-    if (response.data) {
-      const userData = {
+
+    if (response?.data) {
+      return {
         id: response.data.id,
         userName: response.data.userName,
         lastName: response.data.lastName,
@@ -31,17 +22,13 @@ const getCurrentUser = async (forceRefresh = false) => {
         createdAt: response.data.createdAt,
         updatedAt: response.data.updatedAt
       };
-      
-      setUser(userData);
-      return userData;
     }
+
+    throw { message: 'No se recibieron datos del usuario' };
   } catch (error) {
-    console.error('Error al cargar el perfil del usuario:', error.message);
-    if (error.response?.status === 401) {
-      // Token inválido o expirado
-      removeUser();
-    }
-    throw error.response?.data || { message: 'Error al obtener el perfil del usuario' };
+    const message = error?.response?.data?.message || error?.message || 'Error al obtener el perfil del usuario';
+    console.error('Error al cargar el perfil del usuario:', message);
+    throw { message };
   }
 };
 
@@ -58,9 +45,9 @@ const updateProfile = async (userData) => {
       email: userData.email,
       profileImageUrl: userData.profileImageUrl
     });
-    
-    if (response.data) {
-      const updatedUser = {
+
+    if (response?.data) {
+      return {
         id: response.data.id,
         userName: response.data.userName,
         lastName: response.data.lastName,
@@ -71,13 +58,13 @@ const updateProfile = async (userData) => {
         createdAt: response.data.createdAt,
         updatedAt: response.data.updatedAt
       };
-      
-      setUser(updatedUser);
-      return updatedUser;
     }
+
+    throw { message: 'No se pudieron actualizar los datos del usuario' };
   } catch (error) {
-    console.error('Error al guardar los cambios del perfil:', error.message);
-    throw error.response?.data || { message: 'Error al actualizar el perfil' };
+    const message = error?.response?.data?.message || error?.message || 'Error al actualizar el perfil';
+    console.error('Error al guardar los cambios del perfil:', message);
+    throw { message };
   }
 };
 
@@ -89,17 +76,12 @@ const updateProfile = async (userData) => {
  */
 const updatePassword = async ({ currentPassword, newPassword }) => {
   try {
-    const response = await api.put('/api/users/me/password', {
-      currentPassword,
-      newPassword
-    });
-    
+    await api.put('/api/users/me/password', { currentPassword, newPassword });
     return { success: true, message: 'Contraseña actualizada correctamente' };
   } catch (error) {
-    console.error('Error al actualizar la contraseña:', error.message);
-    throw error.response?.data || { 
-      message: error.response?.data?.message || 'Error al actualizar la contraseña' 
-    };
+    const message = error?.response?.data?.message || error?.message || 'Error al actualizar la contraseña';
+    console.error('Error al actualizar la contraseña:', message);
+    throw { message };
   }
 };
 
