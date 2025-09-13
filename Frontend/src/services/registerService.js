@@ -30,8 +30,8 @@ const register = async ({ userName, firstName, lastName, email, password, role =
     
     console.log('Enviando datos de registro...');
     
-    // Usar la ruta completa incluyendo el prefijo /api
-    const response = await api.post('/api/auth/register', userData, {
+    // Usar la ruta correcta del backend según API.md
+    const response = await api.post('/api/users/register', userData, {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'

@@ -1,5 +1,10 @@
 import api from "./api";
-//import { setToken, setUser } from './authStorage';
+import { setToken, clearAuth } from "./api";
+
+// Función helper para setUser
+const setUser = (userData) => {
+    localStorage.setItem('user', JSON.stringify(userData));
+};
 
 // Configuración común para las peticiones de autenticación
 const authConfig = {
@@ -81,9 +86,7 @@ export async function login({ email, password }) {
         }
 
         // Clear any partial authentication state
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        delete api.defaults.headers.common['Authorization'];
+        clearAuth();
 
         throw new Error(errorMessage);
     }

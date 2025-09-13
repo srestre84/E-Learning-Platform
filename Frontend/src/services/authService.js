@@ -1,3 +1,4 @@
+import api from "./api";
 import { setupAuthInterceptor } from "./authInterceptor";
 
 /**
@@ -22,7 +23,7 @@ const isAuthenticated = () => {
  */
 const register = async ({ firstName, lastName, email, password, role = 'STUDENT' }) => {
   try {
-    const response = await api.post('/users/register', {
+    const response = await api.post('/api/users/register', {
       userName: firstName,
       lastName,
       email,
@@ -96,7 +97,7 @@ const logout = () => {
   localStorage.removeItem('user');
   
   // Redirigir al login
-  if (window.location.pathname !== '/auth') {
+  if (window.location.pathname !== '/authentication/login' && window.location.pathname !== '/auth') {
     window.location.href = '/auth';
   }
 };
@@ -114,7 +115,7 @@ const getCurrentUser = async () => {
     }
 
     // Si no hay datos en localStorage, los solicitamos al servidor
-    const response = await api.get('/users/profile');
+    const response = await api.get('/api/users/profile');
     
     if (response.data) {
       // Guardamos los datos en localStorage para futuras solicitudes
@@ -132,18 +133,18 @@ const getCurrentUser = async () => {
 
 /**
  * Valida si el token actual es válido
- * @returns {Promise<boolean>} true si el token es válido, false en caso contrario
+ * @returns {Promise<Object>} {valid: boolean, username?: string}
  */
 const validateToken = async () => {
   const token = localStorage.getItem('token');
-  if (!token) return false;
+  if (!token) return { valid: false };
 
   try {
     // Verificar formato básico del token
     const tokenParts = token.split('.');
     if (tokenParts.length !== 3) {
       logout();
-      return false;
+      return { valid: false };
     }
 
     // Verificar expiración local
@@ -151,21 +152,21 @@ const validateToken = async () => {
       const tokenData = JSON.parse(atob(tokenParts[1]));
       if (tokenData.exp && tokenData.exp * 1000 < Date.now()) {
         logout();
-        return false;
+        return { valid: false };
       }
     } catch (e) {
       // Si hay un error al decodificar, consideramos el token inválido
       logout();
-      return false;
+      return { valid: false };
     }
 
-    // Validar con el servidor
-    const response = await api.get('/auth/validate');
-    return response.data?.valid || false;
+    // Validar con el servidor usando query parameter según API.md
+    const response = await api.get(`/auth/validate?token=${token}`);
+    return response.data || { valid: false };
   } catch (error) {
     // Si hay un error en la validación, cerramos sesión
     logout();
-    return false;
+    return { valid: false };
   }
 };
 
@@ -178,11 +179,8 @@ const verifyToken = async (token) => {
   try {
     if (!token) return false;
     
-    const response = await api.get('/auth/validate', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
+    // Enviar token como query parameter según documentación API.md
+    const response = await api.get(`/auth/validate?token=${token}`);
     
     return response.data?.valid || false;
   } catch (error) {
@@ -197,7 +195,7 @@ const verifyToken = async (token) => {
  */
 const updateProfile = async (userData) => {
   try {
-    const response = await api.put('/users/profile', userData);
+    const response = await api.put('/api/users/profile', userData);
     
     // Actualizar datos del usuario en localStorage
     if (response.data) {

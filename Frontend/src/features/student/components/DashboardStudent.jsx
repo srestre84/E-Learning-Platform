@@ -2,7 +2,7 @@
 
 import React, { lazy, Suspense, useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/ui/card";
-import { Button } from "@/ui/button";
+import { Button } from "@/ui/Button";
 import { Progress } from "@/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";

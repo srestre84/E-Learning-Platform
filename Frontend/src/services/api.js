@@ -2,9 +2,9 @@
 import axios from "axios";
 
 // 🌐 Base URL según el entorno
-const API_URL = import.meta.env.API_URL
-  ? "/api" // Proxy en desarrollo
-  : import.meta.env.VITE_API_URL; // IP pública en producción
+const API_URL = import.meta.env.DEV 
+  ? "" // En desarrollo usar proxy de Vite (vite.config.js maneja /api y /auth)
+  : import.meta.env.VITE_API_URL; // En producción usar la URL completa
 
 // ✅ Crear instancia de Axios
 const api = axios.create({
@@ -60,11 +60,7 @@ api.interceptors.response.use(
     // 🌐 Error de red
     if (error.code === "ERR_NETWORK") {
       return Promise.reject(
-        {
-          message: errorMessage,
-          status,
-          data,
-        }
+        new Error("No se pudo conectar con el servidor. Verifica tu conexión a internet.")
       );
     }
 

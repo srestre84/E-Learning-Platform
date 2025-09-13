@@ -45,9 +45,9 @@ export const AuthProvider = ({ children, onLogout }) => {
         }
 
         // Validar token con servidor usando la función optimizada
-        const { isValid } = await authService.validateToken(token);
+        const response = await authService.validateToken(token);
 
-        if (!isValid) {
+        if (!response || !response.valid) {
           console.log('Token inválido según el servidor, cerrando sesión...');
           authService.logout();
           setUser(null);
@@ -105,7 +105,7 @@ export const AuthProvider = ({ children, onLogout }) => {
       setUser(null);
       setError(null);
 
-      let redirectTo = '/authentication/login';
+      let redirectTo = '/auth';
       if (options.redirectTo) redirectTo = options.redirectTo;
       else if (onLogoutCallback) {
         const result = onLogoutCallback();
