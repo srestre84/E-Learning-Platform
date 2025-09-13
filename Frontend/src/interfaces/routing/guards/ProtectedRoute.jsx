@@ -1,71 +1,72 @@
-import { useState, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/shared/hooks/useAuth'; // <- named import
+import { useAuth } from '@/shared/hooks/useAuth';
+import { Loader2 } from 'lucide-react';
 
-const ProtectedRoute = ({ children, allowedRoles = ['student', 'teacher', 'admin'] }) => {
+const ProtectedRoute = ({ 
+  children, 
+  allowedRoles = ['student', 'teacher', 'instructor', 'admin'] 
+}) => {
   const { isAuthenticated, user, loading, error: authError } = useAuth();
   const location = useLocation();
-  const [isLoading, setIsLoading] = useState(loading);
-  const [error, setError] = useState(null);
 
-  // Normalización de roles
-  const userRole = (user?.role || 'guest').toLowerCase().trim();
-  const allowedRolesNormalized = allowedRoles.map(r => r.toLowerCase().trim());
+  // Normalize roles (map 'instructor' to 'teacher' for compatibility)
+  const normalizeRole = (role) => {
+    if (!role) return 'guest';
+    const normalized = role.toString().toLowerCase().trim();
+    return normalized === 'instructor' ? 'teacher' : normalized;
+  };
+  
+  const userRole = normalizeRole(user?.role);
+  const allowedRolesNormalized = allowedRoles.map(r => normalizeRole(r));
   const hasRequiredRole = allowedRolesNormalized.includes(userRole);
 
-  // Debug
-  //console.log('ProtectedRoute check:', {
-  //  location: location.pathname,
-  //  userRole,
-  //  allowedRolesNormalized,
-  //  hasRequiredRole,
-  //  isAuthenticated
-  //});
-
-  useEffect(() => {
-    setIsLoading(loading);
-    if (authError) {
-      setError('Error al verificar la autenticación. ' + (authError.message || ''));
-      setIsLoading(false);
-    }
-  }, [loading, authError]);
-
-  // Mostrar mensaje de error si existe
-  if (error) {
+  // Loading state
+  if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <div className="text-red-500 mb-4">{error}</div>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Reintentar
-        </button>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-red-500" />
+          <p className="text-gray-600">Verificando autenticación...</p>
+        </div>
       </div>
     );
   }
 
-  // Mostrar carga mientras se verifica la autenticación
-  if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Cargando...</div>;
+  // Authentication error
+  if (authError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
+        <div className="max-w-md w-full bg-white p-6 rounded-lg shadow-md text-center">
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Error de autenticación</h2>
+          <p className="text-red-500 mb-6">{authError.message || 'No se pudo verificar la sesión'}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
   }
 
-  // Redirigir si no está autenticado
+  // Not authenticated
   if (!isAuthenticated) {
-    return <Navigate to="/authtentication" state={{ from: location }} replace />;
+    return <Navigate to="/authentication/login" state={{ from: location }} replace />;
   }
 
-  // Redirigir si no tiene el rol adecuado
+  // Check role permissions
   if (!hasRequiredRole) {
-    //console.warn(
-    //  `Acceso denegado: El usuario (${userRole}) no tiene permiso para acceder a ${location.pathname}. Roles permitidos: ${allowedRoles.join(
-    //    ', '
-    //  )}`
-    //);
+    console.warn(`Acceso denegado: El usuario con rol ${user?.role} no tiene permiso para acceder a esta ruta`);
+    
+    // Redirect based on user role
+    if (userRole === 'student') return <Navigate to="/dashboard" replace />;
+    if (userRole === 'teacher' || userRole === 'instructor') {
+      return <Navigate to="/teacher/dashboard" replace />;
+    }
     return <Navigate to="/no-autorizado" replace />;
   }
 
-  // Si todo está bien, mostrar el contenido
   return children;
 };
 
