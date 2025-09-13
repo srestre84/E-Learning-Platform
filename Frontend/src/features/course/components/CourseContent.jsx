@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button } from '@/ui/button';
+import { Button } from '@/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/ui/card';
 import { Progress } from '@/ui/progress';
 import { ChevronDown, ChevronRight, CheckCircle, Play, Clock, Award, BookOpen } from 'lucide-react';
