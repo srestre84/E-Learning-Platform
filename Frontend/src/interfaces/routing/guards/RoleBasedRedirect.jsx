@@ -1,10 +1,21 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import {useAuth} from '@/shared/hooks/useAuth';
+import { useAuth } from '@/shared/hooks/useAuth';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function RoleBasedRedirect() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const location = useLocation();
 
+  // Si está cargando, mostramos un spinner
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  // Si no hay usuario, redirigir al login
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
