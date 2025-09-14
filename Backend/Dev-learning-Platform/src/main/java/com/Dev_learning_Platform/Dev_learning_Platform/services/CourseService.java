@@ -1,10 +1,12 @@
 package com.Dev_learning_Platform.Dev_learning_Platform.services;
 
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import com.Dev_learning_Platform.Dev_learning_Platform.dtos.CourseCreateDto;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Category;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Course;
@@ -13,6 +15,7 @@ import com.Dev_learning_Platform.Dev_learning_Platform.models.Subcategory;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.User;
 import com.Dev_learning_Platform.Dev_learning_Platform.repositories.CourseRepository;
 import com.Dev_learning_Platform.Dev_learning_Platform.repositories.EnrollmentRepository;
+
 import lombok.RequiredArgsConstructor;
 
 
@@ -67,7 +70,7 @@ public class CourseService {
 
     public List<Course> getCoursesByInstructor(Long instructorId) {
         User instructor = userService.findById(instructorId);
-        return courseRepository.findByInstructor(instructor);
+        return courseRepository.findByInstructorAndIsActive(instructor, true);
     }
 
     public List<Course> getAllActiveCourses() {
@@ -299,5 +302,20 @@ public class CourseService {
         }
 
         courseRepository.delete(course);
+    }
+
+    @Transactional
+    public Course togglePublishStatus(Long courseId) {
+        Course course = findById(courseId);
+        
+        User authenticatedUser = userService.getAuthenticatedUser();
+        boolean isAdmin = authenticatedUser.getRole() == User.Role.ADMIN;
+        boolean isOwner = course.getInstructor().getId().equals(authenticatedUser.getId());
+        if (!isAdmin && !isOwner) {
+            throw new AccessDeniedException("No tienes permisos para modificar este curso.");
+        }
+        
+        course.setIsPublished(!course.getIsPublished());
+        return courseRepository.save(course);
     }
 }
