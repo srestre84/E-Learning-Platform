@@ -2,9 +2,9 @@ name: Java CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ develop ]
 
 jobs:
   build:
@@ -51,7 +51,8 @@ jobs:
           cd /home/opc/Git-Repository/E-Learning-Platform/Backend/Dev-learning-Platform
           
           echo "=== Haciendo git pull ==="
-          git pull origin main
+          git switch develop
+          git pull origin develop
           
           echo "=== Ejecutando tests en producción ==="
           ./mvnw test -Dspring.profiles.active=prod -q
