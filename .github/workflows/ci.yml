@@ -71,6 +71,20 @@ jobs:
 
             echo "=== Verificando despliegue ==="
             sleep 15
+
+            max_attempts=10
+            attempt=1
+            until curl -sf http://localhost:8080/actuator/health; do
+              echo "Intento $attempt/$max_attempts: Backend aún no disponible..."
+              attempt=$((attempt+1))
+              if [ $attempt -gt $max_attempts ]; then
+                echo "❌ Backend no respondió al health check después de $max_attempts intentos."
+                sudo journalctl -u elearning-backend --no-pager -l -n 20
+                exit 1
+              fi
+              sleep 5
+            done
+            echo "✅ Despliegue exitoso y health check OK"
             
             if sudo systemctl is-active --quiet elearning-backend; then
               echo "✅ Despliegue exitoso"
