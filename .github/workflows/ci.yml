@@ -57,12 +57,18 @@ jobs:
           ./mvnw test -Dspring.profiles.active=prod -q
           
           if [ $? -eq 0 ]; then
-            echo "=== Tests exitosos, construyendo aplicación ==="
-            ./mvnw clean package -Dspring.profiles.active=prod -DskipTests -q
-            
-            echo "=== Reiniciando servicio ==="
-            sudo systemctl restart elearning-backend
-            
+            echo "=== Tests exitosos, deteniendo servicio para construcción ==="
+            sudo systemctl stop elearning-backend
+
+            echo "=== Construyendo aplicación ==="
+            mvn clean package -Pprod -DskipTests
+
+            echo "=== Reiniciando daemon ==="
+            sudo systemctl daemon-reload
+
+            echo "=== Iniciando servicio ==="
+            sudo systemctl start elearning-backend
+
             echo "=== Verificando despliegue ==="
             sleep 15
             
