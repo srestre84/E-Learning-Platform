@@ -1,8 +1,12 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/api/(.*)",
       "destination": "http://149.130.176.157:8080/api/$1"
+    },
+    {
+      "source": "/auth/(.*)",
+      "destination": "http://149.130.176.157:8080/auth/$1"
     }
   ]
 }
