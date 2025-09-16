@@ -32,7 +32,7 @@ public class Securityconfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
+    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -49,6 +49,9 @@ public class Securityconfig {
                 // ✅ Herramientas de desarrollo
                 .requestMatchers("/h2-console/**").permitAll()      // H2 para desarrollo
                 .requestMatchers("/actuator/health").permitAll()    // Health check
+                
+                // ✅ Testing de Stripe (temporal para desarrollo)
+                .requestMatchers("/api/stripe/**").permitAll()      // Stripe endpoints para testing
 
                 // ✅ Todo lo demás requiere autenticación JWT
                 .anyRequest().authenticated()                       // Resto requiere JWT
