@@ -19,9 +19,9 @@ log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 # Función para verificar si el backend está corriendo
 check_backend() {
-    log_info "Verificando si el backend está corriendo en localhost:8080..."
-    if ! curl -s --max-time 5 "http://localhost:8080/actuator/health" > /dev/null 2>&1; then
-        log_error "Backend no está corriendo en localhost:8080"
+    log_info "Verificando si el backend está corriendo en http://149.130.176.157:8080..."
+    if ! curl -s --max-time 5 "http://149.130.176.157:8080/actuator/health" > /dev/null 2>&1; then
+        log_error "Backend no está corriendo en http://149.130.176.157:8080"
         log_info "Inicia el backend con: ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev"
         exit 1
     fi
@@ -47,7 +47,7 @@ check_backend
 
 # === 1. Obtener todos los cursos públicos ===
 log_info "Paso 1: Obteniendo cursos públicos..."
-COURSES_RESPONSE=$(curl -s -X GET "http://localhost:8080/api/courses" \
+COURSES_RESPONSE=$(curl -s -X GET "http://149.130.176.157:8080/api/courses" \
     -H "Accept: application/json")
 
 if ! validate_json "$COURSES_RESPONSE" "cursos"; then
@@ -71,11 +71,11 @@ fi
 log_success "Curso seleccionado: ID=$COURSE_ID, Título='$COURSE_TITLE', Precio=\$$COURSE_PRICE"
 
 # === 2. Login de usuario ===
-USER_EMAIL="juan@example.com"
+USER_EMAIL="admin2@admin.com"
 USER_PASSWORD="Password123"  # Contraseña estándar para todos los usuarios de prueba
 
 log_info "Paso 2: Iniciando sesión para $USER_EMAIL..."
-LOGIN_RESPONSE=$(curl -s -X POST "http://localhost:8080/auth/login" \
+LOGIN_RESPONSE=$(curl -s -X POST "http://149.130.176.157:8080/auth/login" \
     -H "Content-Type: application/json" \
     -H "Accept: application/json" \
     -d "{\"email\": \"$USER_EMAIL\", \"password\": \"$USER_PASSWORD\"}")
@@ -127,7 +127,7 @@ PAYLOAD=$(jq -n \
 
 log_info "Payload enviado: $PAYLOAD"
 
-STRIPE_RESPONSE=$(curl -s -X POST "http://localhost:8080/api/stripe/create-checkout-session" \
+STRIPE_RESPONSE=$(curl -s -X POST "http://149.130.176.157:8080/api/stripe/create-checkout-session" \
     -H "Content-Type: application/json" \
     -H "Accept: application/json" \
     -H "Authorization: Bearer $TOKEN" \
