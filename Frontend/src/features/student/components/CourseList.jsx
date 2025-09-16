@@ -19,13 +19,12 @@ export default function CourseList({ courses, onToggleFavorite }) {
   };
 
   const handleContinueCourse = (course) => {
-    // Navigate to the course page, which will handle the redirection to the appropriate lesson 
-    // The course page can use the course's progress to determine which lesson to show
+    
     navigate(`/curso/${course.id}`, {
       state: {
         lastAccessed: course.lastAccessed,
         progress: course.progress,
-        lastLessonId: course.lastLessonId // Assuming this is available in your course data
+        lastLessonId: course.lastLessonId 
       }
     });
   };
