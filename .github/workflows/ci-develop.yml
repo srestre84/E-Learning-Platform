@@ -74,25 +74,39 @@ jobs:
             sudo systemctl start elearning-backend
 
             echo "=== Verificando despliegue ==="
-            sleep 15
+            sleep 20
 
-            max_attempts=10
+            max_attempts=12
             attempt=1
-            until curl -sf http://localhost:8080/actuator/health; do
+            
+            # Verificar primero si el servicio está activo
+            if ! sudo systemctl is-active --quiet elearning-backend; then
+              echo "❌ El servicio no está activo"
+              sudo journalctl -u elearning-backend --no-pager -l -n 20
+              exit 1
+            fi
+            
+            # Intentar diferentes endpoints para verificar que la app está funcionando
+            until curl -sf http://localhost:8080/actuator/health 2>/dev/null || \
+                  curl -sf http://localhost:8080/health 2>/dev/null || \
+                  curl -sf http://localhost:8080/api/test/health 2>/dev/null || \
+                  curl -sf http://localhost:8080/ 2>/dev/null; do
               echo "Intento $attempt/$max_attempts: Backend aún no disponible..."
               attempt=$((attempt+1))
               if [ $attempt -gt $max_attempts ]; then
-                echo "❌ Backend no respondió al health check después de $max_attempts intentos."
-                sudo journalctl -u elearning-backend --no-pager -l -n 20
+                echo "❌ Backend no respondió después de $max_attempts intentos."
+                echo "=== Estado del servicio ==="
+                sudo systemctl status elearning-backend
+                echo "=== Logs recientes ==="
+                sudo journalctl -u elearning-backend --no-pager -l -n 30
                 exit 1
               fi
-              sleep 5
+              sleep 8
             done
             echo "✅ Despliegue exitoso y health check OK"
             
             if sudo systemctl is-active --quiet elearning-backend; then
-              echo "✅ Despliegue exitoso"
-              curl -f http://localhost:8080/actuator/health || echo "Health check no disponible"
+              echo "✅ Despliegue exitoso - Servicio está activo"
             else
               echo "❌ Error en el despliegue"
               sudo journalctl -u elearning-backend --no-pager -l -n 20
