@@ -2,9 +2,9 @@ name: Java CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ develop ]
 
 jobs:
   build:
@@ -51,20 +51,41 @@ jobs:
           cd /home/opc/Git-Repository/E-Learning-Platform/Backend/Dev-learning-Platform
           
           echo "=== Haciendo git pull ==="
-          git pull origin main
+          git switch develop
+          git pull origin develop
           
           echo "=== Ejecutando tests en producción ==="
           ./mvnw test -Dspring.profiles.active=prod -q
           
           if [ $? -eq 0 ]; then
-            echo "=== Tests exitosos, construyendo aplicación ==="
-            ./mvnw clean package -Dspring.profiles.active=prod -DskipTests -q
-            
-            echo "=== Reiniciando servicio ==="
-            sudo systemctl restart elearning-backend
-            
+            echo "=== Tests exitosos, deteniendo servicio para construcción ==="
+            sudo systemctl stop elearning-backend
+
+            echo "=== Construyendo aplicación ==="
+            mvn clean package -Pprod -DskipTests
+
+            echo "=== Reiniciando daemon ==="
+            sudo systemctl daemon-reload
+
+            echo "=== Iniciando servicio ==="
+            sudo systemctl start elearning-backend
+
             echo "=== Verificando despliegue ==="
             sleep 15
+
+            max_attempts=10
+            attempt=1
+            until curl -sf http://localhost:8080/actuator/health; do
+              echo "Intento $attempt/$max_attempts: Backend aún no disponible..."
+              attempt=$((attempt+1))
+              if [ $attempt -gt $max_attempts ]; then
+                echo "❌ Backend no respondió al health check después de $max_attempts intentos."
+                sudo journalctl -u elearning-backend --no-pager -l -n 20
+                exit 1
+              fi
+              sleep 5
+            done
+            echo "✅ Despliegue exitoso y health check OK"
             
             if sudo systemctl is-active --quiet elearning-backend; then
               echo "✅ Despliegue exitoso"

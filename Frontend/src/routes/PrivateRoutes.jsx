@@ -12,7 +12,7 @@ const Profile = lazy(() => import("@/features/student/components/StudentProfileE
 const PurchasedCourses = lazy(() => import("@/features/student/components/PurchasedCourses"));
 const CourseContent = lazy(() => import("@/features/course/components/CourseContent"));
 const CourseDetail = lazy(() => import("@/features/course/components/CourseDetail"));
-const PaymentHistory = lazy(() => import("@/features/student/components/PaymentHistory"));
+// const PaymentHistory = lazy(() => import("@/features/student/components/PaymentHistory"));
 const NotFound = lazy(() => import("@/shared/ui/layout/NotFound"));
 const DataPolicy = lazy(() => import("@/shared/ui/common/DataPolicy"));
 const StudentPage = lazy(() => import("@/features/student/pages/StudentPage"));
@@ -54,10 +54,10 @@ const privateRoutes = [
         path: "/curso/:id",
         element: <CourseContent />,
       },
-      {
-        path: "/pagos",
-        element: <PaymentHistory />,
-      },
+      // {
+      //   path: "/pagos",
+      //   element: <PaymentHistory />,
+      // },
       {
         path: "/politica-de-privacidad",
         element: <DataPolicy />,

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/ui/card';
-import { Button } from '@/ui/button';
+import { Button } from '@/ui/Button';
 import { Progress } from '@/ui/progress';
 import { BookOpen, Clock, Award, Star, AlertCircle } from 'lucide-react';
 import { getActiveEnrollments, getCompletedEnrollments, getEnrolledCourses } from '@/services/enrollmentService'; // ✅ Importamos los servicios de la API
