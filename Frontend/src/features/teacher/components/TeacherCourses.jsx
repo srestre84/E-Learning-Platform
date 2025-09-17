@@ -33,6 +33,7 @@ import {
 } from "@mui/icons-material";
 
 import { useTeacherCourses } from "@/shared/hooks/useTeacherCourses"; // ✅ Importa el nuevo custom hook
+import { useAuth } from "@/shared/hooks/useAuth";
 
 // Componentes de estado de carga
 const LoadingState = () => (
@@ -52,12 +53,15 @@ const ErrorState = ({ message }) => (
   </Box>
 );
 
+
 const TeacherCourses = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("todos");
 
-  // ✅ Usa el custom hook para obtener los datos de la API
-  const { courses, loading, error } = useTeacherCourses();
+  // Obtener usuario autenticado
+  const { user } = useAuth();
+  // Pasar el id del instructor al hook
+  const { courses, loading, error } = useTeacherCourses(user?.id);
 
   // Muestra el estado de carga o error si es necesario
   if (loading) return <LoadingState />;
