@@ -15,7 +15,7 @@ const InstructoresCard = lazy(() =>
   import("@/features/marketing/components/InstructoresCard")
 );
 const TestimonioCard = lazy(() =>
-  import("@/features/marketing/components/TestimonioCard")
+  import("@/features/marketing/components/testimonioCard")
 );
 const CtaButton = lazy(() =>
   import("@/features/marketing/components/CTAButton")
