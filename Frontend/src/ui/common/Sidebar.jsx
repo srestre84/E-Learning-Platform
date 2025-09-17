@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/ui/avatar";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/shared/hooks/useAuth";
 import { useNotification } from "@/contexts/NotificationContext";
@@ -177,7 +178,7 @@ const Sidebar = () => {
   const handleLogout = async () => {
     console.log("--- Iniciando cierre de sesión ---");
     try {
-      await logout({ redirect: true, redirectTo: "/authentication" });
+      await logout({ redirect: true, redirectTo: "/" });
       console.log("--- Cierre de sesión exitoso ---");
       showNotification("¡Hasta luego!", "success");
     } catch (error) {
@@ -339,9 +340,14 @@ const Sidebar = () => {
                   isCollapsed ? "justify-center" : "space-x-3"
                 )}>
                 <div className="relative">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white font-semibold">
-                    {getUserDisplayName().charAt(0).toUpperCase()}
-                  </div>
+                  <Avatar className="w-10 h-10">
+                    {user?.profileImageUrl ? (
+                      <AvatarImage src={user.profileImageUrl} alt={getUserDisplayName()} />
+                    ) : null}
+                    <AvatarFallback>
+                      {getUserDisplayName().charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
                 </div>
                 {!isCollapsed && (

@@ -147,9 +147,10 @@ const [formData, setFormData] = useState({
 
 
 
-  return{
 
+  return{
     formData,
+    setFormData, // <-- Exponer setFormData
     loading,
     updating,
     error,

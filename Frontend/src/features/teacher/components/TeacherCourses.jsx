@@ -163,15 +163,50 @@ const TeacherCourses = () => {
                   overflow: "hidden",
                   boxShadow: 3,
                 }}>
-                <CardMedia
-                  component="img"
-                  height="140"
-                  image={
-                    course.thumbnailUrl ||
-                    generateCoursePlaceholder(course.title || "Curso")
-                  }
-                  alt={`Imagen de ${course.title}`}
-                />
+                <Box
+                  sx={{
+                    position: 'relative',
+                    height: 140,
+                    width: '100%',
+                    overflow: 'hidden',
+                    bgcolor: '#f3f4f6',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  {course.thumbnailUrl ? (
+                    <CardMedia
+                      component="img"
+                      sx={{
+                        height: '100%',
+                        width: '100%',
+                        objectFit: 'cover',
+                        display: 'block',
+                      }}
+                      image={course.thumbnailUrl}
+                      alt={`Portada de ${course.title}`}
+                    />
+                  ) : (
+                    <Box
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'text.disabled',
+                        fontSize: 32,
+                        fontWeight: 500,
+                        letterSpacing: 1,
+                        bgcolor: '#e0e7ef',
+                      }}
+                    >
+                      Portada de Curso
+                    </Box>
+                  )}
+                </Box>
                 <CardContent sx={{ flexGrow: 1, p: 2 }}>
                   <Stack
                     direction="row"

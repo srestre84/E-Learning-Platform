@@ -12,6 +12,7 @@ const TeacherProfileEditor = () => {
 
   const {
     formData,
+    setFormData,
     loading,
     updating,
     error,
