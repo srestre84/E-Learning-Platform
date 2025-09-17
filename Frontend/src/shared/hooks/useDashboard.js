@@ -9,7 +9,7 @@ export function useDashboard() {
   const [courses, setCourses] = useState([]);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+ useEffect(() => {
     const fetchData = async () => {
       if (!user) {
         setIsLoading(false);
@@ -24,28 +24,23 @@ export function useDashboard() {
         if (enrolledData && enrolledData.length > 0) {
           fetchedCourses = enrolledData;
         } else {
-          // Si no hay cursos inscritos, cargamos los cursos sugeridos
           const suggestedData = await getCourses();
-          // Limitamos a 4 para no saturar la página de inicio
-          fetchedCourses = suggestedData.slice(0, 4);
+          // ✅ Añadimos el progreso = 0 a los cursos sugeridos
+          fetchedCourses = suggestedData.slice(0, 4).map(course => ({
+            ...course,
+            progress: 0
+          }));
         }
 
-        // Simular que el progreso está en los datos de la API
-        const coursesWithProgress = fetchedCourses.map(course => ({
-          ...course,
-          progress: Math.floor(Math.random() * 100) + 1, // Ejemplo de progreso
-          isFavorite: Math.random() > 0.5, // Ejemplo de favorito
-        }));
-
-        setCourses(coursesWithProgress);
-      } catch (e) {
-        console.error("Error fetching dashboard data:", e);
-        setError("No se pudieron cargar los datos. Por favor, inténtalo de nuevo.");
+        setCourses(fetchedCourses || []);
+      } catch (err) {
+        console.error("Error fetching courses:", err);
+        setError("Error al cargar los cursos. Por favor, inténtalo de nuevo más tarde.");
+        setCourses([]);
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchData();
   }, [user]);
 
@@ -55,7 +50,6 @@ export function useDashboard() {
     const totalEnrolled = courses.length;
 
     // Estos datos deben ser calculados en el backend para ser precisos
-    const totalLessons = courses.reduce((sum, c) => sum + (c.totalLessons || 0), 0);
     const completedLessons = courses.reduce((sum, c) => sum + (c.completedLessons || 0), 0);
 
     return [
@@ -66,9 +60,9 @@ export function useDashboard() {
     ];
   }, [courses]);
 
-  // Aquí se podrían filtrar los cursos en base a los criterios del usuario
+
   const filteredCourses = useMemo(() => {
-    // Lógica de filtrado y búsqueda...
+
     return courses;
   }, [courses]);
 
@@ -84,13 +78,14 @@ export function useDashboard() {
   ];
 
   return {
-    dashboardData: {
-      stats,
-      filteredCourses: filteredCourses,
-      recentActivities,
-      upcomingEvents,
-    },
-    loading: isLoading,
+    suggestedCourses : courses,
+    stats,
+    filteredCourses: filteredCourses,
+    recentActivities,
+    upcomingEvents,
+    isLoading,
     error,
   };
-}
+
+
+};
