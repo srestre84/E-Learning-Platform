@@ -1,3 +1,13 @@
+// Obtener subcategorías por categoría (para edición de curso)
+export const getSubcategoriesByCategory = async (categoryId) => {
+  try {
+    const response = await api.get(`/api/categories/${categoryId}/subcategories`);
+    return ensureArray(processApiResponse(response.data));
+  } catch (error) {
+    console.error("Error al cargar subcategorías:", error);
+    throw handleApiError(error, "No tienes permiso para esta acción");
+  }
+};
 // Eliminar curso (versión develop)
 export const deleteCourse = async (courseId) => {
   try {
