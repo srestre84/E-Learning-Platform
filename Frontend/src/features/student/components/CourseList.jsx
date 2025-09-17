@@ -4,12 +4,15 @@ import { Progress } from "@/ui/progress";
 import { Play, Star, Star as StarFilled, ShoppingCart } from "lucide-react";
 import { Badge } from "@/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { createStripeCheckoutSession} from '@/services/paymentService'
+import { useAuth } from '@/shared/hooks/useAuth';
 
 export default function CourseList({ courses, onToggleFavorite }) {
   const navigate = useNavigate();
   const [paymentCourse, setPaymentCourse] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState('');
+  const {user} = useAuth();
 
 
   const getProgressColor = (progress) => {
@@ -60,26 +63,20 @@ export default function CourseList({ courses, onToggleFavorite }) {
     setPaymentError('');
 
     try {
-      const response = await fetch('http://149.130.176.157:8080/api/stripe/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
-        },
-        body: JSON.stringify({ courseId: paymentCourse.id })
-      });
+      const data = await createStripeCheckoutSession(
+        paymentCourse.id,
+        user.id, // Obtener del contexto de autenticación
+        `${window.location.origin}/payment/success`,
+        `${window.location.origin}/payment/cancel`
+      );
 
-      if (!response.ok) {
-        throw new Error('Error al crear la sesión de pago. Intenta de nuevo.');
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
       }
-
-      const data = await response.json();
-
-      window.location.href = data.url;
-
     } catch (error) {
       console.error('Error en el pago:', error);
       setPaymentError(error.message);
+    } finally {
       setProcessing(false);
     }
   };
