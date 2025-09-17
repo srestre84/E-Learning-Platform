@@ -1,8 +1,8 @@
 // src/DashboardStudent.jsx
 
-'use client';
+"use client";
 
-import React, { lazy, Suspense, useEffect, useState } from "react";
+import React, { lazy, Suspense,  useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/ui/card";
 import { Button } from "@/ui/Button";
 import { Progress } from "@/ui/progress";
@@ -11,21 +11,28 @@ import { Badge } from "@/ui/badge";
 import { Input } from "@/ui/Input";
 import { Tabs, TabsList, TabsTrigger } from "@/ui/tabs";
 import { Skeleton } from "@/ui/skeleton";
-import { Search, BookOpen, Star, Clock, Bell, ChevronRight, AlertCircle } from "lucide-react";
+import {
+  Search,
+  BookOpen,
+  Star,
+  Clock,
+  Bell,
+  ChevronRight,
+  AlertCircle
+} from "lucide-react";
 import { useDashboard } from "@/shared/hooks/useDashboard";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { CircularProgress } from "@mui/material";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Link } from 'react-router-dom';
-import { getCourses } from '@/services/courseService'; 
-import {getEnrolledCourses} from '@/services/enrollmentService'
-import { useAuth } from "@/contexts/AuthContext";
-import CourseList from "./CourseList";
 
 // Componentes con lazy load
-const DashboardStats = lazy(() => import('./DashboardStats'));
-const ActivityFeed = lazy(() => import('./ActivityFeed'));
-const UpcomingEvents = lazy(() => import('./UpcomingEvents'));
-const CursosSugeridos = lazy(() => import('@/features/marketing/components/CursosSugeridos')); // Asegúrate de que la ruta sea correcta
+const DashboardStats = lazy(() => import("./DashboardStats"));
+const ActivityFeed = lazy(() => import("./ActivityFeed"));
+const CourseList = lazy(() => import("./CourseList"));
+const UpcomingEvents = lazy(() => import("./UpcomingEvents"));
+const CursosSugeridos = lazy(() => import("@/features/marketing/components/CursosSugeridos")); // Asegúrate de que la ruta sea correcta
 
 // Componentes de esqueleto (Skeletons)
 function CourseListSkeleton() {
@@ -85,96 +92,101 @@ function EventsSkeleton() {
 
 export default function DashboardStudent() {
   const { user } = useAuth();
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const [activeTab, setActiveTab] = React.useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const {
+     isLoading,
+    error,
+    suggestedCourses,
+    showSuggested,
+    filteredCourses,
+    stats,
+    recentActivities,
+    upcomingEvents,
+  } = useDashboard();
 
-  const [enrolledCourses, setEnrolledCourses] = useState([]);
-  const [suggestedCourses, setSuggestedCourses] = useState([]);
-  const [loadingCourses, setLoadingCourses] = useState(true);
-  const [loadingSuggested, setLoadingSuggested] = useState(true);
-  const [errorCourses, setErrorCourses] = useState(null);
-  const [errorSuggested, setErrorSuggested] = useState(null);
 
-  // Hook para cargar los cursos inscritos
-  useEffect(() => {
-    setLoadingCourses(true);
-    getEnrolledCourses()
-      .then(data => {
-        setEnrolledCourses(data || []);
-        setLoadingCourses(false);
-      })
-      .catch(error => {
-        setErrorCourses("No se pudieron cargar tus cursos.");
-        console.error(error);
-        setLoadingCourses(false);
-      });
-  }, []);
 
-  // Hook para cargar los cursos sugeridos
-  useEffect(() => {
-    setLoadingSuggested(true);
-    getCourses()
-      .then(data => {
-        setSuggestedCourses(data || []);
-        setLoadingSuggested(false);
-      })
-      .catch(error => {
-        setErrorSuggested("No se pudieron cargar los cursos sugeridos.");
-        console.error(error);
-        setLoadingSuggested(false);
-      });
-  }, []);
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <CircularProgress />
+      </div>
+    );
+  }
 
-  const { recentActivities, upcomingEvents } = useDashboard();
+  if (error) {
+    return (
+      <div className="p-8 text-center text-red-500">
+        <AlertCircle className="w-10 h-10 mx-auto mb-2" />
+        <p>{error}</p>
+      </div>
+    );
+  }
 
-  // Filtrar cursos inscritos por búsqueda
-  const filteredCourses = enrolledCourses.filter(course =>
-    course.title?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 p-4 md:p-6 lg:p-8">
       <div className="flex-1 space-y-6">
-        <DashboardStats />
-        
-        {/* Sección de Mis Cursos */}
+         <div className="pb-4">
+          <h1 className="text-3xl font-bold tracking-tight">
+            Bienvenido, {user?.userName || "Usuario"}! {/* ✅ Uso de optional chaining */}
+          </h1>
+          <p className="text-lg text-gray-500 mt-1">
+            {format(new Date(), 'EEEE, d MMMM', { locale: es })}
+          </p>
+        </div>
+
+        <Suspense fallback={<CourseListSkeleton />}>
+        <DashboardStats stats={stats} />
+        </Suspense>
+         <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+          <Input
+            type="text"
+            placeholder="Buscar cursos..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+
+        {/* ✅ Sección de Cursos Unificada: Mis Cursos o Cursos Sugeridos */}
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
-            <CardTitle className="text-xl">Mis Cursos</CardTitle>
+            <CardTitle className="text-xl">
+              {showSuggested ? "Cursos Sugeridos" : "Mis Cursos"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            {loadingCourses ? (
-              <CourseListSkeleton />
-            ) : errorCourses ? (
+            {isLoading ? (
+              <Suspense fallback={<CourseListSkeleton />}>
+                <CourseListSkeleton />
+              </Suspense>
+            ) : error ? (
               <div className="p-8 text-center text-red-500">
                 <AlertCircle className="w-10 h-10 mx-auto mb-2" />
-                <p>{errorCourses}</p>
+                <p>{error}</p>
               </div>
-            ) : filteredCourses.length > 0 ? (
-              <CourseList courses={filteredCourses} />
+            ) : showSuggested ? (
+              <Suspense fallback={<CourseListSkeleton />}>
+                <CursosSugeridos courses={suggestedCourses} />
+              </Suspense>
+            ) : filteredCourses && filteredCourses.length > 0 ? (
+              <Suspense fallback={<CourseListSkeleton />}>
+                <CourseList courses={filteredCourses} />
+              </Suspense>
             ) : (
               <div className="p-8 text-center text-gray-500">
                 <BookOpen className="w-10 h-10 mx-auto mb-2" />
-                <p>Aún no estás inscrito en ningún curso.</p>
+                <p>
+                  {searchTerm
+                    ? "No se encontraron cursos que coincidan con tu búsqueda."
+                    : "Aún no estás inscrito en ningún curso."}
+                </p>
               </div>
             )}
           </CardContent>
         </Card>
-        
-        {/* Sección de Cursos Sugeridos */}
-        <Suspense fallback={<CourseListSkeleton />}>
-          {loadingSuggested ? (
-            <CourseListSkeleton />
-          ) : errorSuggested ? (
-            <div className="p-8 text-center text-red-500">
-              <AlertCircle className="w-10 h-10 mx-auto mb-2" />
-              <p>{errorSuggested}</p>
-            </div>
-          ) : (
-            <CursosSugeridos courses={suggestedCourses} />
-          )}
-        </Suspense>
-
       </div>
 
       <div className="lg:col-span-1 space-y-6 lg:min-w-[300px] lg:max-w-[400px]">
