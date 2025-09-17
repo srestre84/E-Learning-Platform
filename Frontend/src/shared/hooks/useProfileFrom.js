@@ -1,4 +1,4 @@
-import profileService from "@/services/profileService";
+import ProfileService from "@/services/profileService";
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 
