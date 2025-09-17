@@ -167,7 +167,7 @@ const TeacherCourses = () => {
                   component="img"
                   height="140"
                   image={
-                    course.image ||
+                    course.thumbnailUrl ||
                     generateCoursePlaceholder(course.title || "Curso")
                   }
                   alt={`Imagen de ${course.title}`}
