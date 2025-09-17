@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import {createCourse, getCourseById, updateCourse} from '@/services/courseService';
+import { createCourse, getCourseById, updateCourse } from '@/services/courseService';
 import { useAuth } from '@/contexts/AuthContext';
-
+import { uploadCourseThumbnail } from '@/services/uploadService';
 import { toast } from 'react-toastify';
 import {
   PlusIcon,
@@ -100,15 +100,17 @@ const CreateCourse = ({ isEditing = false }) => {
   }, [isEditing, id]);
 
   // Manejo de carga de imagen y previsualización (versión develop)
+  // Lógica de develop: previsualización y almacenamiento temporal del archivo
+  const [imageFile, setImageFile] = useState(null);
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === 'image' && files && files[0]) {
       const file = files[0];
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData(prev => ({
           ...prev,
-          thumbnailUrl: reader.result, // Guardar la URL base64 para previsualización y envío
           preview: reader.result
         }));
       };
@@ -181,7 +183,13 @@ const CreateCourse = ({ isEditing = false }) => {
 
       const selectedCategory = categoryMap[formData.category] || { categoryId: 1, subcategoryId: 1 };
 
-      // Datos según formato de CourseCreateDto (versión develop, thumbnailUrl sí se envía)
+      // Subir imagen si hay archivo nuevo
+      let thumbnailUrl = formData.thumbnailUrl;
+      if (imageFile) {
+        thumbnailUrl = await uploadCourseThumbnail(imageFile);
+      }
+
+      // Datos según formato de CourseCreateDto (solo URL pública)
       const courseData = {
         title: formData.title,
         description: formData.description,
@@ -192,7 +200,7 @@ const CreateCourse = ({ isEditing = false }) => {
         categoryId: selectedCategory.categoryId,
         subcategoryId: selectedCategory.subcategoryId,
         youtubeUrls: youtubeUrls.length > 0 ? youtubeUrls : [], // Asegurar que sea un array
-        thumbnailUrl: formData.thumbnailUrl, // Ahora sí se envía la URL pública/base64
+        thumbnailUrl, // Solo la URL pública
         price: parseFloat(formData.price) || 0.0, // Asegurar que sea número decimal
         isPremium: parseFloat(formData.price) > 0,
         isPublished: false, // Por defecto como borrador
