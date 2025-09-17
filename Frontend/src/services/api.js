@@ -2,7 +2,7 @@
 import axios from "axios";
 
 // 🌐 Base URL según el entorno
-const API_URL = import.meta.env.DEV 
+const API_URL = import.meta.env.DEV
   ? "" // En desarrollo usar proxy de Vite (vite.config.js maneja /api y /auth)
   : ""; // En producción, usar rutas relativas que Vercel proxy manejará
 
@@ -76,8 +76,8 @@ api.interceptors.response.use(
     // 🔑 Sesión expirada
     if (status === 401) {
       clearAuth();
-      if (window.location.pathname !== "/auth") {
-        window.location.href = "/auth";
+      if (window.location.pathname !== "/authentication") {
+        window.location.href = "/authentication/login";
       }
       return Promise.reject(
         new Error("Tu sesión ha expirado. Inicia sesión nuevamente.")
@@ -89,7 +89,7 @@ api.interceptors.response.use(
       console.log('=== API INTERCEPTOR: Error 400 ===');
       console.log('Data:', data);
       console.log('Original Error:', error);
-      
+
       // Preservar el error original para que el service pueda manejarlo
       return Promise.reject(error);
     }
