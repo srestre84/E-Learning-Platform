@@ -11,11 +11,11 @@ export const useEnrollInCourse = () => {
   const handleEnrollment = useCallback(async (courseId) => {
     setIsEnrolling(true);
     try {
-      const enrollment = await enrollInCourse(courseId);
+      const Enrollment = await enrollInCourse(courseId);
       toast.success("¡Te has inscrito al curso con éxito!");
-      
+
       // Redirigir al usuario al contenido del curso o a su dashboard
-      navigate(`/mis-cursos`); 
+      navigate(`/mis-cursos`);
 
     } catch (error) {
       const errorMessage = error.message || 'Error al inscribirse en el curso.';
