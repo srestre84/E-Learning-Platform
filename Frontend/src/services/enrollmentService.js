@@ -66,3 +66,14 @@ export const getEnrolledCourses = async () => {
     );
   }
 };
+
+export const checkEnrollment = async (courseId) => {
+  try {
+    const response = await api.get(`/api/enrollments/check/${courseId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al verificar inscripción:", error);
+    // Si hay error, asumimos que no está inscrito
+    return { isEnrolled: false };
+  }
+};

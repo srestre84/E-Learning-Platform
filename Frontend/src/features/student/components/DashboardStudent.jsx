@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { lazy, Suspense,  useState } from "react";
+import React, { lazy, Suspense, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/ui/card";
 import { Button } from "@/ui/Button";
 import { Progress } from "@/ui/progress";
@@ -18,7 +18,7 @@ import {
   Clock,
   Bell,
   ChevronRight,
-  AlertCircle
+  AlertCircle,
 } from "lucide-react";
 import { useDashboard } from "@/shared/hooks/useDashboard";
 import { Link } from "react-router-dom";
@@ -32,7 +32,11 @@ const DashboardStats = lazy(() => import("./DashboardStats"));
 const ActivityFeed = lazy(() => import("./ActivityFeed"));
 const CourseList = lazy(() => import("./CourseList"));
 const UpcomingEvents = lazy(() => import("./UpcomingEvents"));
-const CursosSugeridos = lazy(() => import("@/features/marketing/components/CursosSugeridos")); // Asegúrate de que la ruta sea correcta
+const ProgressOverview = lazy(() => import("./ProgressOverview"));
+const RecentCourses = lazy(() => import("./RecentCourses"));
+const CursosSugeridos = lazy(() =>
+  import("@/features/marketing/components/CursosSugeridos")
+);
 
 // Componentes de esqueleto (Skeletons)
 function CourseListSkeleton() {
@@ -94,7 +98,7 @@ export default function DashboardStudent() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const {
-     isLoading,
+    isLoading,
     error,
     suggestedCourses,
     showSuggested,
@@ -102,9 +106,31 @@ export default function DashboardStudent() {
     stats,
     recentActivities,
     upcomingEvents,
+    enrollments,
   } = useDashboard();
 
+  // Debug: Ver qué datos están llegando
+  console.log("DashboardStudent - showSuggested:", showSuggested);
+  console.log("DashboardStudent - filteredCourses:", filteredCourses);
+  console.log("DashboardStudent - enrollments:", enrollments);
 
+  const handleUnenrollCourse = async (courseId) => {
+    try {
+      // Aquí implementarías la llamada a la API para desinscribirse
+      console.log("Desinscribiéndose del curso:", courseId);
+
+      // Por ahora, solo mostramos un mensaje
+      alert(
+        "Función de desinscripción en desarrollo. El curso será removido de la lista."
+      );
+
+      // TODO: Implementar llamada real a la API
+      // await unenrollFromCourse(courseId);
+    } catch (error) {
+      console.error("Error al desinscribirse del curso:", error);
+      alert("Error al desinscribirse del curso. Inténtalo de nuevo.");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -123,94 +149,150 @@ export default function DashboardStudent() {
     );
   }
 
-
   return (
-    <div className="flex flex-col lg:flex-row gap-6 p-4 md:p-6 lg:p-8">
-      <div className="flex-1 space-y-6">
-         <div className="pb-4">
-          <h1 className="text-3xl font-bold tracking-tight">
-            Bienvenido, {user?.userName || "Usuario"}! {/* ✅ Uso de optional chaining */}
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900">
+            ¡Hola, {user?.userName || "Usuario"}! 👋
           </h1>
-          <p className="text-lg text-gray-500 mt-1">
-            {format(new Date(), 'EEEE, d MMMM', { locale: es })}
+          <p className="text-xl text-gray-600 mt-2">
+            {format(new Date(), "EEEE, d MMMM", { locale: es })}
           </p>
         </div>
 
-        <Suspense fallback={<CourseListSkeleton />}>
-        <DashboardStats stats={stats} />
-        </Suspense>
-         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-          <Input
-            type="text"
-            placeholder="Buscar cursos..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
-          />
+        {/* Estadísticas */}
+        <div className="mb-8">
+          <Suspense fallback={<CourseListSkeleton />}>
+            <DashboardStats stats={stats} />
+          </Suspense>
         </div>
 
-        {/* ✅ Sección de Cursos Unificada: Mis Cursos o Cursos Sugeridos */}
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="text-xl">
-              {showSuggested ? "Cursos Sugeridos" : "Mis Cursos"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Suspense fallback={<CourseListSkeleton />}>
-                <CourseListSkeleton />
-              </Suspense>
-            ) : error ? (
-              <div className="p-8 text-center text-red-500">
-                <AlertCircle className="w-10 h-10 mx-auto mb-2" />
-                <p>{error}</p>
-              </div>
-            ) : showSuggested ? (
-              <Suspense fallback={<CourseListSkeleton />}>
-                <CursosSugeridos courses={suggestedCourses} />
-              </Suspense>
-            ) : filteredCourses && filteredCourses.length > 0 ? (
-              <Suspense fallback={<CourseListSkeleton />}>
-                <CourseList courses={filteredCourses} />
-              </Suspense>
-            ) : (
-              <div className="p-8 text-center text-gray-500">
-                <BookOpen className="w-10 h-10 mx-auto mb-2" />
-                <p>
-                  {searchTerm
-                    ? "No se encontraron cursos que coincidan con tu búsqueda."
-                    : "Aún no estás inscrito en ningún curso."}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+        {/* Layout principal */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          {/* Columna principal - Cursos y Progreso */}
+          <div className="xl:col-span-2 space-y-8">
+            {/* Búsqueda */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Buscar en tus cursos..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-12 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-xl"
+              />
+            </div>
 
-      <div className="lg:col-span-1 space-y-6 lg:min-w-[300px] lg:max-w-[400px]">
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-xl">Actividad Reciente</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Suspense fallback={<ActivitiesSkeleton />}>
-              <ActivityFeed activities={recentActivities} />
+            {/* Cursos Recientes */}
+            <Suspense fallback={<CourseListSkeleton />}>
+              <RecentCourses
+                enrollments={enrollments}
+                onViewAll={() => {
+                  /* Navegar a página de cursos */
+                }}
+              />
             </Suspense>
-          </CardContent>
-        </Card>
 
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-xl">Próximos Eventos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Suspense fallback={<EventsSkeleton />}>
-              <UpcomingEvents events={upcomingEvents} />
+            {/* Progreso General */}
+            <Suspense fallback={<CourseListSkeleton />}>
+              <ProgressOverview enrollments={enrollments} />
             </Suspense>
-          </CardContent>
-        </Card>
+
+            {/* Cursos Sugeridos o Mis Cursos */}
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="text-2xl flex items-center gap-2">
+                  <BookOpen className="h-6 w-6 text-blue-600" />
+                  {showSuggested ? "Cursos Sugeridos para Ti" : "Mis Cursos"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <Suspense fallback={<CourseListSkeleton />}>
+                    <CourseListSkeleton />
+                  </Suspense>
+                ) : error ? (
+                  <div className="p-8 text-center text-red-500">
+                    <AlertCircle className="w-12 h-12 mx-auto mb-4" />
+                    <p className="text-lg">{error}</p>
+                    <Button
+                      onClick={() => window.location.reload()}
+                      className="mt-4">
+                      Reintentar
+                    </Button>
+                  </div>
+                ) : showSuggested ? (
+                  <Suspense fallback={<CourseListSkeleton />}>
+                    <CursosSugeridos courses={suggestedCourses} />
+                  </Suspense>
+                ) : filteredCourses && filteredCourses.length > 0 ? (
+                  <Suspense fallback={<CourseListSkeleton />}>
+                    <CourseList
+                      courses={filteredCourses}
+                      onUnenroll={handleUnenrollCourse}
+                    />
+                  </Suspense>
+                ) : (
+                  <div className="p-12 text-center text-gray-500">
+                    <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                    <h3 className="text-xl font-semibold mb-2">
+                      {searchTerm
+                        ? "No se encontraron cursos que coincidan con tu búsqueda."
+                        : "Aún no estás inscrito en ningún curso."}
+                    </h3>
+                    <p className="mb-6">
+                      {searchTerm
+                        ? "Intenta con otros términos de búsqueda."
+                        : "Explora nuestros cursos disponibles y comienza tu viaje de aprendizaje."}
+                    </p>
+                    <Button
+                      onClick={() => {
+                        /* Navegar a catálogo */
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700">
+                      Explorar Cursos
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar - Actividad y Eventos */}
+          <div className="space-y-6">
+            {/* Actividad Reciente */}
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <Bell className="h-5 w-5 text-green-600" />
+                  Actividad Reciente
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Suspense fallback={<ActivitiesSkeleton />}>
+                  <ActivityFeed activities={recentActivities} />
+                </Suspense>
+              </CardContent>
+            </Card>
+
+            {/* Próximos Eventos */}
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-purple-600" />
+                  Próximos Eventos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Suspense fallback={<EventsSkeleton />}>
+                  <UpcomingEvents events={upcomingEvents} />
+                </Suspense>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

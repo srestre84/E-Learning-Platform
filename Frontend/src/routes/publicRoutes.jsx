@@ -20,6 +20,12 @@ const CatalogoCursos = lazy(() =>
 const CourseDetail = lazy(() =>
   import("@/features/course/components/CourseDetail")
 );
+const PaymentSuccess = lazy(() =>
+  import("@/features/payment/pages/PaymentSuccess")
+);
+const PaymentCancel = lazy(() =>
+  import("@/features/payment/pages/PaymentCancel")
+);
 const NotFoundPage = lazy(() => import("@/shared/ui/layout/NotFound"));
 const ComoFunciona = lazy(() =>
   import("@/features/marketing/pages/comoFunciona")
@@ -99,6 +105,22 @@ const publicRoutes = [
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <CatalogoCursos />
+          </Suspense>
+        ),
+      },
+      {
+        path: "payment/success",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <PaymentSuccess />
+          </Suspense>
+        ),
+      },
+      {
+        path: "payment/cancel",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <PaymentCancel />
           </Suspense>
         ),
       },

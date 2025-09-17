@@ -1,4 +1,5 @@
-import  api  from './api';
+import api from './api';
+import { processApiResponse, ensureArray, handleApiError } from './apiUtils';
 
 /**
  * Servicio para operaciones administrativas
@@ -11,10 +12,10 @@ export const adminService = {
   async getStats() {
     try {
       const response = await api.get('/api/admin/stats');
-      return response.data;
+      return processApiResponse(response.data);
     } catch (error) {
       console.error('Error al obtener estadísticas:', error);
-      throw error;
+      throw handleApiError(error, 'Error al obtener estadísticas');
     }
   },
 
@@ -25,10 +26,10 @@ export const adminService = {
   async getAllUsers() {
     try {
       const response = await api.get('/api/users/all');
-      return response.data;
+      return ensureArray(processApiResponse(response.data));
     } catch (error) {
       console.error('Error al obtener usuarios:', error);
-      throw error;
+      throw handleApiError(error, 'Error al obtener usuarios');
     }
   },
 
@@ -39,10 +40,10 @@ export const adminService = {
   async getActiveCourses() {
     try {
       const response = await api.get('/api/courses/admin/active');
-      return response.data;
+      return ensureArray(processApiResponse(response.data));
     } catch (error) {
       console.error('Error al obtener cursos activos:', error);
-      throw error;
+      throw handleApiError(error, 'Error al obtener cursos activos');
     }
   },
 
@@ -53,10 +54,10 @@ export const adminService = {
   async getRecentEnrollments() {
     try {
       const response = await api.get('/api/enrollments/recent');
-      return response.data;
+      return ensureArray(processApiResponse(response.data));
     } catch (error) {
       console.error('Error al obtener inscripciones recientes:', error);
-      throw error;
+      throw handleApiError(error, 'Error al obtener inscripciones recientes');
     }
   },
 
@@ -67,10 +68,10 @@ export const adminService = {
   async getEnrollmentStats() {
     try {
       const response = await api.get('/api/enrollments/stats');
-      return response.data;
+      return ensureArray(processApiResponse(response.data));
     } catch (error) {
       console.error('Error al obtener estadísticas de inscripciones:', error);
-      throw error;
+      throw handleApiError(error, 'Error al obtener estadísticas de inscripciones');
     }
   }
 };

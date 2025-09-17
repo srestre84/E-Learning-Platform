@@ -17,10 +17,40 @@ const api = axios.create({
 });
 
 // 🔑 Helpers para tokens
-const STORAGE_KEY={
-  TOKEN : 'token',
-  USER : 'user',
+const STORAGE_KEY = {
+  TOKEN: 'token',
+  USER: 'user',
 }
+
+// 🛠️ Utilidades para validar formato de datos
+const validateApiResponse = (data) => {
+  if (!data) return null;
+
+  // Si es string, intentar parsear como JSON
+  if (typeof data === 'string') {
+    try {
+      return JSON.parse(data);
+    } catch (error) {
+      console.warn('⚠️ No se pudo parsear respuesta como JSON:', data);
+      return { message: data };
+    }
+  }
+
+  // Si es objeto, validar estructura básica
+  if (typeof data === 'object') {
+    return data;
+  }
+
+  return data;
+};
+
+const cleanApiData = (data) => {
+  if (Array.isArray(data)) {
+    return data.map(item => validateApiResponse(item));
+  }
+
+  return validateApiResponse(data);
+};
 
 export const getToken = () => localStorage.getItem(STORAGE_KEY.TOKEN);
 export const setToken = (token) => {
@@ -45,9 +75,16 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// 🚨 Interceptor para manejar errores
+// 🚨 Interceptor para manejar respuestas y errores
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // ✅ Validar y limpiar formato de respuesta
+    if (response.data) {
+      response.data = cleanApiData(response.data);
+    }
+
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
 
@@ -73,6 +110,9 @@ api.interceptors.response.use(
 
     const { status, data } = error.response;
 
+    // 🔍 Validar formato de datos de error
+    const errorData = cleanApiData(data);
+
     // 🔑 Sesión expirada
     if (status === 401) {
       clearAuth();
@@ -87,7 +127,7 @@ api.interceptors.response.use(
     // ⚠️ Error 400 - Bad Request (errores de validación)
     if (status === 400) {
       console.log('=== API INTERCEPTOR: Error 400 ===');
-      console.log('Data:', data);
+      console.log('Data:', errorData);
       console.log('Original Error:', error);
 
       // Preservar el error original para que el service pueda manejarlo
@@ -95,7 +135,7 @@ api.interceptors.response.use(
     }
 
     // ⚠️ Otros errores comunes
-    let errorMessage = data?.message || "Ocurrió un error inesperado";
+    let errorMessage = errorData?.message || "Ocurrió un error inesperado";
     if (status === 403) errorMessage = "No tienes permiso para esta acción";
     if (status === 404) errorMessage = "Recurso no encontrado";
     if (status === 500)
@@ -107,4 +147,6 @@ api.interceptors.response.use(
 
 
 
+// 📤 Exportar utilidades y API
+export { validateApiResponse, cleanApiData };
 export default api;
