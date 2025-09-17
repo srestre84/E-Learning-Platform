@@ -14,30 +14,33 @@ export const useTeacherCourses = (instructorId) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    // Si no hay un ID de instructor válido, no hacemos la llamada
+  const fetchCourses = async () => {
     if (!instructorId) {
       setLoading(false);
       return;
     }
+    setLoading(true);
+    setError(null);
+    try {
+      const fetchedCourses = await getCoursesByInstructorId(instructorId);
+      setCourses(fetchedCourses);
+    } catch (err) {
+      console.error("Error al cargar los cursos:", err);
+      setError("Ocurrió un error al cargar tus cursos.");
+      toast.error("Error al cargar tus cursos.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const fetchCourses = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const fetchedCourses = await getCoursesByInstructorId(instructorId);
-        setCourses(fetchedCourses);
-      } catch (err) {
-        console.error("Error al cargar los cursos:", err);
-        setError("Ocurrió un error al cargar tus cursos.");
-        toast.error("Error al cargar tus cursos.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
+  useEffect(() => {
     fetchCourses();
-  }, [instructorId]); // El efecto se vuelve a ejecutar si el ID del instructor cambia
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [instructorId]);
 
-  return { courses, loading, error };
+  const refreshCourses = () => {
+    fetchCourses();
+  };
+
+  return { courses, loading, error, refreshCourses };
 };

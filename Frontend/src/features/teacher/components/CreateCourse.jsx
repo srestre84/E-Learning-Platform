@@ -99,19 +99,20 @@ const CreateCourse = ({ isEditing = false }) => {
     fetchCourse();
   }, [isEditing, id]);
 
+  // Manejo de carga de imagen y previsualización (versión develop)
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-
     if (name === 'image' && files && files[0]) {
+      const file = files[0];
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData(prev => ({
           ...prev,
-          thumbnailUrl: files[0],
+          thumbnailUrl: reader.result, // Guardar la URL base64 para previsualización y envío
           preview: reader.result
         }));
       };
-      reader.readAsDataURL(files[0]);
+      reader.readAsDataURL(file);
     } else {
       setFormData(prev => ({
         ...prev,
@@ -180,7 +181,7 @@ const CreateCourse = ({ isEditing = false }) => {
 
       const selectedCategory = categoryMap[formData.category] || { categoryId: 1, subcategoryId: 1 };
 
-      // Datos según formato de CourseCreateDto
+      // Datos según formato de CourseCreateDto (versión develop, thumbnailUrl sí se envía)
       const courseData = {
         title: formData.title,
         description: formData.description,
@@ -191,7 +192,7 @@ const CreateCourse = ({ isEditing = false }) => {
         categoryId: selectedCategory.categoryId,
         subcategoryId: selectedCategory.subcategoryId,
         youtubeUrls: youtubeUrls.length > 0 ? youtubeUrls : [], // Asegurar que sea un array
-        thumbnailUrl: null, // Por ahora null hasta que se implemente subida de imágenes correcta
+        thumbnailUrl: formData.thumbnailUrl, // Ahora sí se envía la URL pública/base64
         price: parseFloat(formData.price) || 0.0, // Asegurar que sea número decimal
         isPremium: parseFloat(formData.price) > 0,
         isPublished: false, // Por defecto como borrador

@@ -32,8 +32,9 @@ import {
   FilterList as FilterIcon,
 } from "@mui/icons-material";
 
-import { useTeacherCourses } from "@/shared/hooks/useTeacherCourses"; // ✅ Importa el nuevo custom hook
+import { useTeacherCourses } from "@/shared/hooks/useTeacherCourses";
 import { useAuth } from "@/shared/hooks/useAuth";
+import { deleteCourse } from '@/services/courseService';
 
 // Componentes de estado de carga
 const LoadingState = () => (
@@ -60,8 +61,26 @@ const TeacherCourses = () => {
 
   // Obtener usuario autenticado
   const { user } = useAuth();
-  // Pasar el id del instructor al hook
-  const { courses, loading, error } = useTeacherCourses(user?.id);
+
+  // Usar solo una llamada al hook, incluyendo refreshCourses
+  const { courses, loading, error, refreshCourses } = useTeacherCourses(user?.id);
+
+  // Eliminar curso (versión develop)
+  const handleDeleteCourse = async (courseId, courseTitle) => {
+    const confirmDelete = window.confirm(
+      `¿Estás seguro de que deseas eliminar el curso "${courseTitle}"?\n\n` +
+      'Esta acción no se puede deshacer y el curso será eliminado permanentemente.\n' +
+      'Solo se pueden eliminar cursos sin estudiantes inscritos.'
+    );
+    if (!confirmDelete) return;
+    try {
+      await deleteCourse(courseId);
+      await refreshCourses();
+      alert('Curso eliminado exitosamente');
+    } catch (error) {
+      alert(`Error al eliminar el curso: ${error.message}`);
+    }
+  };
 
   // Muestra el estado de carga o error si es necesario
   if (loading) return <LoadingState />;
@@ -147,6 +166,26 @@ const TeacherCourses = () => {
       {filteredCourses.length === 0 ? (
         <Box sx={{ p: 4, textAlign: "center" }}>
           <Typography variant="h6" color="text.secondary">
+                      <Tooltip title="Eliminar curso">
+                        <span>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDeleteCourse(course.id, course.title)}
+                            disabled={course.students > 0}
+                            sx={{
+                              color: 'error.main',
+                              '&:hover': { bgcolor: 'error.50' },
+                              '&:disabled': {
+                                color: 'action.disabled',
+                                '&:hover': { bgcolor: 'transparent' }
+                              },
+                              p: 0.5,
+                            }}
+                          >
+                            <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M6 7h12M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m-7 0v12a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          </IconButton>
+                        </span>
+                      </Tooltip>
             No tienes cursos creados o no hay resultados para tu búsqueda.
           </Typography>
         </Box>
@@ -283,6 +322,26 @@ const TeacherCourses = () => {
                           <EditIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
+                       <Tooltip title="Eliminar curso">
+                         <IconButton
+                           size="small"
+                           onClick={() => handleDeleteCourse(course.id, course.title)}
+                           disabled={course.students > 0}
+                           sx={{
+                             color: 'error.main',
+                             '&:hover': { bgcolor: 'error.50' },
+                             '&:disabled': {
+                               color: 'action.disabled',
+                               '&:hover': { bgcolor: 'transparent' }
+                             },
+                             p: 0.5,
+                           }}
+                         >
+                           <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+                             <path d="M6 7h12M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m-7 0v12a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                           </svg>
+                         </IconButton>
+                       </Tooltip>
                     </Box>
                   </Stack>
 
