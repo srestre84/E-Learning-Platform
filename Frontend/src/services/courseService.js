@@ -1,7 +1,7 @@
 // Obtener subcategorías por categoría (para edición de curso)
 export const getSubcategoriesByCategory = async (categoryId) => {
   try {
-    const response = await api.get(`/api/categories/${categoryId}/subcategories`);
+    const response = await api.get(`/api/subcategories/category/${categoryId}`);
     return ensureArray(processApiResponse(response.data));
   } catch (error) {
     console.error("Error al cargar subcategorías:", error);
