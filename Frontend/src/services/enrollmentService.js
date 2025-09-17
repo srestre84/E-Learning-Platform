@@ -3,13 +3,19 @@ import api from './api';
 
 export const enrollInCourse = async (courseId) => {
   try {
-    const response = await api.post(`/api/enrollments`, { courseId });
+    const response = await api.post('/api/enrollments', { courseId });
     return response.data;
   } catch (error) {
-    console.error("Error al inscribirse en el curso:", error);
-    throw new Error(
-      error.response?.data?.message || "No se pudo completar la inscripción. Por favor, inténtalo de nuevo."
-    );
+    console.error('Enrollment error:', error.response);
+
+    if (error.response?.status === 403) {
+      throw new Error('No tienes permiso para inscribirte en este curso');
+    }
+    if (error.response?.status === 401) {
+      throw new Error('Debes iniciar sesión para inscribirte');
+    }
+
+    throw new Error('Error de servidor. Inténtalo más tarde');
   }
 };
 
@@ -60,5 +66,3 @@ export const getEnrolledCourses = async () => {
     );
   }
 };
-
-
