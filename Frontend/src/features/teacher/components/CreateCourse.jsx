@@ -1,13 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import {
-  createCourse,
-  getCourseById,
-  updateCourse,
-} from "@/services/courseService";
-import { useAuth } from "@/contexts/useAuth";
-
-import { toast } from "react-toastify";
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { createCourse, getCourseById, updateCourse } from '@/services/courseService';
+import { useAuth } from '@/contexts/AuthContext';
+import { uploadCourseThumbnail } from '@/services/uploadService';
+import { toast } from 'react-toastify';
 import {
   PlusIcon,
   ArrowLeftIcon,
@@ -101,19 +97,22 @@ const CreateCourse = ({ isEditing = false }) => {
     fetchCourse();
   }, [isEditing, id]);
 
+  // Manejo de carga de imagen y previsualización (versión develop)
+  // Lógica de develop: previsualización y almacenamiento temporal del archivo
+  const [imageFile, setImageFile] = useState(null);
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-
-    if (name === "image" && files && files[0]) {
+    if (name === 'image' && files && files[0]) {
+      const file = files[0];
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData((prev) => ({
           ...prev,
-          thumbnailUrl: files[0],
-          preview: reader.result,
+          preview: reader.result
         }));
       };
-      reader.readAsDataURL(files[0]);
+      reader.readAsDataURL(file);
     } else {
       setFormData((prev) => ({
         ...prev,
@@ -189,7 +188,13 @@ const CreateCourse = ({ isEditing = false }) => {
         subcategoryId: 1,
       };
 
-      // Datos según formato de CourseCreateDto
+      // Subir imagen si hay archivo nuevo
+      let thumbnailUrl = formData.thumbnailUrl;
+      if (imageFile) {
+        thumbnailUrl = await uploadCourseThumbnail(imageFile);
+      }
+
+      // Datos según formato de CourseCreateDto (solo URL pública)
       const courseData = {
         title: formData.title,
         description: formData.description,
@@ -201,7 +206,7 @@ const CreateCourse = ({ isEditing = false }) => {
         categoryId: selectedCategory.categoryId,
         subcategoryId: selectedCategory.subcategoryId,
         youtubeUrls: youtubeUrls.length > 0 ? youtubeUrls : [], // Asegurar que sea un array
-        thumbnailUrl: null, // Por ahora null hasta que se implemente subida de imágenes correcta
+        thumbnailUrl, // Solo la URL pública
         price: parseFloat(formData.price) || 0.0, // Asegurar que sea número decimal
         isPremium: parseFloat(formData.price) > 0,
         isPublished: false, // Por defecto como borrador

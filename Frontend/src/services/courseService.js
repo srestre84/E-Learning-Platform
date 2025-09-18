@@ -1,3 +1,42 @@
+// Obtener subcategorías por categoría (para edición de curso)
+export const getSubcategoriesByCategory = async (categoryId) => {
+  try {
+    const response = await api.get(`/api/subcategories/category/${categoryId}`);
+    return ensureArray(processApiResponse(response.data));
+  } catch (error) {
+    console.error("Error al cargar subcategorías:", error);
+    throw handleApiError(error, "No tienes permiso para esta acción");
+  }
+};
+// Eliminar curso (versión develop)
+export const deleteCourse = async (courseId) => {
+  try {
+    const token = localStorage.getItem('token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const response = await api.delete(`/api/courses/${courseId}`, { headers });
+    return response.data;
+  } catch (error) {
+    let errorMessage = "Error al eliminar el curso. Por favor, inténtalo de nuevo.";
+    if (error.response?.status === 401) {
+      errorMessage = "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.";
+    } else if (error.response?.status === 403) {
+      errorMessage = "No tienes permisos para eliminar este curso.";
+    } else if (error.response?.status === 404) {
+      errorMessage = "El curso no fue encontrado.";
+    } else if (error.response?.status === 400) {
+      errorMessage = "No se puede eliminar un curso con estudiantes inscritos.";
+    } else if (error.response?.status === 500) {
+      errorMessage = "Error interno del servidor. Verifica tu conexión e inténtalo de nuevo.";
+    } else if (error.response?.data) {
+      if (typeof error.response.data === 'string') {
+        errorMessage = error.response.data;
+      } else if (error.response.data.message) {
+        errorMessage = error.response.data.message;
+      }
+    }
+    throw new Error(errorMessage);
+  }
+};
 // src/services/courseService.js
 import api from "./api";
 import { processApiResponse, ensureArray, ensureObject, handleApiError } from "./apiUtils";

@@ -116,7 +116,7 @@ export default function CursoDisponible() {
                   {/* Imagen y badges */}
                   <div className="relative">
                     <img
-                      src={course.image?.thumbnailUrl}
+                      src={course.thumbnailUrl}
                       alt={course.title}
                       className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
                     />

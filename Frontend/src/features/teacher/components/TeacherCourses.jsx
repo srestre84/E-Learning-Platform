@@ -43,7 +43,9 @@ import {
   TrendingUp as TrendingUpIcon,
 } from "@mui/icons-material";
 
-import { useTeacherCourses } from "@/shared/hooks/useTeacherCourses"; // ✅ Importa el nuevo custom hook
+import { useTeacherCourses } from "@/shared/hooks/useTeacherCourses";
+import { useAuth } from "@/shared/hooks/useAuth";
+import { deleteCourse } from '@/services/courseService';
 
 // Componentes de estado de carga
 const LoadingState = () => (
@@ -63,12 +65,33 @@ const ErrorState = ({ message }) => (
   </Box>
 );
 
+
 const TeacherCourses = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("todos");
 
-  // ✅ Usa el custom hook para obtener los datos de la API
-  const { courses, loading, error } = useTeacherCourses();
+  // Obtener usuario autenticado
+  const { user } = useAuth();
+
+  // Usar solo una llamada al hook, incluyendo refreshCourses
+  const { courses, loading, error, refreshCourses } = useTeacherCourses(user?.id);
+
+  // Eliminar curso (versión develop)
+  const handleDeleteCourse = async (courseId, courseTitle) => {
+    const confirmDelete = window.confirm(
+      `¿Estás seguro de que deseas eliminar el curso "${courseTitle}"?\n\n` +
+      'Esta acción no se puede deshacer y el curso será eliminado permanentemente.\n' +
+      'Solo se pueden eliminar cursos sin estudiantes inscritos.'
+    );
+    if (!confirmDelete) return;
+    try {
+      await deleteCourse(courseId);
+      await refreshCourses();
+      alert('Curso eliminado exitosamente');
+    } catch (error) {
+      alert(`Error al eliminar el curso: ${error.message}`);
+    }
+  };
 
   // Muestra el estado de carga o error si es necesario
   if (loading) return <LoadingState />;
@@ -259,6 +282,26 @@ const TeacherCourses = () => {
       {filteredCourses.length === 0 ? (
         <Box sx={{ p: 4, textAlign: "center" }}>
           <Typography variant="h6" color="text.secondary">
+                      <Tooltip title="Eliminar curso">
+                        <span>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDeleteCourse(course.id, course.title)}
+                            disabled={course.students > 0}
+                            sx={{
+                              color: 'error.main',
+                              '&:hover': { bgcolor: 'error.50' },
+                              '&:disabled': {
+                                color: 'action.disabled',
+                                '&:hover': { bgcolor: 'transparent' }
+                              },
+                              p: 0.5,
+                            }}
+                          >
+                            <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M6 7h12M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m-7 0v12a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          </IconButton>
+                        </span>
+                      </Tooltip>
             No tienes cursos creados o no hay resultados para tu búsqueda.
           </Typography>
         </Box>
@@ -281,70 +324,30 @@ const TeacherCourses = () => {
                     boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
                   },
                 }}>
-                {/* Header con imagen y estado */}
-                <Box sx={{ position: "relative" }}>
-                  <CardMedia
-                    component="img"
-                    height="180"
-                    image={
-                      course.image ||
-                      generateCoursePlaceholder(course.title || "Curso")
-                    }
-                    alt={`Imagen de ${course.title}`}
-                    sx={{
-                      background:
-                        "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    }}
-                  />
-                  {/* Overlay con gradiente */}
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background:
-                        "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.3))",
-                    }}
-                  />
-
-                  {/* Estado del curso */}
-                  <Chip
-                    label={course.status}
-                    color={getStatusColor(course.status)}
-                    size="small"
-                    sx={{
-                      position: "absolute",
-                      top: 12,
-                      right: 12,
-                      fontWeight: 600,
-                      backdropFilter: "blur(10px)",
-                      backgroundColor:
-                        course.status === "Activo"
-                          ? "rgba(76, 175, 80, 0.9)"
-                          : course.status === "Borrador"
-                          ? "rgba(255, 152, 0, 0.9)"
-                          : "rgba(158, 158, 158, 0.9)",
-                      color: "white",
-                    }}
-                  />
-
-                  {/* Toggle de publicación */}
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: 12,
-                      left: 12,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                      backgroundColor: "rgba(255,255,255,0.9)",
-                      borderRadius: 2,
-                      px: 1.5,
-                      py: 0.5,
-                    }}>
-                    <Switch
+                <CardMedia
+                  component="img"
+                  height="140"
+                  image={
+                    course.image ||
+                    generateCoursePlaceholder(course.title || "Curso")
+                  }
+                  alt={`Imagen de ${course.title}`}
+                />
+                <CardContent sx={{ flexGrow: 1, p: 2 }}>
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="flex-start"
+                    mb={1}>
+                    <Typography
+                      variant="h6"
+                      component="div"
+                      sx={{ fontWeight: "bold" }}>
+                      {course.title}
+                    </Typography>
+                    <Chip
+                      label={course.status}
+                      color={getStatusColor(course.status)}
                       size="small"
                       checked={course.status === "Activo"}
                       sx={{
@@ -483,37 +486,21 @@ const TeacherCourses = () => {
                       </IconButton>
                     </Tooltip>
 
-                    <Tooltip title="Editar curso">
-                      <IconButton
-                        size="small"
-                        sx={{
-                          backgroundColor: "warning.main",
-                          color: "white",
-                          "&:hover": {
-                            backgroundColor: "warning.dark",
-                            transform: "scale(1.1)",
-                          },
-                          transition: "all 0.2s",
-                        }}>
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-
-                    <Tooltip title="Más opciones">
-                      <IconButton
-                        size="small"
-                        sx={{
-                          backgroundColor: "grey.300",
-                          color: "grey.700",
-                          "&:hover": {
-                            backgroundColor: "grey.400",
-                            transform: "scale(1.1)",
-                          },
-                          transition: "all 0.2s",
-                        }}>
-                        <MoreVertIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
+                      <Tooltip title="Editar curso">
+                        <IconButton
+                          size="small"
+                          href={`/teacher/courses/${course.id}/edit`}
+                          sx={{
+                            color: "gray.500",
+                            "&:hover": {
+                              color: "red.500",
+                              bgcolor: "rgba(239, 68, 68, 0.1)",
+                            },
+                          }}>
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
                   </Stack>
 
                   {/* Información adicional */}
