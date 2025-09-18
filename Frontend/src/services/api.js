@@ -1,8 +1,12 @@
 // src/lib/api.js
 import axios from "axios";
 
+const isProd = import.meta.env.MODE === 'production' || import.meta.env.VITE_ENV === 'production';
+
 // 🌐 Base URL según el entorno
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = isProd
+  ? ''
+  : import.meta.env.VITE_API_URL;
 
 
 // ✅ Crear instancia de Axios
