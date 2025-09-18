@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import LandingLayout from "@/ui/layout/LandingLayout";
 import LoadingSpinner from "@/shared/components/LoadingSpinner";
 import LoadingFallback from "@/shared/components/LoadingFallback";
+import ErrorPage from "@/pages/ErrorPage";
 
 // importar paginas con lazy
 const LandingPage = lazy(() => import("@/features/marketing/pages/Home"));
@@ -31,7 +32,6 @@ const ComoFunciona = lazy(() =>
   import("@/features/marketing/pages/comoFunciona")
 );
 const TestConnection = lazy(() => import("@/features/test/TextConnection"));
-const ErrorPage = lazy(() => import("@/pages/ErrorPage"));
 
 const CentroAyuda = lazy(() => import("@/pages/CentroAyuda"));
 const Contacto = lazy(() => import("@/pages/Contacto"));
