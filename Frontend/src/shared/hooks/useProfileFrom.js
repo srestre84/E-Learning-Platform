@@ -100,18 +100,23 @@ export const useProfileForm = (profileService) => {
       return;
     }
     const dataToSend = {
-      userName: formData.userName,
-      lastName: formData.lastName,
+      userName: formData.userName.trim(),
+      lastName: formData.lastName.trim(),
       email: formData.email,
-
       profileImageUrl: formData.profileImageUrl || null,
       bio: formData.bio || null,
-      specialty: formData.specialty || null,
+      specialty: formData.specialty|| null,
       website: formData.website || null,
       twitter: formData.twitter || null,
       linkedin: formData.linkedin || null,
       github: formData.github || null,
     };
+
+  Object.keys(dataToSend).forEach(key => {
+    if (dataToSend[key] === null || dataToSend[key] === undefined) {
+      delete dataToSend[key];
+    }
+  });
 
     setUpdating(true);
     setError(null);
@@ -148,7 +153,7 @@ export const useProfileForm = (profileService) => {
 
 
 
-  return{
+  return {
     formData,
     setFormData, // <-- Exponer setFormData
     loading,
