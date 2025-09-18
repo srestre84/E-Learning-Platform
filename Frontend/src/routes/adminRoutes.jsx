@@ -15,6 +15,9 @@ const NewCoursePage = lazy(() =>
   import("@/features/admin/pages/NewCoursePage")
 );
 const ReportsPage = lazy(() => import("@/features/admin/pages/ReportsPage"));
+const AdminProfileEditor = lazy(() =>
+  import("@/features/admin/components/AdminProfileEditor")
+);
 
 // Admin routes
 export const adminRoutes = [
@@ -78,6 +81,14 @@ export const adminRoutes = [
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <ReportsPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "perfil",
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <AdminProfileEditor />
           </Suspense>
         ),
       },
