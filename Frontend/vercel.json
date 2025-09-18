@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://149.130.176.157/api/$1"
+      "destination": "http://149.130.176.157/api/$1"
     },
     {
       "source": "/auth/(.*)",
-      "destination": "https://149.130.176.157/auth/$1"
+      "destination": "http://149.130.176.157/auth/$1"
     }
   ]
 }
