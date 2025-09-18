@@ -13,7 +13,9 @@ import {
 import { Badge } from "@/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { createStripeCheckoutSession } from "@/services/paymentService";
-import { useAuth } from "@/shared/hooks/useAuth";
+import { unenrollFromCourse } from "@/services/enrollmentService";
+import { useAuth } from "@/contexts/useAuth";
+import { toast } from "sonner";
 import {
   generateCoursePlaceholder,
   handleImageError,
@@ -115,14 +117,30 @@ export default function CourseList({ courses, onToggleFavorite, onUnenroll }) {
   };
 
   const handleConfirmUnenroll = async () => {
-    if (!unenrollingCourse || !onUnenroll) return;
+    if (!unenrollingCourse) return;
 
     try {
-      await onUnenroll(unenrollingCourse.id);
+      // Buscar el enrollmentId del curso
+      const enrollment = courses.find(
+        (course) => course.id === unenrollingCourse.id
+      );
+      if (!enrollment || !enrollment.enrollmentId) {
+        throw new Error("No se encontró la información de inscripción");
+      }
+
+      await unenrollFromCourse(enrollment.enrollmentId);
+
+      // Notificar al componente padre para actualizar la lista
+      if (onUnenroll) {
+        await onUnenroll(unenrollingCourse.id);
+      }
+
       setShowUnenrollConfirm(false);
       setUnenrollingCourse(null);
+      toast.success("Te has desinscrito del curso correctamente");
     } catch (error) {
       console.error("Error al desinscribirse:", error);
+      toast.error(error.message || "Error al desinscribirse del curso");
     }
   };
 
