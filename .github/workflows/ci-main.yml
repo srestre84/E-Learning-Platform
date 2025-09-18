@@ -76,7 +76,7 @@ jobs:
             echo "=== Verificando despliegue ==="
             sleep 20
 
-            max_attempts=20
+            max_attempts=30
             attempt=1
             until curl -sf http://localhost:8080/actuator/health; do
               echo "Intento $attempt/$max_attempts: Backend aún no disponible..."
