@@ -13,7 +13,7 @@ import { Pencil, Save, X, Mail } from "lucide-react";
 import { useProfileForm } from "@/shared/hooks/useProfileFrom";
 import profileService from "@/services/profileService";
 
-const TeacherProfileEditor = () => {
+const StudentProfileEditor = () => {
   const {
     formData,
     setFormData,
@@ -47,7 +47,7 @@ const TeacherProfileEditor = () => {
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Mi Perfil</h2>
           <p className="text-gray-600 text-sm">
-            Gestiona la información de tu perfil de docente
+            Gestiona la información de tu perfil de estudiante
           </p>
         </div>
         {!isEditing ? (
@@ -287,4 +287,4 @@ const TeacherProfileEditor = () => {
   );
 };
 
-export default TeacherProfileEditor;
+export default StudentProfileEditor;
