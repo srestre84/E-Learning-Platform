@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/shared/hooks/useAuth";
+import { useAuth } from "@/contexts/useAuth";
 import { LogOut, User } from "lucide-react";
 export default function HeaderApp() {
   const { logout, user } = useAuth();
