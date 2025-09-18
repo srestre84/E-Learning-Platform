@@ -30,13 +30,13 @@ const validateApiResponse = (data) => {
   if (typeof data === 'string') {
     try {
       return JSON.parse(data);
-    } catch (error) {
-      console.warn('⚠️ No se pudo parsear respuesta como JSON:', data);
+    } catch (parseError) {
+      console.warn('⚠️ No se pudo parsear respuesta como JSON:', parseError.message);
       return { message: data };
     }
   }
 
-  // Si es objeto, validar estructura básica
+  // Si ya es objeto, devolverlo tal como está
   if (typeof data === 'object') {
     return data;
   }
@@ -45,8 +45,19 @@ const validateApiResponse = (data) => {
 };
 
 const cleanApiData = (data) => {
+  // Si ya es un objeto válido, no procesarlo
+  if (data && typeof data === 'object' && !Array.isArray(data)) {
+    return data;
+  }
+
   if (Array.isArray(data)) {
-    return data.map(item => validateApiResponse(item));
+    return data.map(item => {
+      // Solo procesar si el item es string
+      if (typeof item === 'string') {
+        return validateApiResponse(item);
+      }
+      return item;
+    });
   }
 
   return validateApiResponse(data);
@@ -78,9 +89,14 @@ api.interceptors.request.use(
 // 🚨 Interceptor para manejar respuestas y errores
 api.interceptors.response.use(
   (response) => {
-    // ✅ Validar y limpiar formato de respuesta
-    if (response.data) {
-      response.data = cleanApiData(response.data);
+    // ✅ Solo procesar si la respuesta es string (no ya parseada)
+    if (response.data && typeof response.data === 'string') {
+      try {
+        response.data = JSON.parse(response.data);
+      } catch (error) {
+        console.warn('⚠️ Error parsing JSON response:', error.message);
+        // Mantener la respuesta original si no se puede parsear
+      }
     }
 
     return response;
@@ -110,8 +126,8 @@ api.interceptors.response.use(
 
     const { status, data } = error.response;
 
-    // 🔍 Validar formato de datos de error
-    const errorData = cleanApiData(data);
+    // 🔍 Usar datos de error directamente sin procesar
+    const errorData = data;
 
     // 🔑 Sesión expirada
     if (status === 401) {

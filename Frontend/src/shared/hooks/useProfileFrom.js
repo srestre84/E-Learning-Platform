@@ -3,8 +3,8 @@ import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 
 
-export const useProfileForm = (profileService) =>{
-const [formData, setFormData] = useState({
+export const useProfileForm = (profileService) => {
+  const [formData, setFormData] = useState({
     userName: '',
     lastName: '',
     email: '',
@@ -39,8 +39,8 @@ const [formData, setFormData] = useState({
           specialty: userData.specialty || '',
           website: userData.website || '',
           twitter: userData.twitter || '',
-            linkedin: userData.linkedin || '',
-            github: userData.github || ''
+          linkedin: userData.linkedin || '',
+          github: userData.github || ''
         };
         setFormData(initialData);
         setOriginalData(initialData);
@@ -94,48 +94,48 @@ const [formData, setFormData] = useState({
 
   // Guardar perfil
   const handleSave = async (e) => {
-     e.preventDefault();
-     if (!validate()){
-       toast.error("Por favor corrige los errores en el formulario.")
-       return;
-     }
-     const dataToSend = {
-       userName: formData.userName,
-       lastName: formData.lastName,
-       email: formData.email,
+    e.preventDefault();
+    if (!validate()) {
+      toast.error("Por favor corrige los errores en el formulario.")
+      return;
+    }
+    const dataToSend = {
+      userName: formData.userName,
+      lastName: formData.lastName,
+      email: formData.email,
 
-       profileImageUrl: formData.profileImageUrl || null,
-       bio: formData.bio || null,
-       specialty: formData.specialty || null,
-       website: formData.website || null,
-       twitter: formData.twitter || null,
-       linkedin: formData.linkedin || null,
-       github: formData.github || null,
-     };
+      profileImageUrl: formData.profileImageUrl || null,
+      bio: formData.bio || null,
+      specialty: formData.specialty || null,
+      website: formData.website || null,
+      twitter: formData.twitter || null,
+      linkedin: formData.linkedin || null,
+      github: formData.github || null,
+    };
 
-     setUpdating(true);
-     setError(null);
-     try {
-       const updatedUser = await profileService.updateProfile(dataToSend);
-       setFormData(updatedUser);
-       setOriginalData(updatedUser);
-       toast.success("Perfil actualizado correctamente ✅");
-       setIsEditing(false);
-     } catch (err) {
-       console.error('Error updating profile:', err);
+    setUpdating(true);
+    setError(null);
+    try {
+      const updatedUser = await profileService.updateProfile(dataToSend);
+      setFormData(updatedUser);
+      setOriginalData(updatedUser);
+      toast.success("Perfil actualizado correctamente ✅");
+      setIsEditing(false);
+    } catch (err) {
+      console.error('Error updating profile:', err);
 
-       const backendMessage = err?.response?.data?.message;
-       if (backendMessage) {
-         toast.error(backendMessage);
-         setError(backendMessage);
-       } else {
-         toast.error('Error al actualizar el perfil');
-         setError('Error al actualizar el perfil');
-       }
-     } finally {
-       setUpdating(false);
-     }
-   };
+      const backendMessage = err?.response?.data?.message;
+      if (backendMessage) {
+        toast.error(backendMessage);
+        setError(backendMessage);
+      } else {
+        toast.error('Error al actualizar el perfil');
+        setError('Error al actualizar el perfil');
+      }
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   // Cancelar edición
   const handleCancel = () => {
@@ -147,9 +147,10 @@ const [formData, setFormData] = useState({
 
 
 
-  return{
+  return {
 
     formData,
+    setFormData,
     loading,
     updating,
     error,
