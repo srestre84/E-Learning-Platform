@@ -1,7 +1,7 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "../common/Sidebar";
 import { useEffect } from "react";
-import { useAuth } from "@/shared/hooks/useAuth";
+import { useAuth } from "@/contexts/useAuth";
 import { useSidebar } from "@/shared/hooks/useSidebar";
 
 export default function AppLayout() {
