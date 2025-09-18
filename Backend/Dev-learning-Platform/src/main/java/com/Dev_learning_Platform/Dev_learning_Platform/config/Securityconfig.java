@@ -53,7 +53,13 @@ public class Securityconfig {
         log.info("Configurando CORS en SecurityConfig con orígenes: {}", Arrays.toString(allowedOrigins));
 
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins)); // Usar solo orígenes explícitos
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+            "http://localhost:5173",
+            "https://edu-platform-omega-ten.vercel.app",
+            "https://edu-platform-git-develop-juan-valenzuelas-projects.vercel.app",
+            "https://*.vercel.app",
+            "https://157.137.234.237"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
