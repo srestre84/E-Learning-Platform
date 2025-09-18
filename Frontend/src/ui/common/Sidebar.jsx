@@ -63,7 +63,7 @@ const getTeacherLinks = () => [
     label: "Mis Cursos",
     subItems: [
       { path: "/teacher/courses", icon: BookCopy, label: "Ver Cursos" },
-      { path: "/teacher/courses/new", icon: BookCopy, label: "Crear Curso" },
+      { path: "/teacher/courses/create", icon: BookCopy, label: "Crear Curso" },
     ],
   },
   { path: "/teacher/students", icon: GraduationCap, label: "Estudiantes" },
