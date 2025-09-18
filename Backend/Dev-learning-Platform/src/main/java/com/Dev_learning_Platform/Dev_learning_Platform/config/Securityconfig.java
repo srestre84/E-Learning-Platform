@@ -51,17 +51,17 @@ public class Securityconfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         log.info("Configurando CORS en SecurityConfig con orígenes: {}", Arrays.toString(allowedOrigins));
-        
+
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList(allowedOrigins)); // Usar patterns para wildcards
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins)); // Usar solo orígenes explícitos
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-        
+
         log.info("CORS configurado en SecurityConfig");
         return source;
     }
