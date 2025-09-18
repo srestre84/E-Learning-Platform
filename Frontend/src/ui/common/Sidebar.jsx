@@ -348,7 +348,10 @@ const Sidebar = () => {
                 <div className="relative">
                   <Avatar className="w-10 h-10">
                     {user?.profileImageUrl ? (
-                      <AvatarImage src={user.profileImageUrl} alt={getUserDisplayName()} />
+                      <AvatarImage
+                        src={user.profileImageUrl}
+                        alt={getUserDisplayName()}
+                      />
                     ) : null}
                     <AvatarFallback>
                       {getUserDisplayName().charAt(0).toUpperCase()}
