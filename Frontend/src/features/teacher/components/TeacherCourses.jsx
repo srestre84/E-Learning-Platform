@@ -110,20 +110,20 @@ const TeacherCourses = () => {
           variant="contained"
           startIcon={<AddIcon />}
           component={Link}
-          to="/teacher/courses/create"
+          to="/teacher/courses/new"
           sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            background: "red",
             borderRadius: 2,
             px: 3,
             py: 1.5,
             fontWeight: 600,
             textTransform: "none",
             fontSize: "1rem",
-            boxShadow: "0 4px 15px rgba(102, 126, 234, 0.4)",
+            boxShadow: "0 4px 15px rgba(239, 68, 68, 0.4)",
             "&:hover": {
-              background: "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",
+              background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
               transform: "translateY(-2px)",
-              boxShadow: "0 6px 20px rgba(102, 126, 234, 0.6)",
+              boxShadow: "0 6px 20px rgba(239, 68, 68, 0.6)",
             },
             transition: "all 0.3s ease",
           }}>
