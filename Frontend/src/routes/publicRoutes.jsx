@@ -37,7 +37,7 @@ const CentroAyuda = lazy(() => import("@/pages/CentroAyuda"));
 const Contacto = lazy(() => import("@/pages/Contacto"));
 const TerminosUso = lazy(() => import("@/pages/TerminosUso"));
 const Privacidad = lazy(() => import("@/pages/Privacidad"));
-
+const AuthLoadingScreen = lazy(() => import("@/shared/components/auth/AuthLoadingScreen"));
 const publicRoutes = [
   {
     path: "/",
@@ -190,6 +190,14 @@ const publicRoutes = [
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <ResetPasswordPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "auth-loading",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <AuthLoadingScreen />
           </Suspense>
         ),
       },
