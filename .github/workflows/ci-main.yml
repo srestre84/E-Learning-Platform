@@ -31,6 +31,9 @@ jobs:
       env:
         JWT_SECRET_KEY: testSecretKeyForCITestingPurposesOnly123456789
         JWT_EXPIRATION_TIME: 86400000
+        STRIPE_API_KEY: test_stripe_key
+        STRIPE_API_PUBLIC_KEY: test_stripe_public_key
+        STRIPE_WEBHOOK_SECRET: test_stripe_webhook_secret
       run: |
         cd Backend/Dev-learning-Platform
         ./mvnw clean test -Dspring.profiles.active=test -q -Dlogging.level.org.springframework.boot.autoconfigure=OFF
