@@ -22,7 +22,7 @@ function App() {
           <Suspense fallback={<LoadingSpinner />}>
             <RouterProvider router={router} />
             <ToastContainer
-              position="top-right"
+              position="center-center"
               autoClose={5000}
               hideProgressBar={false}
               newestOnTop={false}
