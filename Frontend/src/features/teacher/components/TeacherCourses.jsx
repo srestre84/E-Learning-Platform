@@ -328,6 +328,7 @@ const TeacherCourses = () => {
                   component="img"
                   height="140"
                   image={
+                    course.thumbnailUrl ||
                     course.image ||
                     generateCoursePlaceholder(course.title || "Curso")
                   }
@@ -345,23 +346,25 @@ const TeacherCourses = () => {
                       sx={{ fontWeight: "bold" }}>
                       {course.title}
                     </Typography>
-                    <Chip
-                      label={course.status}
-                      color={getStatusColor(course.status)}
-                      size="small"
-                      checked={course.status === "Activo"}
-                      sx={{
-                        "& .MuiSwitch-thumb": {
-                          backgroundColor:
-                            course.status === "Activo" ? "#4caf50" : "#f44336",
-                        },
-                      }}
-                    />
-                    <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                      {course.status === "Activo" ? "Publicado" : "Borrador"}
-                    </Typography>
-                  </Box>
-                </Box>
+                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                      <Chip
+                        label={course.status}
+                        color={getStatusColor(course.status)}
+                        size="small"
+                        checked={course.status === "Activo"}
+                        sx={{
+                          "& .MuiSwitch-thumb": {
+                            backgroundColor:
+                              course.status === "Activo" ? "#4caf50" : "#f44336",
+                          },
+                        }}
+                      />
+                      <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                        {course.status === "Activo" ? "Publicado" : "Borrador"}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </CardContent>
 
                 <CardContent sx={{ flexGrow: 1, p: 3 }}>
                   {/* Título del curso */}
@@ -500,7 +503,6 @@ const TeacherCourses = () => {
                           <EditIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
-                    </Box>
                   </Stack>
 
                   {/* Información adicional */}

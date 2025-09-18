@@ -107,9 +107,9 @@ const CourseEditor = () => {
 
     return (
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        {course.image && (
+        {course.thumbnailUrl && (
           <img
-            src={course.image}
+            src={course.thumbnailUrl}
             alt={course.title}
             className="w-full h-48 object-cover rounded-lg mb-6"
           />
@@ -225,7 +225,7 @@ const CourseEditor = () => {
                   <span className="inline-block h-12 w-12 rounded-md overflow-hidden bg-gray-100">
                     {course.image ? (
                       <img
-                        src={course.image}
+                        src={course.thumbnailUrl}
                         alt="Course cover"
                         className="h-full w-full object-cover"
                       />
