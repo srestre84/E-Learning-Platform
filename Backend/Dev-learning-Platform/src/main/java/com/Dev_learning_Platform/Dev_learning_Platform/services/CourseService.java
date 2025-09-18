@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,6 +64,10 @@ public class CourseService {
 
     public List<Course> getPublicCourses() {
         return courseRepository.findByIsActiveAndIsPublished(true, true);
+    }
+
+    public Page<Course> getPublicCourses(Pageable pageable) {
+        return courseRepository.findByIsActiveAndIsPublished(true, true, pageable);
     }
 
     public Course findById(Long courseId) {
@@ -138,12 +144,14 @@ public class CourseService {
         return course;
     }
 
+    @Transactional
     public Course updateCourse(Long courseId, CourseCreateDto courseDto) {
         Course existingCourse = findById(courseId);
 
         User authenticatedUser = userService.getAuthenticatedUser();
         boolean isAdmin = authenticatedUser.getRole() == User.Role.ADMIN;
-        boolean isOwner = existingCourse.getInstructor().getId().equals(authenticatedUser.getId());
+        boolean isOwner = existingCourse.getInstructor() != null && 
+                         existingCourse.getInstructor().getId().equals(authenticatedUser.getId());
         if (!isAdmin && !isOwner) {
             throw new AccessDeniedException("No tienes permisos para editar este curso.");
         }
@@ -185,7 +193,8 @@ public class CourseService {
 
         User authenticatedUser = userService.getAuthenticatedUser();
         boolean isAdmin = authenticatedUser.getRole() == User.Role.ADMIN;
-        boolean isOwner = existingCourse.getInstructor().getId().equals(authenticatedUser.getId());
+        boolean isOwner = existingCourse.getInstructor() != null && 
+                         existingCourse.getInstructor().getId().equals(authenticatedUser.getId());
         if (!isAdmin && !isOwner) {
             throw new AccessDeniedException("No tienes permisos para eliminar este curso.");
         }
@@ -312,7 +321,8 @@ public class CourseService {
         
         User authenticatedUser = userService.getAuthenticatedUser();
         boolean isAdmin = authenticatedUser.getRole() == User.Role.ADMIN;
-        boolean isOwner = course.getInstructor().getId().equals(authenticatedUser.getId());
+        boolean isOwner = course.getInstructor() != null && 
+                         course.getInstructor().getId().equals(authenticatedUser.getId());
         if (!isAdmin && !isOwner) {
             throw new AccessDeniedException("No tienes permisos para modificar este curso.");
         }
