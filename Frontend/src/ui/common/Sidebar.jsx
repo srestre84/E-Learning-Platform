@@ -177,21 +177,30 @@ const Sidebar = () => {
   const [expandedItems, setExpandedItems] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const location = useLocation();
   const { user, role, isAuthenticated, logout } = useAuth();
   const { showNotification } = useNotification();
 
-  const handleLogout = async () => {
-    console.log("--- Iniciando cierre de sesión ---");
-    try {
-      await logout({ redirect: true, redirectTo: "/" });
-      console.log("--- Cierre de sesión exitoso ---");
-      showNotification("¡Hasta luego!", "success");
-    } catch (error) {
-      console.error("--- Error en el cierre de sesión ---", error);
-      showNotification("Ocurrió un error al cerrar la sesión.", "error");
-    }
-  };
+const handleLogoutClick= ( )=>{
+  setShowConfirmDialog(true)
+}
+const cancelLogout =( )=>{
+  setShowConfirmDialog(false)
+}
+
+const confirmLogout = async () => {
+  setShowConfirmDialog(false);
+  console.log("--- Iniciando cierre de sesión ---");
+  try {
+    await logout({ redirect: true, redirectTo: "/" });
+    console.log("--- Cierre de sesión exitoso ---");
+    showNotification("¡Hasta luego!", "success");
+  } catch (error) {
+    console.error("--- Error en el cierre de sesión ---", error);
+    showNotification("Ocurrió un error al cerrar la sesión.", "error");
+  }
+};
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
@@ -437,19 +446,56 @@ const Sidebar = () => {
             {/* Cerrar sesión */}
             <div className="p-4 border-t border-gray-200">
               <Button
-                onClick={handleLogout}
+                onClick={handleLogoutClick} // Cambiar a handleLogoutClick
                 className={cn(
-                  "w-full flex items-center justify-center py-2 px-4 bg-red-500 rounded-lg hover:bg-red-600",
-                  isCollapsed ? "px-2" : ""
+                  "w-full flex items-center justify-center py-3 px-4 bg-gray-100 hover:bg-red-500 text-gray-700 hover:text-white rounded-xl font-medium hover:scale-105 hover:shadow-lg transition-all duration-300 group relative",
+                  isCollapsed ? "px-3" : ""
                 )}
                 title={isCollapsed ? "Cerrar sesión" : ""}>
-                <Logout className={cn("w-4 h-4", isCollapsed ? "" : "mr-2")} />
-                {!isCollapsed && "Cerrar sesión"}
+                <Logout className={cn("w-4 h-4 transition-all duration-300 group-hover:animate-pulse", isCollapsed ? "" : "mr-2")} />
+                {!isCollapsed && (
+                  <span className="transition-all duration-300 group-hover:font-semibold">
+                    Cerrar sesión
+                  </span>
+                )}
+                <div className="absolute inset-0 rounded-xl bg-red-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
               </Button>
             </div>
+
           </div>
         </aside>
       </div>
+      {/* Modal de confirmación */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                <Logout className="w-5 h-5 text-red-600" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900">
+                Cerrar sesión
+              </h3>
+            </div>
+            <p className="text-sm text-gray-500 mb-6">
+              ¿Estás seguro de que quieres cerrar sesión? Tendrás que iniciar
+              sesión nuevamente para acceder a tu cuenta.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={cancelLogout}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors">
+                Cancelar
+              </button>
+              <button
+                onClick={confirmLogout}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors">
+                Cerrar sesión
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
