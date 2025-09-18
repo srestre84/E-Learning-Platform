@@ -10,6 +10,8 @@ import { Input } from "@/ui/Input";
 import { Label } from "@/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Pencil, Save, X, Mail } from "lucide-react";
+import React, { useState } from "react";
+import { uploadProfileImage } from "@/services/uploadService";
 import { useProfileForm } from "@/shared/hooks/useProfileFrom";
 import profileService from "@/services/profileService";
 
@@ -27,6 +29,10 @@ const AdminProfileEditor = () => {
     setIsEditing,
   } = useProfileForm(profileService);
 
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  // No se requiere lógica extra para preview ni archivo, ya que la URL se actualiza al subir
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -38,8 +44,9 @@ const AdminProfileEditor = () => {
       </div>
     );
   }
-  if (error && !isEditing)
+  if (error && !isEditing) {
     return <p className="text-red-600 text-center mt-4">{error}</p>;
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -95,6 +102,11 @@ const AdminProfileEditor = () => {
                   {formData.userName?.[0]}
                   {formData.lastName?.[0] || "U"}
                 </AvatarFallback>
+                {uploadingImage && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/70 rounded-full">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent text-red-500" />
+                  </div>
+                )}
               </Avatar>
               {isEditing && (
                 <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -106,16 +118,18 @@ const AdminProfileEditor = () => {
                       type="file"
                       className="hidden"
                       accept="image/*"
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         const file = e.target.files[0];
                         if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = () =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              profileImageUrl: reader.result,
-                            }));
-                          reader.readAsDataURL(file);
+                          setUploadingImage(true);
+                          try {
+                            const url = await uploadProfileImage(file);
+                            setFormData((prev) => ({ ...prev, profileImageUrl: url }));
+                          } catch (err) {
+                            // Puedes mostrar un toast aquí si quieres
+                          } finally {
+                            setUploadingImage(false);
+                          }
                         }
                       }}
                     />

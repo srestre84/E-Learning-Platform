@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -11,6 +12,7 @@ import { Label } from "@/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Pencil, Save, X, Mail } from "lucide-react";
 import { useProfileForm } from "@/shared/hooks/useProfileFrom";
+import { uploadProfileImage } from "@/services/uploadService";
 import profileService from "@/services/profileService";
 
 const TeacherProfileEditor = () => {
@@ -26,6 +28,8 @@ const TeacherProfileEditor = () => {
     handleCancel,
     setIsEditing,
   } = useProfileForm(profileService);
+  // Estado para loading de imagen
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   if (loading) {
     return (
@@ -95,6 +99,11 @@ const TeacherProfileEditor = () => {
                   {formData.userName?.[0]}
                   {formData.lastName?.[0] || "U"}
                 </AvatarFallback>
+                {uploadingImage && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/70 rounded-full">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent text-red-500" />
+                  </div>
+                )}
               </Avatar>
               {isEditing && (
                 <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -106,16 +115,18 @@ const TeacherProfileEditor = () => {
                       type="file"
                       className="hidden"
                       accept="image/*"
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         const file = e.target.files[0];
                         if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = () =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              profileImageUrl: reader.result,
-                            }));
-                          reader.readAsDataURL(file);
+                          setUploadingImage(true);
+                          try {
+                            const url = await uploadProfileImage(file);
+                            setFormData((prev) => ({ ...prev, profileImageUrl: url }));
+                          } catch (err) {
+                            // Puedes mostrar un toast aquí si quieres
+                          } finally {
+                            setUploadingImage(false);
+                          }
                         }
                       }}
                     />
@@ -285,6 +296,7 @@ const TeacherProfileEditor = () => {
       </Card>
     </div>
   );
+  // No se requiere lógica extra para preview ni archivo, ya que la URL se actualiza al subir
 };
 
 export default TeacherProfileEditor;

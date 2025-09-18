@@ -1,6 +1,7 @@
 import ProfileService from "@/services/profileService";
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { uploadProfileImage } from "@/services/uploadService";
 
 
 export const useProfileForm = (profileService) => {
@@ -96,27 +97,39 @@ export const useProfileForm = (profileService) => {
   const handleSave = async (e) => {
     e.preventDefault();
     if (!validate()) {
-      toast.error("Por favor corrige los errores en el formulario.")
+      toast.error("Por favor corrige los errores en el formulario.");
       return;
     }
+
+    let profileImageUrl = formData.profileImageUrl || null;
+    // Si hay un archivo nuevo, subirlo y obtener la URL
+    if (formData.profileImageFile) {
+      try {
+        profileImageUrl = await uploadProfileImage(formData.profileImageFile);
+      } catch (uploadError) {
+        toast.error(uploadError.message || "Error al subir la imagen de perfil");
+        return;
+      }
+    }
+
     const dataToSend = {
       userName: formData.userName.trim(),
       lastName: formData.lastName.trim(),
       email: formData.email,
-      profileImageUrl: formData.profileImageUrl || null,
+      profileImageUrl,
       bio: formData.bio || null,
-      specialty: formData.specialty|| null,
+      specialty: formData.specialty || null,
       website: formData.website || null,
       twitter: formData.twitter || null,
       linkedin: formData.linkedin || null,
       github: formData.github || null,
     };
 
-  Object.keys(dataToSend).forEach(key => {
-    if (dataToSend[key] === null || dataToSend[key] === undefined) {
-      delete dataToSend[key];
-    }
-  });
+    Object.keys(dataToSend).forEach((key) => {
+      if (dataToSend[key] === null || dataToSend[key] === undefined) {
+        delete dataToSend[key];
+      }
+    });
 
     setUpdating(true);
     setError(null);
@@ -127,15 +140,15 @@ export const useProfileForm = (profileService) => {
       toast.success("Perfil actualizado correctamente ✅");
       setIsEditing(false);
     } catch (err) {
-      console.error('Error updating profile:', err);
+      console.error("Error updating profile:", err);
 
       const backendMessage = err?.response?.data?.message;
       if (backendMessage) {
         toast.error(backendMessage);
         setError(backendMessage);
       } else {
-        toast.error('Error al actualizar el perfil');
-        setError('Error al actualizar el perfil');
+        toast.error("Error al actualizar el perfil");
+        setError("Error al actualizar el perfil");
       }
     } finally {
       setUpdating(false);
