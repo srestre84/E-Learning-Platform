@@ -155,7 +155,7 @@ export default function DashboardStudent() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900">
-            ¡Hola, {user?.userName || "Usuario"}! 👋
+            Bienvenido, {user?.userName || "Usuario"}! 👋
           </h1>
           <p className="text-xl text-gray-600 mt-2">
             {format(new Date(), "EEEE, d MMMM", { locale: es })}
