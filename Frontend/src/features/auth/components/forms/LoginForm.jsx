@@ -51,16 +51,9 @@ export default function LoginForm() {
 
       if (loginResult.success) {
         toast.success("¡Inicio de sesión exitoso!");
-
+        navigate("/authentication/auth-loading");
         // Redirigir según rol (mapear 'instructor' a 'teacher' para compatibilidad)
-        const role = response.data.role.toLowerCase();
-        if (role === "admin") {
-          navigate("/admin/dashboard");
-        } else if (role === "teacher" || role === "instructor") {
-          navigate("/teacher/dashboard");
-        } else {
-          navigate("/dashboard");
-        }
+
       } else {
         throw new Error(loginResult.error || "Error al iniciar sesión");
       }
@@ -68,7 +61,7 @@ export default function LoginForm() {
       console.error("Error en login:", err);
       const msg =
         err.response?.data?.message || err.message || "Error al iniciar sesión";
-   
+
       toast.error(msg);
     } finally {
       setIsLoading(false);
