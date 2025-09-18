@@ -17,6 +17,13 @@ export default function HeaderApp() {
     if (location.pathname.includes("/admin/cursos")) return "Gestión de Cursos";
     if (location.pathname.includes("/admin/reportes"))
       return "Reportes y Análisis";
+    if (location.pathname.includes("/mis-cursos"))
+      return "Mis cursos";
+    if (location.pathname.includes("/perfil"))
+      return "Mi perfil";
+    if (location.pathname.includes("/configuracion"))
+      return "Configuración";
+    if (location.pathname.includes("/dashboard"))
 
     return "Dashboard";
   };
@@ -48,6 +55,7 @@ export default function HeaderApp() {
     setShowConfirmDialog(false);
     setIsDropdownOpen(false);
   };
+  const image = user.profileImageUrl ? user.profileImageUrl : "https://ui-avatars.com/api/?name=" + user.firstName + "+" + user.lastName;
 
   const getUserDisplayName = () => {
     if (!user) return "Usuario";
@@ -55,6 +63,7 @@ export default function HeaderApp() {
       return `${user.firstName} ${user.lastName}`;
     if (user.name) return user.name;
     return user.email || "Usuario";
+
   };
   return (
     <header className="bg-white shadow-sm px-6">
@@ -69,7 +78,8 @@ export default function HeaderApp() {
               className="flex items-center max-w-xs text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 hover:bg-gray-50 transition-colors">
               <span className="sr-only">Abrir menú de usuario</span>
               <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-semibold">
-                {getUserDisplayName().charAt(0).toUpperCase()}
+                <img src={image} alt={getUserDisplayName()} className="w-8 h-8 rounded-full" />
+                {/* {getUserDisplayName().charAt(0).toUpperCase()} */}
               </div>
             </button>
 
