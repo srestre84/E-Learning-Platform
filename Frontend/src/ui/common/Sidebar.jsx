@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "@/shared/hooks/useAuth";
+import { useAuth } from "@/contexts/useAuth";
 import { useNotification } from "@/contexts/NotificationContext";
 import { useSidebar } from "@/shared/hooks/useSidebar";
 import {
@@ -73,22 +73,28 @@ const getTeacherLinks = () => [
 const adminLinks = [
   { path: "/admin/dashboard", icon: LayoutDashboard, label: "Panel" },
   {
-    path: "/admin/usuarios", icon: Users, label: "Usuarios",
+    path: "/admin/usuarios",
+    icon: Users,
+    label: "Usuarios",
     subItems: [
       { path: "/admin/usuarios", icon: Users, label: "Usuarios" },
       { path: "/admin/usuarios/nuevo", icon: Users, label: "Nuevo Usuario" },
     ],
   },
-{
-  path: "/admin/cursos", icon: BookCopy, label: "Cursos",
-  subItems: [
-    { path: "/admin/cursos", icon: BookCopy, label: "Listado de Cursos" },
-    { path: "/admin/cursos/nuevo", icon: BookCopy, label: "Nuevo Curso" },
-  ],
-},
+  {
+    path: "/admin/cursos",
+    icon: BookCopy,
+    label: "Cursos",
+    subItems: [
+      { path: "/admin/cursos", icon: BookCopy, label: "Listado de Cursos" },
+      { path: "/admin/cursos/nuevo", icon: BookCopy, label: "Nuevo Curso" },
+    ],
+  },
 
   {
-    path: "/admin/reportes", icon: BarChart2, label: "Reportes",
+    path: "/admin/reportes",
+    icon: BarChart2,
+    label: "Reportes",
   },
   { path: "/admin/perfil", icon: User, label: "Perfil" },
   //TODO: DESCOMENTAR CUANDO SE TENGA LOS ENLACES DE CHAT
@@ -339,9 +345,19 @@ const Sidebar = () => {
                   isCollapsed ? "justify-center" : "space-x-3"
                 )}>
                 <div className="relative">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white font-semibold">
-                    {getUserDisplayName().charAt(0).toUpperCase()}
-                  </div>
+                  {user?.profileImageUrl ? (
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200">
+                      <img
+                        src={user.profileImageUrl}
+                        alt={getUserDisplayName()}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white font-semibold">
+                      {getUserDisplayName().charAt(0).toUpperCase()}
+                    </div>
+                  )}
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
                 </div>
                 {!isCollapsed && (
