@@ -2,9 +2,8 @@
 import axios from "axios";
 
 // 🌐 Base URL según el entorno
-const API_URL = import.meta.env.DEV
-  ? "" // En desarrollo usar proxy de Vite (vite.config.js maneja /api y /auth)
-  : ""; // En producción, usar rutas relativas que Vercel proxy manejará
+const API_URL = import.meta.env.VITE_API_URL;
+
 
 // ✅ Crear instancia de Axios
 const api = axios.create({
