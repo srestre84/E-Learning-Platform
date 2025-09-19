@@ -4,7 +4,7 @@
  */
 export const routeTitles = {
   // Rutas públicas
-  '/': 'E-Learning Platform | Donde el aprendizaje es una aventura',
+  '/': 'Donde el aprendizaje es una aventura',
   '/authentication': 'Iniciar sesión',
   '/authentication/register': 'Registro',
   '/authentication/forgot-password': 'Recuperar contraseña',
