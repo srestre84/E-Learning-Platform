@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { adminService } from "../../../services/adminService";
 
+
 export default function DashboardPage() {
   // Estados para los datos
   const [stats, setStats] = useState([]);
@@ -24,6 +25,7 @@ export default function DashboardPage() {
   const [recentEnrollments, setRecentEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userStats, setUserStats] = useState(null);
 
   // Cargar datos del dashboard
   useEffect(() => {
@@ -32,128 +34,47 @@ export default function DashboardPage() {
         setLoading(true);
         setError(null);
 
-        // Cargar datos en paralelo (sin stats por ahora)
-        const [usersData, coursesData, enrollmentsData] =
-          await Promise.allSettled([
-            adminService.getAllUsers(),
-            adminService.getActiveCourses(),
-            adminService.getRecentEnrollments(),
-          ]);
+        // Obtener solo los totales desde /api/admin/stats
+        const statsData = await adminService.getStats();
+        const userStats = statsData.userStats || {};
 
-        // Extraer datos exitosos o usar arrays vacíos
-        const users = usersData.status === "fulfilled" ? usersData.value : [];
-        const courses =
-          coursesData.status === "fulfilled" ? coursesData.value : [];
-        const enrollments =
-          enrollmentsData.status === "fulfilled" ? enrollmentsData.value : [];
-
-        // Calcular estadísticas localmente
-        const totalUsers = users.length;
-        const totalStudents = users.filter(
-          (user) => user.role === "STUDENT"
-        ).length;
-        const totalInstructors = users.filter(
-          (user) => user.role === "INSTRUCTOR"
-        ).length;
-        const publishedCourses = courses.filter(
-          (course) => course.isPublished
-        ).length;
-
-        // Calcular usuarios nuevos este mes
-        const currentMonth = new Date().getMonth();
-        const currentYear = new Date().getFullYear();
-        const newUsersThisMonth = users.filter((user) => {
-          const userDate = new Date(user.createdAt);
-          return (
-            userDate.getMonth() === currentMonth &&
-            userDate.getFullYear() === currentYear
-          );
-        }).length;
-
-        // Calcular cursos nuevos este mes
-        const newCoursesThisMonth = courses.filter((course) => {
-          const courseDate = new Date(course.createdAt);
-          return (
-            courseDate.getMonth() === currentMonth &&
-            courseDate.getFullYear() === currentYear
-          );
-        }).length;
-
-        // Procesar estadísticas
+        // Construir el array de stats para la UI
         const processedStats = [
           {
             name: "Usuarios Totales",
-            value: totalUsers.toString(),
+            value: userStats.totalUsers?.toString() || "0",
             icon: Users,
-            change: `+${newUsersThisMonth}`,
+            change: `+${userStats.newUsersLast30Days ?? 0}`,
             changeType: "increase",
           },
           {
             name: "Cursos Activos",
-            value: publishedCourses.toString(),
+            value: statsData.courseStats?.activeCourses?.toString() || "0",
             icon: BookOpen,
-            change: `+${newCoursesThisMonth}`,
+            change: `+0`, // Ajustar si hay campo de nuevos cursos
             changeType: "increase",
           },
           {
             name: "Estudiantes",
-            value: totalStudents.toString(),
+            value: userStats.totalStudents?.toString() || "0",
             icon: Users,
-            change: `+${Math.floor(newUsersThisMonth * 0.8)}`,
+            change: `+0`, // Ajustar si hay campo de nuevos estudiantes
             changeType: "increase",
           },
           {
             name: "Instructores",
-            value: totalInstructors.toString(),
+            value: userStats.totalInstructors?.toString() || "0",
             icon: Award,
-            change: `+${Math.floor(newUsersThisMonth * 0.1)}`,
+            change: `+0`, // Ajustar si hay campo de nuevos instructores
             changeType: "increase",
           },
         ];
 
-        // Procesar usuarios recientes (últimos 5)
-        const processedUsers = users
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-          .slice(0, 5)
-          .map((user) => ({
-            id: user.id,
-            name: `${user.userName} ${user.lastName}`,
-            email: user.email,
-            joinDate: user.createdAt,
-            status: user.active ? "active" : "inactive",
-          }));
-
-        // Procesar cursos recientes (últimos 3)
-        const processedCourses = courses
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-          .slice(0, 3)
-          .map((course) => ({
-            id: course.id,
-            title: course.title,
-            instructor: `${course.instructor?.userName || ""} ${
-              course.instructor?.lastName || ""
-            }`.trim(),
-            students: 0, // No disponible en la API actual
-            status: course.isPublished ? "published" : "draft",
-          }));
-
-        // Procesar inscripciones recientes
-        const processedEnrollments = enrollments
-          .slice(0, 4)
-          .map((enrollment) => ({
-            id: enrollment.id,
-            student: `${enrollment.student?.userName || ""} ${
-              enrollment.student?.lastName || ""
-            }`.trim(),
-            course: enrollment.course?.title || "",
-            enrollmentDate: enrollment.enrollmentDate,
-            status: enrollment.status,
-          }));
-
         setStats(processedStats);
-        setRecentUsers(processedUsers);
-        setRecentCourses(processedCourses);
-        setRecentEnrollments(processedEnrollments);
+        // Las siguientes secciones pueden seguir usando los arrays completos si es necesario
+        // setRecentUsers(...)
+        // setRecentCourses(...)
+        // setRecentEnrollments(...)
       } catch (err) {
         console.error("Error al cargar datos del dashboard:", err);
         setError("Error al cargar los datos del dashboard");
@@ -161,7 +82,6 @@ export default function DashboardPage() {
         setLoading(false);
       }
     };
-
     loadDashboardData();
   }, []);
 
