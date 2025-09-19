@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
@@ -24,6 +24,9 @@ import {
 // import { useAuth } from "@/shared/hooks/useAuth"; // No se usa actualmente
 import { toast } from "sonner";
 
+const RETRY_INTERVAL = 2000; // ms
+const MAX_RETRIES = 10;
+
 const CourseContent = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
@@ -33,6 +36,9 @@ const CourseContent = () => {
   const [course, setCourse] = useState(null);
   const [videos, setVideos] = useState([]);
   const [enrollment, setEnrollment] = useState(null);
+  const [retryingEnrollment, setRetryingEnrollment] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const retryTimeoutRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -43,19 +49,15 @@ const CourseContent = () => {
   const [expandedModules, setExpandedModules] = useState([1]);
   const [updatingProgress, setUpdatingProgress] = useState(false);
 
-  const loadCourseData = useCallback(async () => {
+  const loadCourseData = useCallback(async (retrying = false) => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-
-      // Cargar datos del curso y videos en paralelo
-      const [courseData, videosData, enrollmentData] = await Promise.allSettled(
-        [
-          getCourseById(courseId),
-          getCourseVideos(courseId),
-          checkEnrollment(courseId),
-        ]
-      );
+      const [courseData, videosData, enrollmentData] = await Promise.allSettled([
+        getCourseById(courseId),
+        getCourseVideos(courseId),
+        checkEnrollment(courseId),
+      ]);
 
       // Procesar datos del curso
       if (courseData.status === "fulfilled") {
@@ -79,9 +81,17 @@ const CourseContent = () => {
       // Procesar inscripción
       if (enrollmentData.status === "fulfilled") {
         setEnrollment(enrollmentData.value);
+        if (retrying) {
+          setRetryingEnrollment(false);
+          setRetryCount(0);
+        }
       } else {
-        console.warn("Error al verificar inscripción:", enrollmentData.reason);
-        setEnrollment({ isEnrolled: false });
+        // Si estamos reintentando, seguimos reintentando
+        if (retrying) {
+          setEnrollment({ isEnrolled: false });
+        } else {
+          setEnrollment({ isEnrolled: false });
+        }
       }
     } catch (err) {
       console.error("Error al cargar datos del curso:", err);
@@ -96,7 +106,32 @@ const CourseContent = () => {
     if (courseId) {
       loadCourseData();
     }
+    // Limpiar timeout al desmontar
+    return () => {
+      if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
+    };
   }, [courseId, loadCourseData]);
+
+  // Reintentar verificación de inscripción si no está inscrito
+  useEffect(() => {
+    if (
+      course &&
+      enrollment &&
+      !enrollment.isEnrolled &&
+      retryCount < MAX_RETRIES &&
+      !retryingEnrollment
+    ) {
+      setRetryingEnrollment(true);
+      retryTimeoutRef.current = setTimeout(() => {
+        setRetryCount((prev) => prev + 1);
+        loadCourseData(true);
+      }, RETRY_INTERVAL);
+    }
+    if (enrollment && enrollment.isEnrolled) {
+      setRetryingEnrollment(false);
+      setRetryCount(0);
+    }
+  }, [course, enrollment, retryCount, retryingEnrollment, loadCourseData]);
 
 
 
@@ -242,6 +277,24 @@ const CourseContent = () => {
 
   // Verificar si el usuario está inscrito
   if (!enrollment?.isEnrolled) {
+    // Si estamos reintentando, mostrar mensaje de espera
+    if (retryingEnrollment && retryCount < MAX_RETRIES) {
+      return (
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <Loader2 className="h-12 w-12 text-blue-500 mx-auto mb-4 animate-spin" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Procesando acceso al curso...
+            </h2>
+            <p className="text-gray-600 mb-4">
+              Estamos confirmando tu inscripción. Esto puede tardar unos segundos tras el pago exitoso.
+            </p>
+            <p className="text-gray-400 text-sm">Intento {retryCount + 1} de {MAX_RETRIES}</p>
+          </div>
+        </div>
+      );
+    }
+    // Si ya se agotaron los reintentos, mostrar acceso restringido
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
