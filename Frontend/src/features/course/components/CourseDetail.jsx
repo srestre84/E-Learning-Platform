@@ -46,8 +46,12 @@ const CourseDetail = () => {
 
   useEffect(() => {
     const fetchCourseData = async () => {
-      if (!courseId) return;
+      if (!courseId) {
+        console.log("❌ No hay courseId en los parámetros");
+        return;
+      }
 
+      console.log("�� Obteniendo curso con ID:", courseId);
       setLoading(true);
       setError(null);
 
@@ -59,21 +63,92 @@ const CourseDetail = () => {
             ? checkEnrollment(courseId)
             : Promise.resolve({ isEnrolled: false }),
         ]);
+        console.log("�� Respuesta completa  de getCourseById:", courseData);
+        console.log("📊 Datos del curso:", courseData.value);
+        console.log("💰 Precio del curso:", courseData.value?.price);
+        console.log("🏷️ Es premium:", courseData.value?.isPremium);
+        console.log("📝 Título del curso:", courseData.value?.title);
+        console.log(
+          "🔑 Todas las claves del curso:",
+          Object.keys(courseData.value || {})
+        );
 
         // Procesar datos del curso
         if (courseData.status === "fulfilled") {
-          setCourse(courseData.value);
+          let course = courseData.value;
+          // Si los datos están en un campo 'message' como string JSON, parsearlos
+          if (course.message && typeof course.message === "string") {
+            try {
+              course = JSON.parse(course.message);
+              console.log("✅ Datos parseados desde message:", course);
+            } catch (parseError) {
+              console.error(
+                "❌ Error al parsear JSON del message:",
+                parseError
+              );
+              throw new Error("Error al procesar los datos del curso");
+            }
+          }
+          // Normalizar los datos del curso
+          const normalizedCourse = {
+            ...course,
+            price: parseFloat(course.price) || 0,
+            isPremium:
+              course.isPremium === true ||
+              course.isPremium === "true" ||
+              (parseFloat(course.price) || 0) > 0,
+          };
+
+          console.log("✅ Curso normalizado:", normalizedCourse);
+          console.log("💰 Precio normalizado:", normalizedCourse.price);
+          console.log("🏷️ Es premium normalizado:", normalizedCourse.isPremium);
+
+          setCourse(normalizedCourse);
         } else {
+          console.error("❌ Error al obtener curso:", courseData.reason);
           throw new Error("No se pudo cargar el curso");
         }
 
         // Procesar estado de inscripción
         if (enrollmentData.status === "fulfilled") {
           const enrollment = enrollmentData.value;
-          setIsEnrolled(enrollment.isEnrolled || false);
+          console.log(
+            "✅ Estado de inscripción obtenido exitosamente:",
+            enrollment
+          );
+          console.log("�� Tipo de enrollment:", typeof enrollment);
+          console.log(" Claves de enrollment:", Object.keys(enrollment || {}));
+
+          // Verificar si está inscrito (compatibilidad con diferentes formatos de respuesta)
+          const isEnrolled =
+            enrollment.enrolled || enrollment.isEnrolled || false;
+          const status = enrollment.status || "INACTIVE";
+          const enrollmentId = enrollment.enrollmentId || enrollment.id;
+          const progressPercentage = enrollment.progressPercentage || 0;
+
+          console.log(" Verificación de inscripción:", {
+            enrolled: enrollment.enrolled,
+            isEnrolled: enrollment.isEnrolled,
+            status: status,
+            enrollmentId: enrollmentId,
+            progressPercentage: progressPercentage,
+            isEnrolledFinal: isEnrolled,
+          });
+
+          setIsEnrolled(isEnrolled);
+          // setEnrollmentId(enrollmentId); // This state variable doesn't exist
+          // setProgressPercentage(progressPercentage); // This state variable doesn't exist
+        } else {
+          console.warn(
+            "⚠️ Error al verificar inscripción:",
+            enrollmentData.reason
+          );
+          setIsEnrolled(false);
+          // setEnrollmentId(null); // This state variable doesn't exist
+          // setProgressPercentage(0); // This state variable doesn't exist
         }
       } catch (err) {
-        console.error("Error al cargar el curso:", err);
+        console.error("❌ Error al cargar el curso:", err);
         setError(
           err.message ||
             "No se pudo cargar el curso. Por favor, inténtalo de nuevo."
@@ -89,6 +164,7 @@ const CourseDetail = () => {
   const handleEnrollment = async () => {
     if (!user || user.role !== "STUDENT") {
       toast.error("Por favor, inicia sesión como estudiante para inscribirte.");
+      console.error("Error al inscribirse en el curso:", error);
       navigate("/authentication/login");
       return;
     }
@@ -100,7 +176,7 @@ const CourseDetail = () => {
     }
 
     setIsEnrolling(true);
-
+    console.log("Iniciando proceso de inscripción...");
     try {
       await enrollInCourse(courseId);
       setIsEnrolled(true);
@@ -430,6 +506,25 @@ const CourseDetail = () => {
                     {course.isPremium ? "Premium" : "Estándar"}
                   </Badge>
                 </div>
+                {/* Debug info - remover en producción */}
+                <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
+                  <p>
+                    <strong>Debug Info:</strong>
+                  </p>
+                  <p>Precio: {course.price}</p>
+                  <p>Es Premium: {course.isPremium ? "Sí" : "No"}</p>
+                  <p>Tipo: {typeof course.price}</p>
+                  <p>Is Enrolled: {isEnrolled ? "Sí" : "No"}</p>
+                  <p>
+                    Is Processing Payment: {isProcessingPayment ? "Sí" : "No"}
+                  </p>
+                  <p>is student esta suscrito: {isStudent ? "Sí" : "No"}</p>
+                  <p>
+                    El estudiante se desuscribio: {isEnrolled ? "Sí" : "No"}
+                  </p>
+                  <p>El id del curso es: {courseId}</p>
+                  
+                </div>
 
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center text-sm text-gray-600">
@@ -442,7 +537,7 @@ const CourseDetail = () => {
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <Smartphone className="w-4 h-4 mr-2 text-gray-500" />
-                    <span>Acceso en móvil y TV</span>
+                    <span>Acceso en cualquier dispositivo</span>
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <Trophy className="w-4 h-4 mr-2 text-gray-500" />

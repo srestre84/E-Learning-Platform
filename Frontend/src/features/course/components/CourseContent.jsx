@@ -43,13 +43,6 @@ const CourseContent = () => {
   const [expandedModules, setExpandedModules] = useState([1]);
   const [updatingProgress, setUpdatingProgress] = useState(false);
 
-  useEffect(() => {
-    setIsClient(true);
-    if (courseId) {
-      loadCourseData();
-    }
-  }, [courseId, loadCourseData]);
-
   const loadCourseData = useCallback(async () => {
     try {
       setLoading(true);
@@ -97,6 +90,15 @@ const CourseContent = () => {
       setLoading(false);
     }
   }, [courseId]);
+
+  useEffect(() => {
+    setIsClient(true);
+    if (courseId) {
+      loadCourseData();
+    }
+  }, [courseId, loadCourseData]);
+
+
 
   const toggleModule = (moduleId) => {
     setExpandedModules((prev) =>

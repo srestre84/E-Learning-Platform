@@ -21,7 +21,12 @@ import {
   handleImageError,
 } from "@/utils/imageUtils";
 
-export default function CourseList({ courses, onToggleFavorite, onUnenroll }) {
+export default function CourseList({
+  courses,
+  onToggleFavorite,
+  onUnenroll,
+  refreshData,
+}) {
   const navigate = useNavigate();
   const [paymentCourse, setPaymentCourse] = useState(null);
   const [processing, setProcessing] = useState(false);
@@ -129,6 +134,11 @@ export default function CourseList({ courses, onToggleFavorite, onUnenroll }) {
       }
 
       await unenrollFromCourse(enrollment.enrollmentId);
+
+      // Recargar los datos del dashboard
+      if (refreshData) {
+        await refreshData();
+      }
 
       // Notificar al componente padre para actualizar la lista
       if (onUnenroll) {

@@ -61,3 +61,4 @@ export const generateSimplePlaceholder = (
 export const handleImageError = (event, fallbackText = "Sin imagen") => {
   event.target.src = generateSimplePlaceholder(fallbackText);
 };
+

@@ -45,7 +45,28 @@ export const getCompletedEnrollments = async () => {
 
 export const getAllEnrollments = async () => {
   try {
+    console.log("🔍 Obteniendo todas las inscripciones...");
     const response = await api.get(`/api/enrollments/my-courses/all`);
+    console.log("�� Respuesta completa de getAllEnrollments:", response);
+    console.log("📊 Datos de la respuesta:", response.data);
+    console.log("📊 Tipo de datos:", typeof response.data);
+    console.log("📊 Es array:", Array.isArray(response.data));
+
+    if (Array.isArray(response.data)) {
+      console.log("📊 Cantidad de inscripciones:", response.data.length);
+      response.data.forEach((enrollment, index) => {
+        console.log(` Inscripción ${index}:`, enrollment);
+        console.log(`📊 Curso ${index}:`, enrollment.course);
+        console.log(`📊 Claves del curso ${index}:`, Object.keys(enrollment.course || {}));
+
+        // Verificar si el curso tiene título
+        if (enrollment.course) {
+          console.log(`📊 Título del curso ${index}:`, enrollment.course.title);
+          console.log(`📊 ID del curso ${index}:`, enrollment.course.id);
+        }
+      });
+    }
+
     return response.data;
   } catch (error) {
     console.error("Error al obtener todos los cursos:", error);
@@ -69,12 +90,54 @@ export const getEnrolledCourses = async () => {
 
 export const checkEnrollment = async (courseId) => {
   try {
-    const response = await api.get(`/api/enrollments/check/${courseId}`);
-    return response.data;
+    console.log("🔍 Verificando inscripción para curso:", courseId);
+
+    // Intentar primero con el endpoint específico
+    try {
+      const response = await api.get(`/api/enrollments/check/${courseId}`);
+      console.log("�� Respuesta de checkEnrollment:", response.data);
+      return response.data;
+    } catch (checkError) {
+      console.log("⚠️ Endpoint check no disponible, usando alternativa");
+      console.error("❌ Error al verificar inscripción:", checkError);
+
+      // Alternativa: obtener todas las inscripciones y filtrar
+      const allEnrollments = await getAllEnrollments();
+      console.log("📊 Todas las inscripciones:", allEnrollments);
+
+      const userEnrollment = allEnrollments.find(enrollment =>
+        enrollment.course && enrollment.course.id === parseInt(courseId)
+      );
+
+      if (userEnrollment) {
+        console.log("✅ Inscripción encontrada:", userEnrollment);
+        return {
+          enrolled: true,
+          isEnrolled: true,
+          status: userEnrollment.status,
+          enrollmentId: userEnrollment.id,
+          progressPercentage: userEnrollment.progressPercentage || 0
+        };
+      } else {
+        console.log("❌ No se encontró inscripción para este curso");
+        return {
+          enrolled: false,
+          isEnrolled: false,
+          status: null,
+          enrollmentId: null,
+          progressPercentage: 0
+        };
+      }
+    }
   } catch (error) {
-    console.error("Error al verificar inscripción:", error);
-    // Si hay error, asumimos que no está inscrito
-    return { isEnrolled: false };
+    console.error("❌ Error al verificar inscripción:", error);
+    return {
+      enrolled: false,
+      isEnrolled: false,
+      status: null,
+      enrollmentId: null,
+      progressPercentage: 0
+    };
   }
 };
 

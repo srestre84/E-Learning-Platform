@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
-  getActiveEnrollments
+  getAllEnrollments
 } from '@/services/enrollmentService';
 import { getCourses } from '@/services/courseService';
 import { useAuth } from '@/contexts/ContextUse';
@@ -13,53 +13,72 @@ export function useDashboard() {
   const [enrollments, setEnrollments] = useState([]);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
 
-      setIsLoading(true);
-      setError(null);
+  const refreshData = useCallback(async () => {
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
 
-      try {
-        // Obtener inscripciones del estudiante
-        const [enrollmentsData, suggestedData] = await Promise.allSettled([
-          getActiveEnrollments(),
-          getCourses()
-        ]);
+    setIsLoading(true);
+    setError(null);
 
-        // Procesar inscripciones
-        if (enrollmentsData.status === 'fulfilled') {
-          const processedEnrollments = ensureArray(processApiResponse(enrollmentsData.value));
-          setEnrollments(processedEnrollments);
-        } else {
-          console.warn('Error fetching enrollments:', enrollmentsData.reason);
-          setEnrollments([]);
-        }
+    try {
+      // Obtener TODAS las inscripciones del estudiante
+      const [enrollmentsData, suggestedData] = await Promise.allSettled([
+        getAllEnrollments(),
+        getCourses()
+      ]);
 
-        // Procesar cursos sugeridos
-        if (suggestedData.status === 'fulfilled') {
-          const processedSuggested = ensureArray(processApiResponse(suggestedData.value));
-          setSuggestedCourses(processedSuggested.slice(0, 6)); // Mostrar hasta 6 cursos sugeridos
-        } else {
-          console.warn('Error fetching suggested courses:', suggestedData.reason);
-          setSuggestedCourses([]);
-        }
+      // Procesar inscripciones
+      if (enrollmentsData.status === 'fulfilled') {
+        console.log('📊 Datos brutos de enrollments:', enrollmentsData.value);
+        console.log('�� Tipo de datos brutos:', typeof enrollmentsData.value);
+        console.log(' Es array bruto:', Array.isArray(enrollmentsData.value));
 
-      } catch (err) {
-        console.error("Error fetching dashboard data:", err);
-        setError(handleApiError(err, "Error al cargar los datos del dashboard"));
-        setSuggestedCourses([]);
+        const processedEnrollments = ensureArray(processApiResponse(enrollmentsData.value));
+        console.log(' Datos procesados - Inscripciones:', processedEnrollments);
+        console.log(' Cantidad de inscripciones procesadas:', processedEnrollments.length);
+        console.log('🔄 Tipo de datos procesados:', typeof processedEnrollments);
+        console.log(' Es array procesado:', Array.isArray(processedEnrollments));
+
+        // Verificar cada inscripción
+        processedEnrollments.forEach((enrollment, index) => {
+          console.log(` Inscripción ${index}:`, enrollment);
+          console.log(`🔄 Curso ${index}:`, enrollment.course);
+          if (enrollment.course) {
+            console.log(`🔄 Título del curso ${index}:`, enrollment.course.title);
+          }
+        });
+
+        setEnrollments(processedEnrollments);
+      } else {
+        console.warn('Error fetching enrollments:', enrollmentsData.reason);
         setEnrollments([]);
-      } finally {
-        setIsLoading(false);
       }
-    };
 
-    fetchData();
+      // Procesar cursos sugeridos
+      if (suggestedData.status === 'fulfilled') {
+        const processedSuggested = ensureArray(processApiResponse(suggestedData.value));
+        setSuggestedCourses(processedSuggested.slice(0, 6));
+      } else {
+        console.warn('Error fetching suggested courses:', suggestedData.reason);
+        setSuggestedCourses([]);
+      }
+
+    } catch (err) {
+      console.error("Error fetching dashboard data:", err);
+      setError(handleApiError(err, "Error al cargar los datos del dashboard"));
+      setSuggestedCourses([]);
+      setEnrollments([]);
+    } finally {
+      setIsLoading(false);
+    }
   }, [user]);
+
+  useEffect(() => {
+    refreshData();
+  }, [refreshData]);
 
   const stats = useMemo(() => {
     // Debug: Ver datos de inscripciones
@@ -128,39 +147,64 @@ export function useDashboard() {
 
   const filteredCourses = useMemo(() => {
     // Debug: Ver qué datos están llegando
-    console.log('useDashboard - enrollments data:', enrollments);
+    console.log('🔍 useDashboard - enrollments data:', enrollments);
+    console.log('🔍 useDashboard - enrollments length:', enrollments.length);
+    console.log('🔍 useDashboard - enrollments type:', typeof enrollments);
+    console.log('🔍 useDashboard - is array:', Array.isArray(enrollments));
+
+    if (!enrollments || enrollments.length === 0) {
+      console.log('⚠️ useDashboard - No hay inscripciones disponibles');
+      return [];
+    }
 
     // Mapear inscripciones a formato de cursos para CourseList
-    const mappedCourses = enrollments.map(enrollment => {
+    const mappedCourses = enrollments.map((enrollment, index) => {
+      console.log(`🔍 useDashboard - enrollment ${index}:`, enrollment);
+      console.log(`🔍 useDashboard - course ${index}:`, enrollment.course);
+      console.log(`🔍 useDashboard - course keys ${index}:`, Object.keys(enrollment.course || {}));
+
       const course = enrollment.course;
-      console.log('useDashboard - enrollment:', enrollment);
-      console.log('useDashboard - course:', course);
 
-      if (!course) return null;
+      if (!course) {
+        console.log(`⚠️ useDashboard - No course data for enrollment ${index}`);
+        return null;
+      }
 
-      return {
+      // Verificar si el curso tiene datos válidos
+      if (!course.id) {
+        console.log(`⚠️ useDashboard - Invalid course data for enrollment ${index}:`, course);
+        return null;
+      }
+
+      const mappedCourse = {
         id: course.id,
-        title: course.title,
-        description: course.description,
-        shortDescription: course.shortDescription,
-        imageUrl: course.thumbnailUrl,
+        title: course.title || 'Curso sin título',
+        description: course.description || '',
+        shortDescription: course.shortDescription || '',
+        imageUrl: course.thumbnailUrl || course.imageUrl,
         category: course.category?.name || course.subcategory?.name || 'Sin categoría',
-        instructor: course.instructor?.userName || 'Instructor',
-        price: course.price,
-        rating: course.rating,
-        progress: enrollment.progressPercentage,
-        status: enrollment.status,
-        enrollmentDate: enrollment.enrollmentDate,
+        instructor: course.instructor?.userName || course.instructor?.name || 'Instructor',
+        price: course.price || 0,
+        rating: course.rating || 0,
+        progress: enrollment.progressPercentage || 0,
+        status: enrollment.status || 'ACTIVE',
+        enrollmentDate: enrollment.enrollmentDate || enrollment.enrolledAt,
         lastAccessed: enrollment.lastAccessed,
         lastLessonId: enrollment.lastLessonId,
-        estimatedHours: course.estimatedHours,
-        isPremium: course.isPremium,
-        isPublished: course.isPublished,
-        isActive: course.isActive
+        estimatedHours: course.estimatedHours || 0,
+        isPremium: course.isPremium || false,
+        isPublished: course.isPublished || false,
+        isActive: course.isActive || false,
+        enrollmentId: enrollment.id
       };
-    }).filter(Boolean); // Filtrar valores null
 
-    console.log('useDashboard - mappedCourses:', mappedCourses);
+      console.log(`✅ useDashboard - mapped course ${index}:`, mappedCourse);
+      return mappedCourse;
+    }).filter(Boolean);
+
+    console.log('✅ useDashboard - mappedCourses final:', mappedCourses);
+    console.log('✅ useDashboard - mappedCourses length:', mappedCourses.length);
+
     return mappedCourses;
   }, [enrollments]);
 
@@ -247,6 +291,7 @@ export function useDashboard() {
     isLoading,
     error,
     showSuggested: enrollments.length === 0, // Mostrar sugeridos si no hay cursos inscritos
+    refreshData
   };
 
 
