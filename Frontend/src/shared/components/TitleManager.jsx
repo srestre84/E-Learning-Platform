@@ -11,9 +11,9 @@ import { useLocation, useMatches } from 'react-router-dom';
  */
 const TitleManager = ({
   routeTitles = {},
-  defaultTitle = 'E-Learning Platform',
+  defaultTitle = ' ',
   includeAppName = true,
-  appName = 'E-Learning',
+  appName = '',
   ...props
 }) => {
   const location = useLocation();

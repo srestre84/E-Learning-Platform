@@ -306,18 +306,6 @@ pnpm test
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
 
-## 📝 Licencia
-
-Este proyecto está bajo la Licencia ISC. Ver el archivo `LICENSE` para más detalles.
-
-## 🆘 Soporte
-
-Para soporte técnico o preguntas:
-
-- **Email**: soporte@eduplataform.com
-- **Documentación**: [docs.eduplataform.com](https://docs.eduplataform.com)
-- **Issues**: [GitHub Issues](https://github.com/your-repo/issues)
-
 ## 🔄 Changelog
 
 ### v1.0.0
@@ -332,4 +320,4 @@ Para soporte técnico o preguntas:
 
 ---
 
-**Desarrollado con ❤️ para la educación del futuro**
+**Desarrollado con ❤️ para la Hackathon Tech Advanced - Oracle Next Education (ONE)**

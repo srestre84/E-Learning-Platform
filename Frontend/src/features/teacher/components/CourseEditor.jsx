@@ -20,10 +20,10 @@ const CourseEditor = () => {
   const [activeTab, setActiveTab] = useState("content");
   const [previewMode, setPreviewMode] = useState(false);
   const [course, setCourse] = useState({
-    title: "Nuevo Curso",
+    title: "",
     description: "",
     image: "",
-    content: "# Título del Curso\n\nEscribe aquí el contenido de tu curso...",
+    content: "",
     modules: [],
     status: "draft",
   });

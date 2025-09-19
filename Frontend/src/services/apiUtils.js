@@ -1,5 +1,5 @@
 // src/services/apiUtils.js
-import { validateApiResponse, cleanApiData } from './api';
+
 
 /**
  * Utilidades para manejar respuestas de la API
@@ -12,9 +12,27 @@ import { validateApiResponse, cleanApiData } from './api';
  * @returns {any} Datos validados y limpios
  */
 export const processApiResponse = (data) => {
-  return cleanApiData(data);
-};
+  console.log("🔍 processApiResponse - Datos de entrada:", data);
+  console.log("🔍 Tipo de datos:", typeof data);
+  console.log("🔍 Es objeto:", typeof data === 'object');
+  console.log("🔍 Tiene message:", data && data.message);
+  console.log("�� Message es string:", data && typeof data.message === 'string');
 
+  // Si los datos están en un campo 'message' como string JSON, parsearlos
+  if (data && typeof data === 'object' && data.message && typeof data.message === 'string') {
+    try {
+      const parsedData = JSON.parse(data.message);
+      console.log("📊 Datos parseados desde message:", parsedData);
+      return parsedData;
+    } catch (error) {
+      console.error("❌ Error al parsear JSON del message:", error);
+      return data;
+    }
+  }
+
+  console.log("�� Devolviendo datos sin procesar:", data);
+  return data;
+};
 /**
  * Valida que los datos sean un array válido
  * @param {any} data - Datos a validar
@@ -43,13 +61,63 @@ export const ensureArray = (data) => {
  * @returns {Object} Objeto válido o objeto vacío
  */
 export const ensureObject = (data) => {
-  if (data && typeof data === 'object' && !Array.isArray(data)) {
+  console.log("🔍 ensureObject - Datos de entrada:", data);
+  console.log("🔍 Tipo de datos:", typeof data);
+  console.log("🔍 Longitud del string:", typeof data === 'string' ? data.length : 'N/A');
+  console.log("�� Es objeto:", typeof data === 'object');
+  console.log("🔍 Es array:", Array.isArray(data));
+
+  // Si es un string JSON, parsearlo
+  if (typeof data === 'string') {
+    try {
+      // Verificar si el string parece ser JSON válido
+      const trimmed = data.trim();
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        const parsed = JSON.parse(trimmed);
+        console.log("✅ String JSON parseado exitosamente");
+        return parsed;
+      } else {
+        console.log("⚠️ String no parece ser JSON válido, devolviendo objeto vacío");
+        return {};
+      }
+    } catch (error) {
+      console.error("❌ Error al parsear JSON:", error);
+      console.error("❌ Primeros 100 caracteres:", data.substring(0, 100));
+      console.error("❌ Últimos 100 caracteres:", data.substring(data.length - 100));
+
+      // Intentar extraer solo los datos del curso sin las relaciones anidadas
+      try {
+        const courseMatch = data.match(/"id":\d+,"title":"[^"]+","description":"[^"]+","shortDescription":"[^"]+","youtubeUrls":\[[^\]]+\],"thumbnailUrl":"[^"]+","price":[\d.]+,"isPremium":(true|false),"isPublished":(true|false),"isActive":(true|false),"estimatedHours":\d+/);
+        if (courseMatch) {
+          const courseData = JSON.parse('{' + courseMatch[0] + '}');
+          console.log("✅ Datos del curso extraídos exitosamente:", courseData);
+          return courseData;
+        }
+      } catch (extractError) {
+        console.error("❌ Error al extraer datos del curso:", extractError);
+      }
+
+      return {};
+    }
+  }
+
+  // Si ya es un objeto, devolverlo
+  if (typeof data === 'object' && data !== null) {
+    console.log("✅ Ya es un objeto, devolviendo:", data);
     return data;
   }
 
-  console.warn('⚠️ Datos no son un objeto válido:', data);
+  // Si es un array, devolverlo
+  if (Array.isArray(data)) {
+    console.log("✅ Es un array, devolviendo:", data);
+    return data;
+  }
+
+  // Si no es nada de lo anterior, devolver objeto vacío
+  console.log("⚠️ No se pudo procesar, devolviendo objeto vacío");
   return {};
 };
+
 
 /**
  * Extrae un mensaje de error de la respuesta
