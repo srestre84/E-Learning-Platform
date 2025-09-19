@@ -49,7 +49,7 @@ export default function DashboardPage() {
           },
           {
             name: "Cursos Activos",
-            value: statsData.courseStats?.activeCourses?.toString() || "0",
+            value: statsData.courseStats?.publishedCourses?.toString() || "0",
             icon: BookOpen,
             change: `+0`, // Ajustar si hay campo de nuevos cursos
             changeType: "increase",
