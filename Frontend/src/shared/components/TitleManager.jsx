@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useLocation, useMatches } from 'react-router-dom';
+import { useEffect } from "react";
+import { useLocation, useMatches } from "react-router-dom";
 
 /**
  * Componente que maneja dinámicamente el título del documento basado en la ruta actual
@@ -11,16 +11,17 @@ import { useLocation, useMatches } from 'react-router-dom';
  */
 const TitleManager = ({
   routeTitles = {},
-  defaultTitle = ' ',
+  defaultTitle = "Donde el aprendizaje es una aventura",
   includeAppName = true,
-  appName = '',
+  appName = "EduPlatform", 
   ...props
 }) => {
   const location = useLocation();
   const matches = useMatches();
 
   // Get the current path from the last match or use location as fallback
-  const currentPath = matches[matches.length - 1]?.pathname || location.pathname;
+  const currentPath =
+    matches[matches.length - 1]?.pathname || location.pathname;
 
   useEffect(() => {
     try {
@@ -47,17 +48,27 @@ const TitleManager = ({
       if (document.title !== newTitle) {
         document.title = newTitle;
       }
-
     } catch (error) {
-      console.error('Error setting document title:', error);
-      document.title = includeAppName ? `${defaultTitle} | ${appName}` : defaultTitle;
+      console.error("Error setting document title:", error);
+      document.title = includeAppName
+        ? `${defaultTitle} | ${appName}`
+        : defaultTitle;
     }
 
     // Restaurar el título original al desmontar
     return () => {
-      document.title = includeAppName ? `${defaultTitle} | ${appName}` : defaultTitle;
+      document.title = includeAppName
+        ? `${defaultTitle} | ${appName}`
+        : defaultTitle;
     };
-  }, [currentPath, matches, routeTitles, defaultTitle, includeAppName, appName]);
+  }, [
+    currentPath,
+    matches,
+    routeTitles,
+    defaultTitle,
+    includeAppName,
+    appName,
+  ]);
 
   // Este componente no renderiza nada
   return <div {...props} />;
