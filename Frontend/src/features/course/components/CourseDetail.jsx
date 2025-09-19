@@ -1,234 +1,291 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/ui/card';
-import { Badge } from '@/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Star, 
-  Users, 
-  BookOpen, 
-  Clock, 
-  Award, 
-  Play, 
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { getCourseById } from "@/services/courseService";
+import {
+  Star,
+  Users,
+  BookOpen,
+  Clock,
+  Play,
   Heart,
   Share2,
   CheckCircle,
-  Globe,
+  Award,
+  CirclePlay,
   Download,
   Smartphone,
   Trophy,
+  User,
+  ListVideo,
   ArrowLeft,
-  Calendar,
-  X
-} from 'lucide-react';
-import ReactPlayer from 'react-player';
-
-// Mock data - En producción esto vendría de una API
-const getCourseDetail = (courseId) => {
-  const courses = {
-    1: {
-      id: 1,
-      title: 'Marketing Digital Avanzado',
-      instructor: 'Diego Ruiz',
-      instructorAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
-      instructorBio: 'Experto en marketing digital con más de 8 años de experiencia. Ha trabajado con empresas Fortune 500.',
-      rating: 4.7,
-      reviewCount: 1250,
-      students: 3420,
-      duration: '30 horas',
-      lessons: 65,
-      price: 89,
-      originalPrice: 129,
-      image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=400&fit=crop&crop=center',
-      category: 'MARKETING',
-      level: 'Principiante',
-      language: 'Español',
-      lastUpdated: '2024-01-15',
-      previewVideo: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-      description: 'Domina las estrategias de marketing digital más efectivas del mercado actual. Este curso te enseñará desde los fundamentos hasta técnicas avanzadas de SEO, publicidad online, redes sociales y análisis de datos para impulsar cualquier negocio en el mundo digital.',
-      whatYouLearn: [
-        'Estrategias de SEO y optimización para motores de búsqueda',
-        'Creación y gestión de campañas publicitarias efectivas',
-        'Marketing en redes sociales y community management',
-        'Email marketing y automatización de procesos',
-        'Google Analytics y métricas clave de rendimiento',
-        'Funnel de ventas y conversión de leads',
-        'Content marketing y storytelling digital',
-        'Publicidad en Google Ads y Facebook Ads'
-      ],
-      requirements: [
-        'Conocimientos básicos de navegación en internet',
-        'Interés genuino en marketing y ventas',
-        'Computadora o dispositivo móvil con conexión a internet',
-        'Ganas de aprender y aplicar conocimientos'
-      ],
-      includes: [
-        '30 horas de contenido en video',
-        '65 lecciones estructuradas',
-        'Recursos descargables y plantillas',
-        'Acceso de por vida al curso',
-        'Certificado de finalización',
-        'Acceso en dispositivos móviles',
-        'Soporte del instructor'
-      ],
-      curriculum: [
-        {
-          title: 'Introducción al Marketing Digital',
-          lessons: 8,
-          duration: '2.5 horas',
-          topics: [
-            'Fundamentos del marketing digital',
-            'Ecosistema digital actual',
-            'Herramientas esenciales',
-            'Definición de objetivos SMART'
-          ]
-        },
-        {
-          title: 'SEO y Optimización Web',
-          lessons: 12,
-          duration: '4 horas',
-          topics: [
-            'Investigación de palabras clave',
-            'SEO on-page y off-page',
-            'Google Search Console',
-            'Link building estratégico'
-          ]
-        },
-        {
-          title: 'Publicidad Digital',
-          lessons: 15,
-          duration: '5.5 horas',
-          topics: [
-            'Google Ads: configuración y optimización',
-            'Facebook e Instagram Ads',
-            'Segmentación de audiencias',
-            'Análisis de ROI publicitario'
-          ]
-        },
-        {
-          title: 'Redes Sociales y Content Marketing',
-          lessons: 18,
-          duration: '6 horas',
-          topics: [
-            'Estrategia de contenidos',
-            'Community management',
-            'Storytelling digital',
-            'Influencer marketing'
-          ]
-        },
-        {
-          title: 'Analytics y Métricas',
-          lessons: 12,
-          duration: '4 horas',
-          topics: [
-            'Google Analytics 4',
-            'KPIs y métricas clave',
-            'Reportes automatizados',
-            'Toma de decisiones basada en datos'
-          ]
-        }
-      ],
-      reviews: [
-        {
-          id: 1,
-          name: 'María González',
-          avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=50&h=50&fit=crop&crop=face',
-          rating: 5,
-          date: '2024-01-10',
-          comment: 'Excelente curso, muy completo y práctico. Diego explica de manera muy clara y los ejemplos son súper útiles.'
-        },
-        {
-          id: 2,
-          name: 'Carlos Mendoza',
-          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop&crop=face',
-          rating: 5,
-          date: '2024-01-08',
-          comment: 'He aplicado las estrategias enseñadas y ya veo resultados en mi negocio. Totalmente recomendado.'
-        },
-        {
-          id: 3,
-          name: 'Ana Rodríguez',
-          avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=50&h=50&fit=crop&crop=face',
-          rating: 4,
-          date: '2024-01-05',
-          comment: 'Muy buen contenido, aunque me hubiera gustado más ejemplos prácticos en algunas secciones.'
-        }
-      ]
-    }
-  };
-  
-  return courses[courseId] || null;
-};
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
+import { Badge } from "@/ui/badge";
+import { Button } from "@/ui/Button";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "react-toastify";
+import { enrollInCourse, checkEnrollment } from "@/services/enrollmentService";
+import {
+  generateCoursePlaceholder,
+  handleImageError,
+} from "@/utils/imageUtils";
+import { processCoursePayment } from "@/services/stripeService";
 
 const CourseDetail = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showPreview, setShowPreview] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [error, setError] = useState(null);
+  const { user } = useAuth();
   const [isEnrolled, setIsEnrolled] = useState(false);
+  const [isEnrolling, setIsEnrolling] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
-    const fetchCourse = async () => {
+    const fetchCourseData = async () => {
+      if (!courseId) {
+        console.log("❌ No hay courseId en los parámetros");
+        return;
+      }
+
+      console.log("�� Obteniendo curso con ID:", courseId);
       setLoading(true);
-      // Simular delay de API
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const courseData = getCourseDetail(parseInt(courseId));
-      setCourse(courseData);
-      setLoading(false);
+      setError(null);
+
+      try {
+        // Cargar datos del curso y verificar inscripción en paralelo
+        const [courseData, enrollmentData] = await Promise.allSettled([
+          getCourseById(courseId),
+          user
+            ? checkEnrollment(courseId)
+            : Promise.resolve({ isEnrolled: false }),
+        ]);
+        console.log("�� Respuesta completa  de getCourseById:", courseData);
+        console.log("📊 Datos del curso:", courseData.value);
+        console.log("💰 Precio del curso:", courseData.value?.price);
+        console.log("🏷️ Es premium:", courseData.value?.isPremium);
+        console.log("📝 Título del curso:", courseData.value?.title);
+        console.log(
+          "🔑 Todas las claves del curso:",
+          Object.keys(courseData.value || {})
+        );
+
+        // Procesar datos del curso
+        if (courseData.status === "fulfilled") {
+          let course = courseData.value;
+          // Si los datos están en un campo 'message' como string JSON, parsearlos
+          if (course.message && typeof course.message === "string") {
+            try {
+              course = JSON.parse(course.message);
+              console.log("✅ Datos parseados desde message:", course);
+            } catch (parseError) {
+              console.error(
+                "❌ Error al parsear JSON del message:",
+                parseError
+              );
+              throw new Error("Error al procesar los datos del curso");
+            }
+          }
+          // Normalizar los datos del curso
+          const normalizedCourse = {
+            ...course,
+            price: parseFloat(course.price) || 0,
+            isPremium:
+              course.isPremium === true ||
+              course.isPremium === "true" ||
+              (parseFloat(course.price) || 0) > 0,
+          };
+
+          console.log("✅ Curso normalizado:", normalizedCourse);
+          console.log("💰 Precio normalizado:", normalizedCourse.price);
+          console.log("🏷️ Es premium normalizado:", normalizedCourse.isPremium);
+
+          setCourse(normalizedCourse);
+        } else {
+          console.error("❌ Error al obtener curso:", courseData.reason);
+          throw new Error("No se pudo cargar el curso");
+        }
+
+        // Procesar estado de inscripción
+        if (enrollmentData.status === "fulfilled") {
+          const enrollment = enrollmentData.value;
+          console.log(
+            "✅ Estado de inscripción obtenido exitosamente:",
+            enrollment
+          );
+          console.log("�� Tipo de enrollment:", typeof enrollment);
+          console.log(" Claves de enrollment:", Object.keys(enrollment || {}));
+
+          // Verificar si está inscrito (compatibilidad con diferentes formatos de respuesta)
+          const isEnrolled =
+            enrollment.enrolled || enrollment.isEnrolled || false;
+          const status = enrollment.status || "INACTIVE";
+          const enrollmentId = enrollment.enrollmentId || enrollment.id;
+          const progressPercentage = enrollment.progressPercentage || 0;
+
+          console.log(" Verificación de inscripción:", {
+            enrolled: enrollment.enrolled,
+            isEnrolled: enrollment.isEnrolled,
+            status: status,
+            enrollmentId: enrollmentId,
+            progressPercentage: progressPercentage,
+            isEnrolledFinal: isEnrolled,
+          });
+
+          setIsEnrolled(isEnrolled);
+          // setEnrollmentId(enrollmentId); // This state variable doesn't exist
+          // setProgressPercentage(progressPercentage); // This state variable doesn't exist
+        } else {
+          console.warn(
+            "⚠️ Error al verificar inscripción:",
+            enrollmentData.reason
+          );
+          setIsEnrolled(false);
+          // setEnrollmentId(null); // This state variable doesn't exist
+          // setProgressPercentage(0); // This state variable doesn't exist
+        }
+      } catch (err) {
+        console.error("❌ Error al cargar el curso:", err);
+        setError(
+          err.message ||
+            "No se pudo cargar el curso. Por favor, inténtalo de nuevo."
+        );
+      } finally {
+        setLoading(false);
+      }
     };
 
-    if (courseId) {
-      fetchCourse();
-    }
-  }, [courseId]);
+    fetchCourseData();
+  }, [courseId, user]);
 
-  const handleEnroll = () => {
-    if (!isAuthenticated) {
-      // Redirigir a login si no está autenticado
-      navigate('/login', { 
-        state: { 
-          from: `/curso/${courseId}/detalle`,
-          message: 'Debes iniciar sesión para inscribirte al curso'
-        }
-      });
+  const handleEnrollment = async () => {
+    if (!user || user.role !== "STUDENT") {
+      toast.error("Por favor, inicia sesión como estudiante para inscribirte.");
+      console.error("Error al inscribirse en el curso:", error);
+      navigate("/authentication/login");
       return;
     }
 
-    // Aquí iría la lógica de inscripción
-    setIsEnrolled(true);
-    // Redirigir al contenido del curso
-    navigate(`/curso/${courseId}`);
+    if (isEnrolled) {
+      // Si ya está inscrito, navegar al contenido del curso
+      navigate(`/curso/${courseId}/content`);
+      return;
+    }
+
+    setIsEnrolling(true);
+    console.log("Iniciando proceso de inscripción...");
+    try {
+      await enrollInCourse(courseId);
+      setIsEnrolled(true);
+      toast.success(
+        "¡Inscripción exitosa! Ahora puedes acceder al contenido del curso."
+      );
+    } catch (error) {
+      let errorMessage =
+        "Ocurrió un error inesperado al inscribirse. Por favor, inténtalo de nuevo.";
+
+      if (error.response?.data?.message) {
+        const apiMessage = error.response.data.message;
+        if (apiMessage.includes("Ya estás inscrito")) {
+          setIsEnrolled(true);
+          errorMessage =
+            "Ya estás inscrito en este curso. ¡Disfruta de tu aprendizaje!";
+          toast.info(errorMessage);
+          return;
+        } else {
+          errorMessage = apiMessage;
+        }
+      }
+
+      toast.error(errorMessage);
+      console.error("Error al inscribirse en el curso:", error);
+    } finally {
+      setIsEnrolling(false);
+    }
   };
 
-  const renderStars = (rating) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${
-          i < Math.floor(rating) 
-            ? 'text-yellow-500 fill-current' 
-            : i < rating 
-            ? 'text-yellow-500 fill-current opacity-50' 
-            : 'text-gray-300'
-        }`}
-      />
-    ));
+  const handleContinueCourse = () => {
+    navigate(`/curso/${courseId}/content`);
+  };
+
+  const handleToggleFavorite = () => {
+    setIsFavorite(!isFavorite);
+    toast.success(
+      isFavorite ? "Eliminado de favoritos" : "Agregado a favoritos"
+    );
+  };
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: course.title,
+        text: course.shortDescription || course.description,
+        url: window.location.href,
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Enlace copiado al portapapeles");
+    }
+  };
+
+  const handlePayment = async () => {
+    if (!user || user.role !== "STUDENT") {
+      toast.error(
+        "Por favor, inicia sesión como estudiante para comprar el curso."
+      );
+      navigate("/authentication/login");
+      return;
+    }
+
+    if (!course) {
+      toast.error("Información del curso no disponible.");
+      return;
+    }
+
+    setIsProcessingPayment(true);
+
+    try {
+      await processCoursePayment(course, user);
+      // La redirección se maneja en processCoursePayment
+    } catch (error) {
+      console.error("Error processing payment:", error);
+      toast.error(
+        error.message ||
+          "Error al procesar el pago. Por favor, inténtalo de nuevo."
+      );
+    } finally {
+      setIsProcessingPayment(false);
+    }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-red-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Cargando detalles del curso...</p>
-          <div className="mt-2 flex justify-center space-x-1">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-center items-center h-96">
+          <div className="text-center">
+            <Loader2 className="w-12 h-12 animate-spin text-red-500 mx-auto mb-4" />
+            <p className="text-xl text-gray-700">
+              Cargando detalles del curso...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-center items-center h-96">
+          <div className="text-center">
+            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <p className="text-xl text-red-500 mb-4">Error: {error}</p>
+            <Button onClick={() => window.location.reload()} variant="outline">
+              Reintentar
+            </Button>
           </div>
         </div>
       </div>
@@ -237,424 +294,331 @@ const CourseDetail = () => {
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Curso no encontrado</h2>
-          <p className="text-gray-600 mb-4">El curso que buscas no existe o ha sido eliminado.</p>
-          <Button onClick={() => navigate('/cursos')}>
-            Volver al catálogo
-          </Button>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-center items-center h-96">
+          <div className="text-center">
+            <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-xl text-gray-700 mb-4">Curso no encontrado.</p>
+            <Button onClick={() => navigate("/")} variant="outline">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Volver al inicio
+            </Button>
+          </div>
         </div>
       </div>
     );
   }
 
+  const totalLectures = course.sections?.reduce(
+    (sum, section) => sum + (section.lectures?.length || 0),
+    0
+  );
+  const isStudent = user && user.role === "STUDENT";
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Breadcrumb Navigation */}
-          <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-6">
-            <button 
-              onClick={() => navigate('/')}
-              className="hover:text-red-500 transition-colors"
-            >
-              Inicio
-            </button>
-            <span>/</span>
-            <button 
-              onClick={() => navigate('/cursos')}
-              className="hover:text-red-500 transition-colors"
-            >
-              Cursos
-            </button>
-            <span>/</span>
-            <span className="text-gray-900 font-medium">{course.title}</span>
-          </nav>
-          <div className="flex items-center justify-between mb-8">
-            <button
-              onClick={() => navigate(-1)}
-              className="group flex items-center px-4 py-2 text-gray-600 hover:text-white hover:bg-red-500 rounded-lg transition-all duration-200 border border-gray-300 hover:border-red-500"
-            >
-              <ArrowLeft className="w-5 h-5 mr-2 group-hover:animate-pulse" />
-              <span className="font-medium">Volver</span>
-            </button>
-            
-            {/* Acciones rápidas */}
-            <div className="flex items-center space-x-3">
-              <button className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all duration-200">
-                <Heart className="w-5 h-5" />
-              </button>
-              <button className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all duration-200">
-                <Share2 className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      {/* Botón de regreso */}
+      <div className="mb-6">
+        <Button
+          onClick={() => navigate(-1)}
+          variant="outline"
+          className="flex items-center gap-2">
+          <ArrowLeft className="w-4 h-4" />
+          Regresar
+        </Button>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Contenido principal */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Hero Section */}
-            <div className="bg-white rounded-xl shadow-sm p-8">
-              <div className="flex items-start justify-between mb-6">
-                <div>
-                  <Badge className="mb-3" variant="secondary">
-                    {course.category}
-                  </Badge>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                    {course.title}
-                  </h1>
-                  <p className="text-lg text-gray-600 mb-6">
-                    {course.description}
-                  </p>
-                </div>
-              </div>
-
-              {/* Stats */}
-              <div className="flex flex-wrap items-center gap-6 mb-6">
-                <div className="flex items-center">
-                  {renderStars(course.rating)}
-                  <span className="ml-2 text-sm font-medium text-gray-900">
-                    {course.rating}
-                  </span>
-                  <span className="ml-1 text-sm text-gray-500">
-                    ({course.reviewCount.toLocaleString()} reseñas)
-                  </span>
-                </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  <Users className="w-4 h-4 mr-1" />
-                  {course.students.toLocaleString()} estudiantes
-                </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  <Clock className="w-4 h-4 mr-1" />
-                  {course.duration}
-                </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  <BookOpen className="w-4 h-4 mr-1" />
-                  {course.lessons} lecciones
-                </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  <Globe className="w-4 h-4 mr-1" />
-                  {course.language}
-                </div>
-              </div>
-
-              {/* Instructor */}
-              <div className="flex items-center p-4 bg-gray-50 rounded-lg">
-                <img
-                  src={course.instructorAvatar}
-                  alt={course.instructor}
-                  className="w-12 h-12 rounded-full mr-4"
-                />
-                <div>
-                  <h3 className="font-semibold text-gray-900">
-                    Instructor: {course.instructor}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {course.instructorBio}
-                  </p>
-                </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Columna Principal - Contenido del Curso */}
+        <div className="md:col-span-2">
+          {/* Encabezado del Curso */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div className="flex items-start justify-between mb-4">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 flex-1">
+                {course.title}
+              </h1>
+              <div className="flex items-center gap-2 ml-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleToggleFavorite}
+                  className="p-2">
+                  <Heart
+                    className={`w-4 h-4 ${
+                      isFavorite ? "text-red-500 fill-current" : "text-gray-500"
+                    }`}
+                  />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleShare}
+                  className="p-2">
+                  <Share2 className="w-4 h-4 text-gray-500" />
+                </Button>
               </div>
             </div>
-
-            {/* Video Preview */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Vista previa del curso</CardTitle>
-                {/* Vista previa del video mejorada */}
-                <div className="relative mb-6 group">
-                  <div className="aspect-video bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl overflow-hidden shadow-lg">
-                    {showPreview ? (
-                      <div className="relative w-full h-full">
-                        <ReactPlayer
-                          url={course.previewVideo}
-                          width="100%"
-                          height="100%"
-                          controls
-                          playing
-                        />
-                        <button
-                          onClick={() => setShowPreview(false)}
-                          className="absolute top-4 right-4 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full transition-all"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="relative w-full h-full">
-                        <img
-                          src={course.image}
-                          alt={course.title}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-center justify-center">
-                          <button
-                            onClick={() => setShowPreview(true)}
-                            className="bg-white/90 hover:bg-white backdrop-blur-sm rounded-full p-6 transition-all transform hover:scale-110 shadow-xl group-hover:shadow-2xl"
-                          >
-                            <Play className="w-10 h-10 text-red-500 ml-1" />
-                          </button>
-                        </div>
-                        <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
-                          Vista previa gratuita
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-              </CardContent>
-            </Card>
-
-            {/* Tabs */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <div className="border-b border-gray-200 bg-gray-50">
-                <nav className="flex space-x-1 px-6">
-                  {[
-                    { id: 'overview', label: 'Descripción', icon: BookOpen },
-                    { id: 'curriculum', label: 'Temario', icon: Award },
-                    { id: 'reviews', label: 'Reseñas', icon: Star }
-                  ].map((tab) => {
-                    const Icon = tab.icon;
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center py-3 px-4 rounded-t-lg font-medium text-sm transition-all duration-200 ${
-                          activeTab === tab.id
-                            ? 'bg-white text-red-500 shadow-sm border-b-2 border-red-500 -mb-px'
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'
-                        }`}
-                      >
-                        <Icon className="w-4 h-4 mr-2" />
-                        {tab.label}
-                      </button>
-                    );
-                  })}
-                </nav>
+            <p className="text-gray-700 leading-relaxed break-all">
+              {course.subtitle || course.shortDescription}
+            </p>
+            <div className="flex items-center space-x-4 text-sm text-gray-500 mb-4">
+              <div className="flex items-center">
+                <Star className="w-4 h-4 mr-1 text-yellow-400 fill-current" />
+                <span>
+                  {course.rating ? course.rating.toFixed(1) : "Sin valoración"}
+                </span>
               </div>
-
-              <div className="p-8">
-                {activeTab === 'overview' && (
-                  <div className="space-y-8">
-                    {/* Lo que aprenderás */}
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                        Lo que aprenderás
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {course.whatYouLearn.map((item, index) => (
-                          <div key={index} className="flex items-start">
-                            <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                            <span className="text-gray-700">{item}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Requisitos */}
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                        Requisitos
-                      </h3>
-                      <ul className="space-y-2">
-                        {course.requirements.map((req, index) => (
-                          <li key={index} className="flex items-start">
-                            <div className="w-2 h-2 bg-gray-400 rounded-full mr-3 mt-2 flex-shrink-0"></div>
-                            <span className="text-gray-700">{req}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === 'curriculum' && (
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-semibold text-gray-900">
-                        Contenido del curso
-                      </h3>
-                      <div className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                        {course.curriculum.reduce((total, section) => total + section.lessons, 0)} lecciones totales
-                      </div>
-                    </div>
-                    {course.curriculum.map((section, index) => (
-                      <div key={index} className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
-                        <div className="p-5 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center">
-                              <div className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">
-                                {index + 1}
-                              </div>
-                              <h4 className="font-semibold text-gray-900">
-                                {section.title}
-                              </h4>
-                            </div>
-                            <div className="text-sm text-gray-600 bg-white px-3 py-1 rounded-full">
-                              {section.lessons} lecciones • {section.duration}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="p-5">
-                          <ul className="space-y-3">
-                            {section.topics.map((topic, topicIndex) => (
-                              <li key={topicIndex} className="flex items-center text-gray-700 hover:text-red-500 transition-colors group">
-                                <div className="w-6 h-6 bg-gray-100 group-hover:bg-red-50 rounded-full flex items-center justify-center mr-3 transition-colors">
-                                  <Play className="w-3 h-3 text-gray-400 group-hover:text-red-500" />
-                                </div>
-                                <span className="flex-1">{topic}</span>
-                                <span className="text-xs text-gray-400 group-hover:text-red-500">5:30</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {activeTab === 'reviews' && (
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-semibold text-gray-900">
-                        Reseñas de estudiantes
-                      </h3>
-                      <div className="flex items-center">
-                        {renderStars(course.rating)}
-                        <span className="ml-2 text-lg font-semibold">
-                          {course.rating}
-                        </span>
-                        <span className="ml-2 text-gray-500">
-                          ({course.reviewCount} reseñas)
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-6">
-                      {course.reviews.map((review) => (
-                        <div key={review.id} className="border-b border-gray-200 pb-6">
-                          <div className="flex items-start space-x-4">
-                            <img
-                              src={review.avatar}
-                              alt={review.name}
-                              className="w-10 h-10 rounded-full"
-                            />
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-semibold text-gray-900">
-                                  {review.name}
-                                </h4>
-                                <span className="text-sm text-gray-500">
-                                  {new Date(review.date).toLocaleDateString('es-ES')}
-                                </span>
-                              </div>
-                              <div className="flex items-center mb-2">
-                                {renderStars(review.rating)}
-                              </div>
-                              <p className="text-gray-700">{review.comment}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+              <div className="flex items-center">
+                <Users className="w-4 h-4 mr-1" />
+                <span>{course.totalStudents || 0} estudiantes</span>
+              </div>
+            </div>
+            <div className="flex items-center mb-4">
+              <User className="w-5 h-5 mr-3 text-gray-600" />
+              <div className="text-md font-semibold text-gray-800">
+                Instructor: {course.instructorid?.userName || "N/A"}{" "}
+                {course.instructorid?.lastName || ""}
+              </div>
+            </div>
+            <div className="flex items-center space-x-4 text-sm text-gray-500">
+              <div className="flex items-center">
+                <Clock className="w-4 h-4 mr-1" />
+                <span>{course.estimatedHours || 0} horas</span>
+              </div>
+              <div className="flex items-center">
+                <ListVideo className="w-4 h-4 mr-1" />
+                <span>{totalLectures} lecciones</span>
               </div>
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-8">
-              <Card className="p-6">
-                <div className="aspect-video bg-gray-100 rounded-lg mb-6 overflow-hidden">
-                  <img
-                    src={course.image}
-                    alt={course.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                <div className="text-center mb-6">
-                  <div className="flex items-center justify-center space-x-2 mb-2">
-                    <span className="text-3xl font-bold text-gray-900">
-                      ${course.price}
-                    </span>
-                    <span className="text-lg text-gray-500 line-through">
-                      ${course.originalPrice}
-                    </span>
+          {/* Sección "Qué aprenderás"
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Qué aprenderás
+            </h2>
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 list-none p-0">
+              {course.learningOutcomes?.map((outcome, index) => (
+                <li key={index} className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-1" />
+                  <span className="text-gray-700">{outcome}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+*/}
+          {/* Sección de Contenido del Curso
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Contenido del Curso
+            </h2>
+            <div className="space-y-4">
+              {course.sections?.length > 0 ? (
+                course.sections.map((section, sectionIndex) => (
+                  <div key={section.id} className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-gray-800 flex items-center mb-2">
+                      <BookOpen className="w-5 h-5 mr-2" />
+                      {section.title}
+                      <span className="ml-auto text-sm font-normal text-gray-500">
+                        {section.lectures?.length || 0} lecciones
+                      </span>
+                    </h3>
+                    <ul className="space-y-2 ml-6 border-l pl-4 border-gray-200">
+                      {section.lectures?.map((lecture, lectureIndex) => (
+                        <li key={lecture.id} className="text-sm text-gray-600 flex items-center">
+                          <CirclePlay className="w-4 h-4 mr-2 flex-shrink-0" />
+                          {lecture.title}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <Badge variant="destructive" className="text-sm">
-                    {Math.round(((course.originalPrice - course.price) / course.originalPrice) * 100)}% descuento
+                ))
+              ) : (
+                <p className="text-gray-500">El curso no tiene secciones de contenido aún.</p>
+              )}
+            </div>
+          </div>
+*/}
+          {/* Descripción Completa
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Descripción
+            </h2>
+            <p className="text-gray-700 leading-relaxed break-all">
+              {course.description}
+            </p>
+          </div>
+ */}
+          {/* Requisitos del Curso */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Requisitos
+            </h2>
+            <ul className="list-disc list-inside space-y-2">
+              {course.requirements?.length > 0 ? (
+                course.requirements.map((req, index) => (
+                  <li key={index} className="text-gray-700">
+                    {req}
+                  </li>
+                ))
+              ) : (
+                <p className="text-gray-500">
+                  No hay requisitos específicos para este curso.
+                </p>
+              )}
+            </ul>
+          </div>
+        </div>
+
+        {/* Columna Lateral - Información de Compra y General */}
+        <div className="md:col-span-1">
+          <div className="sticky top-8">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              {/* Imagen y Video de Previsualización */}
+              <div className="relative aspect-video">
+                <img
+                  className="w-full h-full object-cover"
+                  src={
+                    course.thumbnailUrl ||
+                    generateCoursePlaceholder(course.title)
+                  }
+                  alt={course.title}
+                  onError={handleImageError}
+                />
+                {course.youtubeUrls && course.youtubeUrls.length > 0 && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <Play className="w-12 h-12 text-white cursor-pointer" />
+                  </div>
+                )}
+              </div>
+
+              {/* Contenido Lateral */}
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-3xl font-bold text-gray-900">
+                    {course.price > 0
+                      ? `$${course.price.toFixed(2)}`
+                      : "Gratis"}
+                  </span>
+                  <Badge
+                    variant="secondary"
+                    className="bg-green-100 text-green-800">
+                    {course.isPremium ? "Premium" : "Estándar"}
                   </Badge>
                 </div>
-
-                <div className="space-y-4 mb-6">
-                  <Button
-                    onClick={handleEnroll}
-                    className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-4 text-lg font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center group"
-                  >
-                    {isEnrolled ? (
-                      <>
-                        <Play className="w-5 h-5 mr-2 group-hover:animate-pulse" />
-                        Continuar curso
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="w-5 h-5 mr-2 group-hover:animate-pulse" />
-                        {isAuthenticated ? 'Inscribirse ahora' : 'Iniciar sesión para inscribirse'}
-                      </>
-                    )}
-                  </Button>
-                  
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Heart className="w-4 h-4 mr-2" />
-                      Favorito
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Share2 className="w-4 h-4 mr-2" />
-                      Compartir
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-4 text-sm">
-                  <h4 className="font-semibold text-gray-900">Este curso incluye:</h4>
-                  {course.includes.map((item, index) => (
-                    <div key={index} className="flex items-center">
-                      <CheckCircle className="w-4 h-4 text-green-500 mr-3" />
-                      <span className="text-gray-700">{item}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-6 pt-6 border-t border-gray-200 text-center">
-                  <p className="text-sm text-gray-500 mb-2">
-                    Última actualización: {new Date(course.lastUpdated).toLocaleDateString('es-ES')}
+                {/* Debug info - remover en producción */}
+                <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
+                  <p>
+                    <strong>Debug Info:</strong>
                   </p>
-                  <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
-                    <div className="flex items-center">
-                      <Smartphone className="w-4 h-4 mr-1" />
-                      Móvil
-                    </div>
-                    <div className="flex items-center">
-                      <Download className="w-4 h-4 mr-1" />
-                      Descargable
-                    </div>
-                    <div className="flex items-center">
-                      <Trophy className="w-4 h-4 mr-1" />
-                      Certificado
-                    </div>
+                  <p>Precio: {course.price}</p>
+                  <p>Es Premium: {course.isPremium ? "Sí" : "No"}</p>
+                  <p>Tipo: {typeof course.price}</p>
+                  <p>Is Enrolled: {isEnrolled ? "Sí" : "No"}</p>
+                  <p>
+                    Is Processing Payment: {isProcessingPayment ? "Sí" : "No"}
+                  </p>
+                  <p>is student esta suscrito: {isStudent ? "Sí" : "No"}</p>
+                  <p>
+                    El estudiante se desuscribio: {isEnrolled ? "Sí" : "No"}
+                  </p>
+                  <p>El id del curso es: {courseId}</p>
+                  
+                </div>
+
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Play className="w-4 h-4 mr-2 text-gray-500" />
+                    <span>Acceso de por vida</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Download className="w-4 h-4 mr-2 text-gray-500" />
+                    <span>Recursos descargables</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Smartphone className="w-4 h-4 mr-2 text-gray-500" />
+                    <span>Acceso en cualquier dispositivo</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Trophy className="w-4 h-4 mr-2 text-gray-500" />
+                    <span>Certificado de finalización</span>
                   </div>
                 </div>
-              </Card>
+
+                <div className="flex flex-col space-y-3">
+                  {isStudent ? (
+                    isEnrolled ? (
+                      <Button
+                        onClick={handleContinueCourse}
+                        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6">
+                        <Play className="w-4 h-4 mr-2" />
+                        Continuar Curso
+                      </Button>
+                    ) : course.price > 0 ? (
+                      // Curso premium - mostrar botón de pago
+                      <Button
+                        onClick={handlePayment}
+                        disabled={isProcessingPayment}
+                        className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6">
+                        {isProcessingPayment ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Procesando Pago...
+                          </>
+                        ) : (
+                          <>
+                            <Trophy className="w-4 h-4 mr-2" />
+                            Comprar Curso - ${course.price.toFixed(2)}
+                          </>
+                        )}
+                      </Button>
+                    ) : (
+                      // Curso gratuito - mostrar botón de inscripción
+                      <Button
+                        onClick={handleEnrollment}
+                        disabled={isEnrolling}
+                        className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6">
+                        {isEnrolling ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Inscribiendo...
+                          </>
+                        ) : (
+                          <>
+                            <BookOpen className="w-4 h-4 mr-2" />
+                            Inscribirse Gratis
+                          </>
+                        )}
+                      </Button>
+                    )
+                  ) : (
+                    <Link
+                      to="/authentication/login"
+                      className="w-full bg-red-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-red-600 transition-colors text-center block">
+                      Iniciar Sesión para{" "}
+                      {course.price > 0 ? "Comprar" : "Inscribirte"}
+                    </Link>
+                  )}
+
+                  {isEnrolled && (
+                    <div className="text-center">
+                      <Badge
+                        variant="secondary"
+                        className="bg-green-100 text-green-800">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Inscrito
+                      </Badge>
+                    </div>
+                  )}
+
+                  {course.price > 0 && !isEnrolled && (
+                    <div className="text-center text-sm text-gray-600">
+                      <p>💳 Pago seguro con Stripe</p>
+                      <p>🔄 Acceso de por vida</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

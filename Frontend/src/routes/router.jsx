@@ -5,13 +5,13 @@ import privateRoutes from './PrivateRoutes';
 import teacherRoutes from './teacherRoutes';
 import { adminRoutes } from './adminRoutes';
 import ErrorPage from '@/pages/ErrorPage';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import LoadingSpinner from '@/shared/components/LoadingSpinner';
 import ProtectedRoute from '@/interfaces/routing/guards/ProtectedRoute';
 
-// Lazy load admin layout
+// Lazy load admin layout (Layout de administración)  (Layout de administración)
 const AdminLayout = lazy(() => import('@/features/admin/pages/AdminLayout'));
 
-// Add errorElement to all routes
+// Agregar errorElement a todas las rutas
 const withErrorHandling = (routes) => {
   return routes.map(route => ({
     ...route,
@@ -23,33 +23,30 @@ const withErrorHandling = (routes) => {
 import RootLayout from '@/layouts/RootLayout';
 
 export const router = createBrowserRouter([
-  // Main layout with title management
+  // Main layout with title management (Layout principal con gestión de títulos)
   {
     element: <RootLayout />,
     children: [
-      // Admin routes first to ensure they take precedence
+      
       {
-    path: '/admin/*',
-    element: (
-      <ProtectedRoute allowedRoles={['admin']}>
-        <Suspense fallback={
-          <div className="flex items-center justify-center min-h-screen">
-            <LoadingSpinner text="Cargando panel de administración..." />
-          </div>
-        }>
-          <AdminLayout />
-        </Suspense>
-      </ProtectedRoute>
-    ),
+        path: '/admin/*',
+        element: (
+          <ProtectedRoute allowedRoles={['admin']}>
+            <Suspense fallback={
+              <div className="flex items-center justify-center min-h-screen">
+                <LoadingSpinner text="Cargando panel de administración..." />
+              </div>
+            }>
+              <AdminLayout />
+            </Suspense>
+          </ProtectedRoute>
+        ),
         children: adminRoutes[0].children
       },
-      // Then public routes
+
       ...withErrorHandling(publicRoutes),
-      // Then teacher routes
       ...withErrorHandling(teacherRoutes),
-      // Then private routes
       ...withErrorHandling(privateRoutes),
-      // Catch-all route - must be last
       {
         path: '*',
         element: <Navigate to="/404" replace />
@@ -71,7 +68,7 @@ export const AppRouter = () => {
         </div>
       }
     >
-      <RouterProvider 
+      <RouterProvider
         router={router}
         fallbackElement={
           <div className="flex items-center justify-center min-h-screen">

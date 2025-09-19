@@ -1,161 +1,174 @@
-import api from './api';
-
-const createCourse = async (courseData) => {
+// src/services/courseService.js
+import api from "./api";
+import { processApiResponse, ensureArray, ensureObject, handleApiError } from "./apiUtils";
+// Obtener subcategorías por categoría (para edición de curso)
+export const getSubcategoriesByCategory = async (categoryId) => {
   try {
-    console.log('=== COURSE SERVICE: Enviando datos al backend ===');
-    console.log('URL:', '/api/courses');
-    console.log('Datos:', courseData);
-    console.log('Headers:', { 'Content-Type': 'application/json' });
-
-    const response = await api.post('/api/courses', courseData, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-
-    console.log('=== COURSE SERVICE: Respuesta exitosa ===');
-    console.log('Status:', response.status);
-    console.log('Data:', response.data);
-
+    const response = await api.get(`/api/subcategories/category/${categoryId}`);
+    return ensureArray(processApiResponse(response.data));
+  } catch (error) {
+    console.error("Error al cargar subcategorías:", error);
+    throw handleApiError(error, "No tienes permiso para esta acción");
+  }
+};
+// Eliminar curso (versión develop)
+export const deleteCourse = async (courseId) => {
+  try {
+    const token = localStorage.getItem('token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const response = await api.delete(`/api/courses/${courseId}`, { headers });
     return response.data;
   } catch (error) {
-    console.error('=== COURSE SERVICE: Error al crear curso ===');
-    console.error('Status:', error.response?.status);
-    console.error('Status Text:', error.response?.statusText);
-    console.error('Error Data:', error.response?.data);
-    
-    // EXPANDIR ERRORES ESPECÍFICOS
-    if (error.response?.data?.errors) {
-      console.error('=== ERRORES DE VALIDACIÓN ESPECÍFICOS ===');
-      error.response.data.errors.forEach((err, index) => {
-        console.error(`Error ${index + 1}:`, err);
-      });
-    }
-    
-    console.error('Error Message:', error.message);
-    console.error('Full Error:', error);
-
-    // Extraer mensaje de error más específico
-    let errorMessage = 'No se pudo crear el curso. Por favor, inténtalo de nuevo.';
-    
-    if (error.response?.data) {
+    let errorMessage = "Error al eliminar el curso. Por favor, inténtalo de nuevo.";
+    if (error.response?.status === 401) {
+      errorMessage = "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.";
+    } else if (error.response?.status === 403) {
+      errorMessage = "No tienes permisos para eliminar este curso.";
+    } else if (error.response?.status === 404) {
+      errorMessage = "El curso no fue encontrado.";
+    } else if (error.response?.status === 400) {
+      errorMessage = "No se puede eliminar un curso con estudiantes inscritos.";
+    } else if (error.response?.status === 500) {
+      errorMessage = "Error interno del servidor. Verifica tu conexión e inténtalo de nuevo.";
+    } else if (error.response?.data) {
       if (typeof error.response.data === 'string') {
         errorMessage = error.response.data;
       } else if (error.response.data.message) {
         errorMessage = error.response.data.message;
-      } else if (error.response.data.error) {
-        errorMessage = error.response.data.error;
-      } else if (error.response.data.errors) {
-        // Si hay errores de validación, mostrarlos
-        const validationErrors = error.response.data.errors;
-        if (Array.isArray(validationErrors)) {
-          errorMessage = validationErrors.map(err => err.message || err).join('; ');
-        } else {
-          errorMessage = JSON.stringify(validationErrors);
-        }
       }
     }
-
     throw new Error(errorMessage);
   }
 };
 
-const updateCourse = async (id, courseData) => {
+// Obtener los cursos de la API DE MANERA PUBLICA
+export const getCourses = async () => {
   try {
-    const response = await api.put(`/api/courses/${id}`, courseData, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    return response.data;
+    const response = await api.get("/api/courses");
+    return ensureArray(processApiResponse(response.data));
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'No se pudo actualizar el curso. Por favor, inténtalo de nuevo.');
+    console.error("Error al cargar los cursos:", error);
+    throw handleApiError(error, "Error al cargar los cursos");
   }
 };
 
-const courseService = {
+// Obtener las categorías de la API
+export const getCategories = async () => {
+  try {
+    const response = await api.get("/api/categories");
+    return ensureArray(processApiResponse(response.data));
+  } catch (error) {
+    console.error("Error al cargar las categorías:", error);
+    throw handleApiError(error, "No tienes permiso para esta acción");
+  }
+};
+// Obtener los niveles de la API
+export const getLevels = async () => {
+  try {
+    const response = await api.get("/api/levels");
+    return ensureArray(processApiResponse(response.data));
+  } catch (error) {
+    console.error("Error al cargar los niveles:", error);
+    throw handleApiError(error, "No tienes permiso para esta acción");
+  }
+};
+// Actualizar un curso de la API
+export const updateCourse = async (id, courseData) => {
+  try {
+    const response = await api.put(`/api/courses/${id}`, courseData);
+    return ensureObject(processApiResponse(response.data));
+  } catch (error) {
+    console.error("Error al actualizar el curso:", error);
+    throw handleApiError(error, "Error al actualizar el curso. Por favor, inténtalo de nuevo.");
+  }
+}
+// Obtener un curso de la API por su id
+export const getCourseById = async (id) => {
+  try {
+    const response = await api.get(`/api/courses/${id}`);
+    console.log("📊 Respuesta completa del backend:", response.data);
 
-  
+    // Si la respuesta es un string JSON muy largo, extraer solo los datos esenciales
+    if (typeof response.data === 'string') {
+      try {
+        // Intentar parsear el JSON completo primero
+        const parsed = JSON.parse(response.data);
+        console.log("✅ JSON parseado exitosamente");
+        return parsed;
+      } catch (error) {
+        console.log("⚠️ JSON muy largo, extrayendo datos esenciales...");
+        console.error("❌ Error al parsear JSON:", error);
 
-  /**
-   * Obtiene la lista de cursos con opciones de filtrado
-   * @param {Object} filters - Filtros opcionales (search, category, level, etc.)
-   * @returns {Promise<Array>} Lista de cursos
-   */
-  async getCourses(filters = {}) {
-    try {
-      const response = await api.get('/api/courses', { params: filters });
-      return response.data;
-    } catch (error) {
-      console.error('Error al obtener la lista de cursos:', error.message);
-      throw error;
+        // Extraer solo los datos esenciales del curso usando regex
+        const courseData = {
+          id: response.data.match(/"id":(\d+)/)?.[1] ? parseInt(response.data.match(/"id":(\d+)/)[1]) : null,
+          title: response.data.match(/"title":"([^"]+)"/)?.[1] || '',
+          description: response.data.match(/"description":"([^"]+)"/)?.[1] || '',
+          shortDescription: response.data.match(/"shortDescription":"([^"]+)"/)?.[1] || '',
+          youtubeUrls: response.data.match(/"youtubeUrls":(\[[^\]]+\])/)?.[1] ? JSON.parse(response.data.match(/"youtubeUrls":(\[[^\]]+\])/)[1]) : [],
+          thumbnailUrl: response.data.match(/"thumbnailUrl":"([^"]+)"/)?.[1] || '',
+          price: response.data.match(/"price":([\d.]+)/)?.[1] ? parseFloat(response.data.match(/"price":([\d.]+)/)[1]) : 0,
+          isPremium: response.data.match(/"isPremium":(true|false)/)?.[1] === 'true',
+          isPublished: response.data.match(/"isPublished":(true|false)/)?.[1] === 'true',
+          isActive: response.data.match(/"isActive":(true|false)/)?.[1] === 'true',
+          estimatedHours: response.data.match(/"estimatedHours":(\d+)/)?.[1] ? parseInt(response.data.match(/"estimatedHours":(\d+)/)[1]) : 0,
+          createdAt: response.data.match(/"createdAt":"([^"]+)"/)?.[1] || '',
+          updatedAt: response.data.match(/"updatedAt":"([^"]+)"/)?.[1] || ''
+        };
+
+        console.log("✅ Datos del curso extraídos:", courseData);
+        return courseData;
+      }
     }
-  },
 
-  /**
-   * Obtiene los detalles de un curso específico
-   * @param {string|number} courseId - ID del curso
-   * @returns {Promise<Object>} Detalles del curso
-   */
-  async getCourseById(courseId) {
-    try {
-      const response = await api.get(`/api/courses/${courseId}`);
-      return response.data;
-    } catch (error) {
-      console.error(`Error al obtener los detalles del curso (ID: ${courseId}):`, error);
-      throw new Error(error.response?.data?.message || 'No se pudo cargar el curso. Por favor, inténtalo de nuevo.');
+    // Si la respuesta tiene un campo 'message' con JSON string, parsearlo
+    if (response.data && typeof response.data === 'object' && response.data.message) {
+      try {
+        const parsed = JSON.parse(response.data.message);
+        console.log("✅ JSON parseado desde message:", parsed);
+        return parsed;
+      } catch (error) {
+        console.error("❌ Error al parsear message:", error);
+        return response.data;
+      }
     }
-  },
-  
-  createCourse,
-  updateCourse,
 
-  /**
-   * Obtiene las categorías de cursos disponibles
-   * @returns {Promise<Array>} Lista de categorías
-   */
-  async getCategories() {
-    try {
-      const response = await api.get('/api/categories');
-      return response.data;
-    } catch (error) {
-      console.error('Error al cargar las categorías de cursos:', error.message);
-      // Retornar categorías por defecto en caso de error
-      return [
-        { id: 'todos', name: 'Todos los cursos' },
-        { id: 'frontend', name: 'Frontend Development' },
-        { id: 'backend', name: 'Backend Development' },
-        { id: 'fullstack', name: 'Full Stack Development' },
-        { id: 'mobile', name: 'Mobile Development' },
-        { id: 'data', name: 'Data Science & AI' },
-        { id: 'design', name: 'UI/UX Design' },
-        { id: 'devops', name: 'DevOps & Cloud' },
-      ];
-    }
-  },
-
-  /**
-   * Obtiene los niveles de dificultad disponibles
-   * @returns {Promise<Array>} Lista de niveles
-   */
-  async getLevels() {
-    try {
-      const response = await api.get('/api/levels');
-      return response.data;
-    } catch (error) {
-      console.error('Error al cargar los niveles de dificultad:', error.message);
-      // Retornar niveles por defecto en caso de error
-      return [
-        { id: 'todos', name: 'Todos los niveles' },
-        { id: 'principiante', name: 'Principiante' },
-        { id: 'intermedio', name: 'Intermedio' },
-        { id: 'avanzado', name: 'Avanzado' },
-      ];
-    }
-  },
+    // Si ya es un objeto, devolverlo
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener el curso:", error);
+    throw handleApiError(error, "Error al obtener el curso. Por favor, inténtalo de nuevo.");
+  }
+};
+// Crear un curso de la API
+export const createCourse = async (courseData) => {
+  try {
+    const response = await api.post("/api/courses", courseData);
+    return ensureObject(processApiResponse(response.data));
+  } catch (error) {
+    console.error("Error al crear el curso:", error);
+    throw handleApiError(error, "Error al crear el curso. Por favor, inténtalo de nuevo.");
+  }
 };
 
-export default {
-  courseService,
-  createCourse
+// Obtener los cursos de un instructor de la API
+export const getCoursesByInstructorId = async (instructorId) => {
+  try {
+    const response = await api.get(`/api/courses/instructor/${instructorId}`);
+    return ensureArray(processApiResponse(response.data));
+  } catch (error) {
+    console.error("Error al obtener los cursos del instructor:", error);
+    throw handleApiError(error, "Error al obtener los cursos del instructor. Por favor, inténtalo de nuevo.");
+  }
+}
+
+// Obtener los estudiantes de un curso de la API
+export const getStudentsByCourseId = async (courseId) => {
+  try {
+    const response = await api.get(`/api/courses/${courseId}/students`);
+    return ensureArray(processApiResponse(response.data));
+  } catch (error) {
+    console.error(`Error al obtener estudiantes para el curso ${courseId}:`, error);
+    throw handleApiError(error, "Error al obtener los estudiantes del curso. Por favor, inténtalo de nuevo.");
+  }
 };

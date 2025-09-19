@@ -1,55 +1,43 @@
-import React, { lazy, Suspense } from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { lazy, Suspense } from "react";
+import { Navigate } from "react-router-dom";
 import LandingLayout from "@/ui/layout/LandingLayout";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import LoadingSpinner from "@/shared/components/LoadingSpinner";
+import LoadingFallback from "@/shared/components/LoadingFallback";
+import ErrorPage from "@/pages/ErrorPage";
 
-// Retraso artificial para mostrar el spinner de carga
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-// Lazy load components with Suspense wrapper and minimum loading time
-const withSuspense = (Component, minDelay = 0) => (props) => {
-  const [isDelayed, setIsDelayed] = React.useState(true);
-  
-  React.useEffect(() => {
-    if (minDelay > 0) {
-      const timer = setTimeout(() => setIsDelayed(false), minDelay);
-      return () => clearTimeout(timer);
-    } else {
-      setIsDelayed(false);
-    }
-  }, [minDelay]);
-
-  return (
-    <Suspense fallback={
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    }>
-      {isDelayed ? (
-        <div className="min-h-[60vh] flex items-center justify-center">
-          <LoadingSpinner />
-        </div>
-      ) : (
-        <Component {...props} />
-      )}
-    </Suspense>
-  );
-};
-
-// lazy cargar componente
-const lazyLoad = (importFn) => withSuspense(lazy(importFn));
-
-// importar paginas con lazy 
+// importar paginas con lazy
 const LandingPage = lazy(() => import("@/features/marketing/pages/Home"));
-const LoginPage = lazy(() => import("@/features/auth/pages/LoginPage"))
-const RegisterPage = lazy(() => import("@/features/auth/pages/RegisterPage"))
-const CatalogoCursos = lazy(() => import("@/features/marketing/pages/CatalogoCursos"));
-const CourseDetail = lazy(() => import("@/features/course/components/CourseDetail"));
+const LoginPage = lazy(() => import("@/features/auth/pages/LoginPage"));
+const RegisterPage = lazy(() => import("@/features/auth/pages/RegisterPage"));
+const ForgotPasswordPage = lazy(() =>
+  import("@/features/auth/pages/ForgotPasswordPage")
+);
+const ResetPasswordPage = lazy(() =>
+  import("@/features/auth/pages/ResetPasswordPage")
+);
+const CatalogoCursos = lazy(() =>
+  import("@/features/marketing/pages/CatalogoCursos")
+);
+const CourseDetail = lazy(() =>
+  import("@/features/course/components/CourseDetail")
+);
+const PaymentSuccess = lazy(() =>
+  import("@/features/payment/pages/PaymentSuccess")
+);
+const PaymentCancel = lazy(() =>
+  import("@/features/payment/pages/PaymentCancel")
+);
 const NotFoundPage = lazy(() => import("@/shared/ui/layout/NotFound"));
-const ComoFunciona = lazyLoad(() => import("@/features/marketing/pages/comoFunciona"));
-const TestConnection = lazyLoad(() => import("@/features/test/TextConnection"));
-const ErrorPage = lazyLoad(() => import("@/pages/ErrorPage"));
+const ComoFunciona = lazy(() =>
+  import("@/features/marketing/pages/comoFunciona")
+);
+const TestConnection = lazy(() => import("@/features/test/TextConnection"));
 
+const CentroAyuda = lazy(() => import("@/pages/CentroAyuda"));
+const Contacto = lazy(() => import("@/pages/Contacto"));
+const TerminosUso = lazy(() => import("@/pages/TerminosUso"));
+const Privacidad = lazy(() => import("@/pages/Privacidad"));
+const AuthLoadingScreen = lazy(() => import("@/shared/components/auth/AuthLoadingScreen"));
 const publicRoutes = [
   {
     path: "/",
@@ -58,31 +46,107 @@ const publicRoutes = [
       {
         index: true,
         errorElement: <ErrorPage />,
-        element: <LandingPage />,
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <LandingPage />
+          </Suspense>
+        ),
       },
       {
         path: "comoFunciona",
-        element: <ComoFunciona />,
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <ComoFunciona />
+          </Suspense>
+        ),
+      },
+      {
+        path: "centro-ayuda",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <CentroAyuda />
+          </Suspense>
+        ),
+      },
+      {
+        path: "contacto",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <Contacto />
+          </Suspense>
+        ),
+      },
+      {
+        path: "terminos-de-uso",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <TerminosUso />
+          </Suspense>
+        ),
+      },
+      {
+        path: "politica-de-privacidad",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <Privacidad />
+          </Suspense>
+        ),
       },
       {
         path: "test-connection",
-        element: <TestConnection />,
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <TestConnection />
+          </Suspense>
+        ),
       },
       {
         path: "cursos",
-        element: <CatalogoCursos />,
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <CatalogoCursos />
+          </Suspense>
+        ),
       },
       {
-        path: "curso/:courseId/detalle",
-        element: <CourseDetail />,
+        path: "payment/success",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <PaymentSuccess />
+          </Suspense>
+        ),
+      },
+      {
+        path: "payment/cancel",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <PaymentCancel />
+          </Suspense>
+        ),
+      },
+      {
+        path: "curso/:courseId",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <CourseDetail />
+          </Suspense>
+        ),
       },
       {
         path: "not-found",
-        element: <NotFoundPage />,
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <NotFoundPage />
+          </Suspense>
+        ),
       },
       {
         path: "*",
-        element: <Navigate to="/not-found" replace />,
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <Navigate to="/not-found" replace />
+          </Suspense>
+        ),
       },
     ],
   },
@@ -91,24 +155,62 @@ const publicRoutes = [
     children: [
       {
         index: true,
-        element: <Navigate to="/authentication/login" replace />
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <Navigate to="/authentication/login" replace />
+          </Suspense>
+        ),
       },
       {
         path: "login",
-        element: <LoginPage />
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <LoginPage />
+          </Suspense>
+        ),
       },
       {
         path: "register",
-        element: <RegisterPage />
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <RegisterPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "forgot-password",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <ForgotPasswordPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "reset-password",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <ResetPasswordPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "auth-loading",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <AuthLoadingScreen />
+          </Suspense>
+        ),
       },
       {
         path: "*",
-        element: <Navigate to="/authentication/login" replace />
-      }
-    ]
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <Navigate to="/authentication/login" replace />
+          </Suspense>
+        ),
+      },
+    ],
   },
- 
- 
 ];
 
 export default publicRoutes;

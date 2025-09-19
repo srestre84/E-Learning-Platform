@@ -1,15 +1,16 @@
 import { Outlet } from 'react-router-dom';
-import TitleManager from '@/components/TitleManager';
+import TitleManager from '@/shared/components/TitleManager';
 import { routeTitles } from '@/config/routeTitles';
 
 const RootLayout = () => {
     return (
         <>
+
             <TitleManager
                 routeTitles={routeTitles}
-                defaultTitle="E-Learning Platform"
+                defaultTitle="| E-Learning Platform"
                 includeAppName={true}
-                appName="E-Learning"
+                appName="E-Learning Platform"
             />
             <Outlet />
         </>

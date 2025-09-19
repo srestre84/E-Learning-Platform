@@ -1,7 +1,9 @@
-'use client';
+// src/DashboardStudent.jsx
 
-import React, { lazy, Suspense, useEffect, useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/ui/card";
+"use client";
+
+import React, { lazy, Suspense, useState } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/ui/card";
 import { Button } from "@/ui/Button";
 import { Progress } from "@/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
@@ -9,433 +11,64 @@ import { Badge } from "@/ui/badge";
 import { Input } from "@/ui/Input";
 import { Tabs, TabsList, TabsTrigger } from "@/ui/tabs";
 import { Skeleton } from "@/ui/skeleton";
-import { Search, BookOpen, Star, Star as StarFilled, Clock, Bell, ChevronRight } from "lucide-react";
+import {
+  Search,
+  BookOpen,
+  Star,
+  Clock,
+  Bell,
+  ChevronRight,
+  AlertCircle,
+  ShoppingCart,
+  PlayCircle,
+  Award,
+  TrendingUp,
+  CheckCircle,
+  ArrowRight,
+  Users,
+  Target,
+} from "lucide-react";
 import { useDashboard } from "@/shared/hooks/useDashboard";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { CircularProgress } from "@mui/material";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Link } from 'react-router-dom';
-import { getRecommendedCourses, getEnrolledCourses } from '@/features/course/services';
-import { useAuth } from "@/contexts/ContextUse";
+import { toast } from "react-toastify";
+import PurchasedCourses from "./PurchasedCourses";
 
-// Lazy load components for better performance
-const DashboardStats = lazy(() => import('./DashboardStats'));
-const CourseList = lazy(() => import('./CourseList'));
-const ActivityFeed = lazy(() => import('./ActivityFeed'));
-const UpcomingEvents = lazy(() => import('./UpcomingEvents'));
+// Componentes con lazy load
+const DashboardStats = lazy(() => import("./DashboardStats"));
+const ActivityFeed = lazy(() => import("./ActivityFeed"));
+const CourseList = lazy(() => import("./CourseList"));
+const UpcomingEvents = lazy(() => import("./UpcomingEvents"));
+const ProgressOverview = lazy(() => import("./ProgressOverview"));
+const RecentCourses = lazy(() => import("./RecentCourses"));
+const CursosSugeridos = lazy(() =>
+  import("@/features/marketing/components/CursosSugeridos")
+);
 
-export default function DashboardStudent() {
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const [activeTab, setActiveTab] = React.useState("all");
-  const [recommended, setRecommended] = useState([]);
-  const [recLoading, setRecLoading] = useState(true);
-  const [recError, setRecError] = useState('');
-
-  // New: enrolled courses for "Continuar aprendiendo"
-  const [enrolled, setEnrolled] = useState([]);
-  const [enrLoading, setEnrLoading] = useState(true);
-  const [enrError, setEnrError] = useState('');
-
-  const {
-    stats,
-    filteredCourses,
-    recentActivities,
-    upcomingEvents,
-    loading,
-    handleToggleFavorite,
-    handleMarkAsRead,
-    handleJoinEvent
-  } = useDashboard(searchQuery, activeTab);
-
-  const formattedDate = format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es });
-
-  useEffect(() => {
-    let active = true;
-    const loadRecs = async () => {
-      try {
-        setRecLoading(true);
-        const data = await getRecommendedCourses();
-        if (active) setRecommended(data);
-      } catch (e) {
-        if (active) setRecError('No se pudieron cargar las recomendaciones.');
-      } finally {
-        if (active) setRecLoading(false);
-      }
-    };
-    const loadEnrolled = async () => {
-      try {
-        setEnrLoading(true);
-        const data = await getEnrolledCourses();
-        if (active) setEnrolled(data);
-      } catch (e) {
-        if (active) setEnrError('No se pudieron cargar tus cursos.');
-      } finally {
-        if (active) setEnrLoading(false);
-      }
-    };
-    loadRecs();
-    loadEnrolled();
-    return () => { active = false; };
-  }, []);
-
-  // mostras el nombre del usuario autenticado 
-  const {user}= useAuth();
-
-  //console.log('Usuario actual QUE SE ESTA MOSTRANDO EN EL DASHBOARD:', user);
-
-  // Local: toggle favorite for enrolled courses
-  const handleToggleFavoriteEnrolled = (courseId) => {
-    setEnrolled(prev => prev.map(c => c.id === courseId ? { ...c, isFavorite: !c.isFavorite } : c));
-  };
-
-  // Local: filter enrolled by activeTab
-  const filteredEnrolled = React.useMemo(() => {
-    const base = enrolled;
-    switch (activeTab) {
-      case 'in-progress':
-        return base.filter(c => (c.progress ?? 0) < 100);
-      case 'completed':
-        return base.filter(c => (c.progress ?? 0) === 100);
-      case 'favorites':
-        return base.filter(c => !!c.isFavorite);
-      default:
-        return base;
-    }
-  }, [enrolled, activeTab]);
-
-  // Loading skeleton
-  if (loading) {
-    return <DashboardSkeleton />;
-  }
-
+// Componentes de esqueleto (Skeletons)
+function CourseListSkeleton() {
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
-      {/* Header redesigned */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Bienvenido {user?.name} {user?.lastName} <span className="text-red-500">👋</span></h1>
-          <p className="text-gray-600">{formattedDate}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          <div className="relative flex-1 md:flex-none md:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              type="search"
-              placeholder="Buscar cursos..."
-              className="pl-10 w-full"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              disabled={loading}
-            />
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {[...Array(4)].map((_, index) => (
+        <Card
+          key={index}
+          className="flex flex-col animate-pulse bg-white rounded-xl shadow-lg border border-gray-100">
+          <div className="w-full h-40 bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-xl" />
+          <CardHeader className="pb-3">
+            <div className="h-5 bg-gray-200 rounded w-3/4 mb-2" />
+            <div className="h-4 bg-gray-200 rounded w-1/2" />
+          </CardHeader>
+          <CardContent className="flex-grow">
+            <div className="h-3 bg-gray-200 rounded w-full mb-2" />
+            <div className="h-3 bg-gray-200 rounded w-5/6" />
+          </CardContent>
+          <div className="p-4 border-t border-gray-100">
+            <div className="h-10 bg-gray-200 rounded-lg" />
           </div>
-          <Button asChild variant="outline">
-            <Link to="/mis-cursos">Mis cursos</Link>
-          </Button>
-          <Button asChild>
-            <Link to="/cursos">Explorar</Link>
-          </Button>
-          <Button asChild variant="secondary">
-            <Link to="/perfil">Perfil</Link>
-          </Button>
-          <Button variant="outline" size="icon" className="rounded-full" disabled={loading}>
-            <Bell className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <Suspense fallback={<StatsSkeleton />}>
-        <DashboardStats stats={stats} />
-      </Suspense>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Continuar aprendiendo */}
-          <Card>
-            <CardHeader className="pb-3 flex items-center justify-between">
-              <CardTitle>Continuar aprendiendo</CardTitle>
-              <Tabs
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="w-full sm:w-auto"
-                disabled={loading}
-              >
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="all">Todos</TabsTrigger>
-                  <TabsTrigger value="in-progress">En Curso</TabsTrigger>
-                  <TabsTrigger value="completed">Completados</TabsTrigger>
-                  <TabsTrigger value="favorites">Favoritos</TabsTrigger>
-                </TabsList>
-              </Tabs>
-              <Button asChild variant="link" className="text-red-500">
-                <Link to="/mis-cursos" className="flex items-center">Ver todo <ChevronRight className="h-4 w-4 ml-1" /></Link>
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {enrLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {[1, 2].map(i => (
-                    <div key={i} className="border rounded-lg p-4 animate-pulse">
-                      <div className="h-20 w-full bg-gray-200 rounded mb-3"></div>
-                      <div className="h-4 w-2/3 bg-gray-200 rounded mb-2"></div>
-                      <div className="h-2 w-full bg-gray-100 rounded"></div>
-                    </div>
-                  ))}
-                </div>
-              ) : enrError ? (
-                <div className="text-sm text-red-600 bg-red-50 border border-red-200 p-3 rounded">{enrError}</div>
-              ) : filteredEnrolled.length === 0 ? (
-                <div className="text-gray-600">Aún no tienes cursos. Empieza explorando el catálogo.</div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-fr">
-                  {filteredEnrolled.slice(0, 4).map((course) => (
-                    <Card
-                      key={course.id}
-                      className="border overflow-hidden h-full transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-4">
-                          <div className="h-20 w-28 flex-shrink-0 overflow-hidden rounded-md bg-gray-100">
-                            <img src={course.thumbnail} alt={course.title} className="h-full w-full object-cover" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <div>
-                                <h4 className="font-medium text-gray-900 line-clamp-1 break-words">{course.title}</h4>
-                                <p className="text-sm text-gray-600 line-clamp-1">Por {course.instructor}</p>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={(e) => { e.stopPropagation?.(); handleToggleFavoriteEnrolled(course.id); }}
-                                title={course.isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-                              >
-                                {course.isFavorite ? (
-                                  <StarFilled className="h-4 w-4 text-yellow-500 fill-current" />
-                                ) : (
-                                  <Star className="h-4 w-4 text-gray-400" />
-                                )}
-                              </Button>
-                            </div>
-
-                            <div className="mt-2 flex flex-wrap items-center gap-2">
-                              <Badge variant="secondary">Inscrito</Badge>
-                              {course.progress === 100 ? (
-                                <Badge className="bg-green-100 text-green-800 border-green-200">Completado</Badge>
-                              ) : (
-                                <Badge className="bg-red-100 text-red-800 border-red-200">En curso</Badge>
-                              )}
-                              {typeof course.rating === 'number' && (
-                                <span className="text-xs text-yellow-700 flex items-center gap-1">
-                                  <Star className="h-3 w-3 fill-current" /> {course.rating}
-                                </span>
-                              )}
-                            </div>
-                            <div className="mt-2 space-y-1">
-                              <div className="flex justify-between text-xs text-gray-600">
-                                <span>Progreso</span>
-                                <span className="font-medium">{course.progress}%</span>
-                              </div>
-                              <Progress value={course.progress} className="h-2" />
-                            </div>
-                            <div className="mt-3 flex gap-2 flex-wrap">
-                              <Button asChild size="sm" variant="outline" className="whitespace-nowrap">
-                                <Link to={`/curso/${course.id}`}>{course.progress === 100 ? 'Ver de nuevo' : 'Continuar'}</Link>
-                              </Button>
-                              <Button asChild size="sm" className="whitespace-nowrap">
-                                <Link to={`/curso/${course.id}`}>Detalles</Link>
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Cursos Recomendados */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <CardTitle>Cursos Recomendados</CardTitle>
-
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <CourseList
-                courses={filteredCourses}
-
-              />
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Recent Activities */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Actividad Reciente</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Suspense fallback={<ActivitiesSkeleton />}>
-                <ActivityFeed
-                  activities={recentActivities}
-                  onMarkAsRead={handleMarkAsRead}
-                />
-              </Suspense>
-            </CardContent>
-          </Card>
-
-          {/* Upcoming Events */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Próximos Eventos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Suspense fallback={<EventsSkeleton />}>
-                <UpcomingEvents
-                  events={upcomingEvents}
-                  onJoinEvent={handleJoinEvent}
-                />
-              </Suspense>
-            </CardContent>
-          </Card>
-
-
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Skeleton Components
-function DashboardSkeleton() {
-  return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6 animate-pulse">
-      {/* Header Skeleton */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div className="space-y-2">
-          <div className="h-8 w-48 bg-gray-200 rounded-md"></div>
-          <div className="h-4 w-32 bg-gray-200 rounded"></div>
-        </div>
-        <div className="flex items-center space-x-3 w-full md:w-auto">
-          <div className="relative flex-1 md:flex-none md:w-64">
-            <div className="h-9 bg-gray-200 rounded-md w-full"></div>
-          </div>
-          <div className="h-9 w-24 bg-gray-200 rounded-md"></div>
-          <div className="h-9 w-24 bg-gray-200 rounded-md"></div>
-          <div className="h-9 w-24 bg-gray-200 rounded-md"></div>
-        </div>
-      </div>
-
-      {/* Stats Grid Skeleton */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[1, 2, 3, 4].map((item) => (
-          <div key={item} className="h-32 bg-white rounded-lg p-4 shadow-sm border">
-            <div className="h-4 w-3/4 bg-gray-200 rounded mb-4"></div>
-            <div className="h-8 w-1/2 bg-gray-200 rounded mb-2"></div>
-            <div className="h-2 w-full bg-gray-100 rounded"></div>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-        {/* Courses Skeleton */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-lg border p-6">
-            <div className="h-6 w-48 bg-gray-200 rounded mb-6"></div>
-            <div className="space-y-4">
-              {[1, 2].map((item) => (
-                <div key={item} className="border rounded-lg p-4">
-                  <div className="flex items-start space-x-4">
-                    <div className="h-20 w-20 bg-gray-200 rounded-md"></div>
-                    <div className="flex-1 space-y-2">
-                      <div className="h-5 w-3/4 bg-gray-200 rounded"></div>
-                      <div className="h-4 w-1/2 bg-gray-200 rounded"></div>
-                      <div className="h-2 w-full bg-gray-100 rounded"></div>
-                      <div className="h-2 w-5/6 bg-gray-100 rounded"></div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Sidebar Skeleton */}
-        <div className="space-y-6">
-          {/* Activities Skeleton */}
-          <div className="bg-white rounded-lg border p-6">
-            <div className="h-6 w-32 bg-gray-200 rounded mb-6"></div>
-            <div className="space-y-4">
-              {[1, 2, 3].map((item) => (
-                <div key={item} className="flex items-start space-x-3">
-                  <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
-                  <div className="flex-1 space-y-2">
-                    <div className="h-3 w-3/4 bg-gray-200 rounded"></div>
-                    <div className="h-2 w-1/2 bg-gray-100 rounded"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Upcoming Events Skeleton */}
-          <div className="bg-white rounded-lg border p-6">
-            <div className="h-6 w-48 bg-gray-200 rounded mb-6"></div>
-            <div className="space-y-4">
-              {[1, 2].map((item) => (
-                <div key={item} className="flex items-start space-x-3">
-                  <div className="h-12 w-12 bg-gray-200 rounded-md flex-shrink-0"></div>
-                  <div className="flex-1 space-y-1">
-                    <div className="h-4 w-3/4 bg-gray-200 rounded"></div>
-                    <div className="h-3 w-1/2 bg-gray-100 rounded"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Individual skeleton components (can be used as fallbacks for Suspense)
-function StatsSkeleton() {
-  return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {[1, 2, 3, 4].map((item) => (
-        <div key={item} className="h-32 bg-white rounded-lg p-4 shadow-sm border animate-pulse">
-          <div className="h-4 w-3/4 bg-gray-200 rounded mb-4"></div>
-          <div className="h-8 w-1/2 bg-gray-200 rounded mb-2"></div>
-          <div className="h-2 w-full bg-gray-100 rounded"></div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function CoursesSkeleton() {
-  return (
-    <div className="space-y-4">
-      {[1, 2, 3].map((item) => (
-        <div key={item} className="border rounded-lg p-4 animate-pulse">
-          <div className="flex items-start space-x-4">
-            <div className="h-20 w-20 bg-gray-200 rounded-md"></div>
-            <div className="flex-1 space-y-2">
-              <div className="h-5 w-3/4 bg-gray-200 rounded"></div>
-              <div className="h-4 w-1/2 bg-gray-200 rounded"></div>
-              <div className="h-2 w-full bg-gray-100 rounded"></div>
-              <div className="h-2 w-5/6 bg-gray-100 rounded"></div>
-            </div>
-          </div>
-        </div>
+        </Card>
       ))}
     </div>
   );
@@ -446,7 +79,7 @@ function ActivitiesSkeleton() {
     <div className="space-y-4">
       {[1, 2, 3].map((item) => (
         <div key={item} className="flex items-start space-x-3 animate-pulse">
-          <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
+          <div className="h-10 w-10 bg-gradient-to-br from-red-100 to-red-200 rounded-full"></div>
           <div className="flex-1 space-y-2">
             <div className="h-3 w-3/4 bg-gray-200 rounded"></div>
             <div className="h-2 w-1/2 bg-gray-100 rounded"></div>
@@ -460,15 +93,288 @@ function ActivitiesSkeleton() {
 function EventsSkeleton() {
   return (
     <div className="space-y-4">
-      {[1, 2].map((item) => (
-        <div key={item} className="flex items-start space-x-3 animate-pulse">
-          <div className="h-12 w-12 bg-gray-200 rounded-md flex-shrink-0"></div>
-          <div className="flex-1 space-y-1">
-            <div className="h-4 w-3/4 bg-gray-200 rounded"></div>
-            <div className="h-3 w-1/2 bg-gray-100 rounded"></div>
+      {[...Array(3)].map((_, index) => (
+        <div key={index} className="flex items-center space-x-4 animate-pulse">
+          <div className="h-12 w-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl" />
+          <div className="flex-1 space-y-2">
+            <div className="h-3 bg-gray-200 rounded w-full" />
+            <div className="h-2 bg-gray-100 rounded w-3/4" />
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+export default function DashboardStudent() {
+  const { user } = useAuth();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const {
+    isLoading,
+    error,
+    suggestedCourses,
+    showSuggested,
+    filteredCourses,
+    stats,
+    recentActivities,
+    upcomingEvents,
+    enrollments,
+    refreshData,
+  } = useDashboard();
+
+  console.log("�� DashboardStudent - filteredCourses:", filteredCourses);
+  console.log(
+    "�� DashboardStudent - filteredCourses length:",
+    filteredCourses?.length
+  );
+  console.log("�� DashboardStudent - isLoading:", isLoading);
+  console.log(" DashboardStudent - error:", error);
+
+  const handleUnenrollCourse = async (courseId) => {
+    try {
+      console.log("Desinscribiéndose del curso:", courseId);
+
+      // Recargar los datos después de desinscribirse
+      await refreshData();
+
+      toast.success("Te has desinscrito del curso exitosamente");
+    } catch (error) {
+      console.error("Error al desinscribirse del curso:", error);
+      toast.error("Error al desinscribirse del curso. Inténtalo de nuevo.");
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+        <div className="text-center">
+          <CircularProgress size={60} />
+          <p className="mt-4 text-gray-600">Cargando tu dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 text-center text-red-500 bg-gradient-to-br from-gray-50 via-white to-gray-100 min-h-screen flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+          <AlertCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />
+          <h3 className="text-xl font-semibold mb-2">
+            Error al cargar el dashboard
+          </h3>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <Button
+            onClick={() => window.location.reload()}
+            className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl font-semibold">
+            Reintentar
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
+      {/* Elementos decorativos de fondo */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-red-100 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-gray-200 rounded-full mix-blend-multiply filter blur-xl opacity-15 animate-pulse delay-700"></div>
+
+      <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 relative">
+        {/* Header mejorado */}
+        <div className="mb-10 text-center lg:text-left">
+          <h1 className="text-xl md:text-3xl font-bold text-gray-900 mb-4 leading-tight">
+            ¡Hola,{" "}
+            <span className="text-red-500 relative">
+              {user?.userName || "Usuario"}!
+              <div className="absolute -bottom-2 left-0 right-0 h-1 bg-red-200 rounded-full"></div>
+            </span>
+          </h1>
+          <p className="text-xl text-gray-600 mb-2">
+            {format(new Date(), "EEEE, d MMMM", { locale: es })}
+          </p>
+          <p className="text-lg text-gray-500">
+            Continúa tu viaje de aprendizaje
+          </p>
+        </div>
+
+        {/* Estadísticas mejoradas */}
+        <div className="mb-10">
+          <Suspense fallback={<CourseListSkeleton />}>
+            <DashboardStats stats={stats} />
+          </Suspense>
+        </div>
+
+        {/* Layout principal */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          {/* Columna principal - Cursos */}
+          <div className="xl:col-span-2 space-y-8">
+            {/* Búsqueda mejorada */}
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Buscar en tus cursos..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-12 h-14 text-lg border-2   focus:ring-0 rounded-2xl   transition-all duration-300"
+              />
+            </div>
+            {/* Progreso General */}
+            <Suspense fallback={<CourseListSkeleton />}>
+              <ProgressOverview enrollments={enrollments} />
+            </Suspense>
+
+            {/* Mis Cursos Inscritos */}
+            <RecentCourses />
+
+            {/* Cursos Sugeridos */}
+            <Card className="bg-white rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300">
+              <CardHeader className="pb-6">
+                <CardTitle className="text-3xl flex items-center gap-3 text-gray-900">
+                  <div className="p-3 bg-green-100 rounded-xl">
+                    <ShoppingCart className="h-8 w-8 text-green-600" />
+                  </div>
+                  Cursos Sugeridos para Ti
+                </CardTitle>
+                <p className="text-gray-600 text-lg">
+                  Descubre nuevos cursos basados en tus intereses
+                </p>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <Suspense fallback={<CourseListSkeleton />}>
+                    <CourseListSkeleton />
+                  </Suspense>
+                ) : error ? (
+                  <div className="p-12 text-center">
+                    <div className="bg-red-50 rounded-2xl p-8 border border-red-100">
+                      <AlertCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                        Error al cargar sugerencias
+                      </h3>
+                      <p className="text-gray-600 mb-6">{error}</p>
+                      <Button
+                        onClick={() => window.location.reload()}
+                        className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl font-semibold">
+                        Reintentar
+                      </Button>
+                    </div>
+                  </div>
+                ) : suggestedCourses && suggestedCourses.length > 0 ? (
+                  <Suspense fallback={<CourseListSkeleton />}>
+                    <CursosSugeridos courses={suggestedCourses} />
+                  </Suspense>
+                ) : (
+                  <div className="p-16 text-center">
+                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-12 border border-gray-200">
+                      <TrendingUp className="w-20 h-20 mx-auto mb-6 text-gray-300" />
+                      <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                        No hay cursos sugeridos disponibles
+                      </h3>
+                      <p className="text-lg text-gray-600 mb-8 max-w-md mx-auto">
+                        Estamos trabajando en recomendaciones personalizadas
+                        para ti.
+                      </p>
+                      <Button
+                        onClick={() => {
+                          /* Navegar a catálogo completo */
+                        }}
+                        className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
+                        <ArrowRight className="w-5 h-5 mr-2" />
+                        Ver Todos los Cursos
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar mejorado */}
+          <div className="space-y-6">
+            {/* Actividad Reciente */}
+            <Card className="bg-white rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl flex items-center gap-3 text-gray-900">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Bell className="h-5 w-5 text-green-600" />
+                  </div>
+                  Actividad Reciente
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Suspense fallback={<ActivitiesSkeleton />}>
+                  <ActivityFeed activities={recentActivities} />
+                </Suspense>
+              </CardContent>
+            </Card>
+
+            {/* Próximos Eventos */}
+            <Card className="bg-white rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl flex items-center gap-3 text-gray-900">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <Clock className="h-5 w-5 text-purple-600" />
+                  </div>
+                  Próximos Eventos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Suspense fallback={<EventsSkeleton />}>
+                  <UpcomingEvents events={upcomingEvents} />
+                </Suspense>
+              </CardContent>
+            </Card>
+
+            {/* Logros Recientes */}
+            <Card className="bg-white rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl flex items-center gap-3 text-gray-900">
+                  <div className="p-2 bg-yellow-100 rounded-lg">
+                    <Award className="h-5 w-5 text-yellow-600" />
+                  </div>
+                  Logros Recientes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-xl border border-yellow-200">
+                    <Award className="h-10 w-10 text-yellow-600" />
+                    <div>
+                      <p className="font-semibold text-gray-900">
+                        Primer Curso Completado
+                      </p>
+                      <p className="text-sm text-gray-600">¡Felicitaciones!</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+                    <Star className="h-10 w-10 text-blue-600" />
+                    <div>
+                      <p className="font-semibold text-gray-900">
+                        Estudiante Activo
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        7 días consecutivos
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border border-red-200">
+                    <Target className="h-10 w-10 text-red-600" />
+                    <div>
+                      <p className="font-semibold text-gray-900">
+                        Objetivo Semanal
+                      </p>
+                      <p className="text-sm text-gray-600">¡Completado!</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
