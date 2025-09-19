@@ -43,6 +43,33 @@ const NewUserPage = () => {
     setError(null);
     setSuccess(false);
 
+    // Validaciones frontend
+    if (!formData.userName || formData.userName.length < 2) {
+      setError("El nombre de usuario debe tener al menos 2 caracteres.");
+      setLoading(false);
+      return;
+    }
+    if (!formData.lastName || formData.lastName.length < 2) {
+      setError("El apellido debe tener al menos 2 caracteres.");
+      setLoading(false);
+      return;
+    }
+    if (!formData.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.email)) {
+      setError("El email no es válido.");
+      setLoading(false);
+      return;
+    }
+    if (!formData.password || formData.password.length < 6) {
+      setError("La contraseña debe tener al menos 6 caracteres.");
+      setLoading(false);
+      return;
+    }
+    if (!formData.role || !["STUDENT", "INSTRUCTOR", "ADMIN"].includes(formData.role)) {
+      setError("El rol seleccionado no es válido.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await api.post("/api/users/register", formData);
 
@@ -64,8 +91,10 @@ const NewUserPage = () => {
         }, 2000);
       }
     } catch (err) {
+      // Mostrar errores de validación del backend si existen
+      const backendMsg = err.response?.data?.errors?.[0]?.defaultMessage || err.response?.data?.message;
+      setError(backendMsg || "Error al crear el usuario");
       console.error("Error creating user:", err);
-      setError(err.response?.data?.message || "Error al crear el usuario");
     } finally {
       setLoading(false);
     }

@@ -41,6 +41,7 @@ import {
   Person,
 } from "@mui/icons-material";
 import api from "@/services/api";
+import { adminService } from "@/services/adminService";
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
@@ -50,6 +51,10 @@ export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [sortBy, setSortBy] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
+  // Estado para los stats de usuarios
+  const [userStats, setUserStats] = useState({ total: 0, admin: 0, instructor: 0, student: 0 });
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState(null);
 
   // Estados para modales
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -74,7 +79,14 @@ export default function UsersPage() {
       setError(null);
 
       const response = await api.get("/api/users/all");
-      setUsers(response.data);
+      // Asegurar que users siempre sea un array
+      let usersData = response.data;
+      if (!Array.isArray(usersData)) {
+        // Si es objeto, buscar un array dentro de sus propiedades
+        const possibleArray = Object.values(usersData).find(value => Array.isArray(value));
+        usersData = possibleArray || [];
+      }
+      setUsers(usersData);
     } catch (error) {
       console.error("Error fetching users:", error);
       setError(error.response?.data?.message || "Error al cargar los usuarios");
@@ -185,13 +197,30 @@ export default function UsersPage() {
     }
   };
 
-  // Fetch users from API
+  // Fetch stats al montar
   useEffect(() => {
+    const fetchUserStats = async () => {
+      try {
+        setStatsLoading(true);
+        setStatsError(null);
+        const stats = await adminService.getStats();
+        setUserStats({
+          total: stats?.userStats?.totalUsers ?? 0,
+          instructor: stats?.userStats?.instructorUsers ?? 0,
+          student: stats?.userStats?.studentUsers ?? 0,
+        });
+      } catch (error) {
+        setStatsError(error.message || "Error al cargar estadísticas de usuarios");
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+    fetchUserStats();
     fetchUsers();
   }, []);
 
-  const filteredUsers = users
-    .filter((user) => {
+  // Si users no es array, devolver array vacío para evitar crash
+  const filteredUsers = (Array.isArray(users) ? users : []).filter((user) => {
       // Filtrar por rol
       const roleMatch = roleFilter === "ALL" || user.role === roleFilter;
 
@@ -387,7 +416,7 @@ export default function UsersPage() {
                   },
                 }),
               }}>
-              Todos ({users.length})
+              Todos ({userStats.total})
             </Button>
 
             <Button
@@ -414,7 +443,7 @@ export default function UsersPage() {
                   },
                 }),
               }}>
-              Administradores ({users.filter((u) => u.role === "ADMIN").length})
+              Administradores ({userStats.admin})
             </Button>
 
             <Button
@@ -441,8 +470,7 @@ export default function UsersPage() {
                   },
                 }),
               }}>
-              Instructores (
-              {users.filter((u) => u.role === "INSTRUCTOR").length})
+              Instructores ({userStats.instructor})
             </Button>
 
             <Button
@@ -469,7 +497,7 @@ export default function UsersPage() {
                   },
                 }),
               }}>
-              Estudiantes ({users.filter((u) => u.role === "STUDENT").length})
+              Estudiantes ({userStats.student})
             </Button>
           </Box>
 
