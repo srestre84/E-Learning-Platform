@@ -6,6 +6,7 @@ import { generateCoursePlaceholder } from "@/utils/imageUtils";
 import { useTeacherCourses } from "@/shared/hooks/useTeacherCourses";
 import { useAuth } from "@/shared/hooks/useAuth";
 import { deleteCourse } from "@/services/courseService";
+import { toast } from "sonner"; // ✅ Reemplazar alert con toast
 
 // Componentes de estado de carga
 const LoadingState = () => (
@@ -23,9 +24,40 @@ const ErrorState = ({ message }) => (
   </div>
 );
 
+// ✅ Componente de confirmación moderno
+const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
+        <h3 className="text-xl font-bold text-gray-900 mb-4">{title}</h3>
+        <p className="text-gray-600 mb-6 whitespace-pre-line">{message}</p>
+        <div className="flex gap-3 justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const TeacherCourses = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("todos");
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    courseId: null,
+    courseTitle: "",
+  });
 
   // Obtener usuario autenticado
   const { user } = useAuth();
@@ -35,21 +67,33 @@ const TeacherCourses = () => {
     user?.id
   );
 
-  // Eliminar curso
+  // ✅ Función mejorada para eliminar curso
   const handleDeleteCourse = async (courseId, courseTitle) => {
-    const confirmDelete = window.confirm(
-      `¿Estás seguro de que deseas eliminar el curso "${courseTitle}"?\n\n` +
-        "Esta acción no se puede deshacer y el curso será eliminado permanentemente.\n" +
-        "Solo se pueden eliminar cursos sin estudiantes inscritos."
-    );
-    if (!confirmDelete) return;
+    setConfirmDialog({
+      isOpen: true,
+      courseId,
+      courseTitle,
+    });
+  };
+
+  // ✅ Confirmar eliminación
+  const confirmDelete = async () => {
+    const { courseId, courseTitle } = confirmDialog;
+
     try {
       await deleteCourse(courseId);
       await refreshCourses();
-      alert("Curso eliminado exitosamente");
+      toast.success("Curso eliminado exitosamente");
     } catch (error) {
-      alert(`Error al eliminar el curso: ${error.message}`);
+      toast.error(`Error al eliminar el curso: ${error.message}`);
+    } finally {
+      setConfirmDialog({ isOpen: false, courseId: null, courseTitle: "" });
     }
+  };
+
+  // ✅ Cancelar eliminación
+  const cancelDelete = () => {
+    setConfirmDialog({ isOpen: false, courseId: null, courseTitle: "" });
   };
 
   // Muestra el estado de carga o error si es necesario
@@ -67,6 +111,15 @@ const TeacherCourses = () => {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
+      {/* ✅ Dialog de confirmación */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title="Confirmar eliminación"
+        message={`¿Estás seguro de que deseas eliminar el curso "${confirmDialog.courseTitle}"?\n\nEsta acción no se puede deshacer y el curso será eliminado permanentemente.\nSolo se pueden eliminar cursos sin estudiantes inscritos.`}
+      />
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <h1 className="text-4xl font-bold text-gray-950 mb-2">Mis Cursos</h1>
@@ -262,7 +315,8 @@ const TeacherCourses = () => {
                   {/* Botones de acción */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <button
+                      <Link
+                        to={`/teacher/courses/${course.id}`}
                         className="bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 hover:scale-105 transition-all duration-200"
                         title="Ver curso">
                         <svg
@@ -283,7 +337,7 @@ const TeacherCourses = () => {
                             d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                           />
                         </svg>
-                      </button>
+                      </Link>
                       <Link
                         to={`/teacher/courses/${course.id}/edit`}
                         className="text-gray-500 p-2 rounded-lg hover:text-red-500 hover:bg-red-50 transition-all duration-200"
