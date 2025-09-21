@@ -35,8 +35,8 @@ import {
   Delete,
   Save,
   Cancel,
-  FilterList,
-  Clear,
+  Filter,
+  X,
   ArrowUpward,
   ArrowDownward,
   BookOpen,
@@ -396,7 +396,7 @@ export default function CoursesPage() {
             flexWrap: "wrap",
           }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <FilterList sx={{ color: "error.main" }} />
+            <Filter sx={{ color: "error.main" }} />
             <Typography
               variant="subtitle2"
               fontWeight={600}
@@ -446,7 +446,7 @@ export default function CoursesPage() {
                   setCategoryFilter("ALL");
                   setSearchTerm("");
                 }}
-                startIcon={<Clear />}
+                startIcon={<X />}
                 sx={{
                   textTransform: "none",
                   color: "text.secondary",
@@ -477,7 +477,7 @@ export default function CoursesPage() {
                 setCategoryFilter("ALL");
                 setSearchTerm("");
               }}
-              startIcon={<Clear />}
+              startIcon={<X />}
               sx={{ mt: 2 }}>
               Limpiar filtros
             </Button>
