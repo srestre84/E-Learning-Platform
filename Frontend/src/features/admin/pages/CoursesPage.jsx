@@ -42,7 +42,7 @@ import {
   BookOpen,
   School,
   DollarSign,
-  People,
+  Users,
 } from "lucide-react";
 import api from "@/services/api";
 
@@ -713,7 +713,7 @@ export default function CoursesPage() {
                   <TableCell sx={{ display: { xs: "none", lg: "table-cell" } }}>
                     <Box
                       sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      <People sx={{ fontSize: 16, color: "info.main" }} />
+                      <Users sx={{ fontSize: 16, color: "info.main" }} />
                       <Typography variant="body2">
                         {course.studentsCount || 0}
                       </Typography>
