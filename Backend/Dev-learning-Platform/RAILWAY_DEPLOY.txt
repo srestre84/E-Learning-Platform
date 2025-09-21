@@ -1,0 +1,15 @@
+RAILWAY DEPLOY CONFIGURATION
+============================
+
+This file is used to trigger Railway deployment.
+
+Project: E-Learning Platform v2.0
+Branch: feature/v2.0-course-details-enrollment
+Backend Directory: Backend/Dev-learning-Platform
+
+Configuration Files:
+- railway.toml: Main Railway configuration
+- nixpacks.toml: Build configuration
+- start.sh: Startup script
+
+Last Updated: $(date)
