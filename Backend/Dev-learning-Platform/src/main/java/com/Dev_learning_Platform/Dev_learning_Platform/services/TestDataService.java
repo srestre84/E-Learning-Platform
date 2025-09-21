@@ -2,6 +2,7 @@ package com.Dev_learning_Platform.Dev_learning_Platform.services;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -13,10 +14,14 @@ import com.Dev_learning_Platform.Dev_learning_Platform.models.Category;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Course;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Subcategory;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.User;
+import com.Dev_learning_Platform.Dev_learning_Platform.models.Module;
+import com.Dev_learning_Platform.Dev_learning_Platform.models.Lesson;
 import com.Dev_learning_Platform.Dev_learning_Platform.repositories.CategoryRepository;
 import com.Dev_learning_Platform.Dev_learning_Platform.repositories.CourseRepository;
 import com.Dev_learning_Platform.Dev_learning_Platform.repositories.SubcategoryRepository;
 import com.Dev_learning_Platform.Dev_learning_Platform.repositories.UserRepository;
+import com.Dev_learning_Platform.Dev_learning_Platform.repositories.ModuleRepository;
+import com.Dev_learning_Platform.Dev_learning_Platform.repositories.LessonRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +40,8 @@ public class TestDataService implements CommandLineRunner {
     private final CategoryRepository categoryRepository;
     private final SubcategoryRepository subcategoryRepository;
     private final CourseRepository courseRepository;
+    private final ModuleRepository moduleRepository;
+    private final LessonRepository lessonRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -53,14 +60,14 @@ public class TestDataService implements CommandLineRunner {
     private void createInitialData() {
         log.info("Creando datos iniciales del sistema...");
 
-        // Crear usuario administrador
-        User admin = getOrCreateUser("Admin", "Sistema", "admin@elearning.com", "Admin123", User.Role.ADMIN, true);
+        // Crear usuario administrador (coincide con frontend)
+        User admin = getOrCreateUser("Admin", "Sistema", "admin@test.com", "Password123", User.Role.ADMIN, true);
         
-        // Crear instructor demo
-        User instructor = getOrCreateUser("Profesor", "Demo", "instructor@elearning.com", "Instructor123", User.Role.INSTRUCTOR, true);
+        // Crear instructor demo (coincide con frontend)
+        User instructor = getOrCreateUser("Profesor", "Demo", "instructor@test.com", "Password123", User.Role.INSTRUCTOR, true);
         
-        // Crear estudiante demo
-        User student = getOrCreateUser("Estudiante", "Demo", "student@elearning.com", "Student123", User.Role.STUDENT, true);
+        // Crear estudiante demo (coincide con frontend)
+        User student = getOrCreateUser("Estudiante", "Demo", "student@test.com", "Password123", User.Role.STUDENT, true);
 
         // Crear categorías principales
         Category frontend = getOrCreateCategory("Frontend", "Desarrollo de interfaces de usuario", 1, true);
@@ -109,6 +116,9 @@ public class TestDataService implements CommandLineRunner {
                     BigDecimal.valueOf(149.99), true, true, true, 
                     "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=225&fit=crop", 35);
 
+        // Crear módulos y lecciones para los cursos
+        createModulesAndLessons();
+
         log.info("Datos iniciales creados exitosamente");
     }
 
@@ -131,8 +141,6 @@ public class TestDataService implements CommandLineRunner {
         user.setPassword(passwordEncoder.encode(password));
         user.setRole(role);
         user.setActive(isActive);
-        user.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
-        user.setUpdatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
         return userRepository.save(user);
     }
 
@@ -191,8 +199,70 @@ public class TestDataService implements CommandLineRunner {
         course.setThumbnailUrl(thumbnailUrl);
         course.setEstimatedHours(estimatedHours);
         course.setLevel("INTERMEDIATE");
-        course.setCreatedAt(LocalDateTime.now());
-        course.setUpdatedAt(LocalDateTime.now());
         return courseRepository.save(course);
+    }
+
+    private void createModulesAndLessons() {
+        log.info("Creando módulos y lecciones para los cursos...");
+        
+        // Obtener todos los cursos creados
+        List<Course> courses = courseRepository.findAll();
+        
+        for (Course course : courses) {
+            // Crear módulos para cada curso
+            Module module1 = createModule(course, 1, "Introducción", "Conceptos básicos del curso");
+            Module module2 = createModule(course, 2, "Desarrollo Práctico", "Ejercicios y proyectos");
+            Module module3 = createModule(course, 3, "Avanzado", "Temas avanzados y mejores prácticas");
+            
+            // Crear lecciones para cada módulo
+            createLesson(module1, 1, "Bienvenida al curso", "video", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", 180);
+            createLesson(module1, 2, "¿Qué aprenderás?", "video", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", 240);
+            createLesson(module1, 3, "Configuración del entorno", "video", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", 300);
+            
+            createLesson(module2, 1, "Primer ejercicio", "video", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", 420);
+            createLesson(module2, 2, "Segundo ejercicio", "video", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", 360);
+            
+            createLesson(module3, 1, "Temas avanzados", "video", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", 480);
+            createLesson(module3, 2, "Proyecto final", "video", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", 600);
+        }
+        
+        log.info("Módulos y lecciones creados exitosamente");
+    }
+
+    private Module createModule(Course course, int orderIndex, String title, String description) {
+        Module module = new Module();
+        module.setTitle(title);
+        module.setDescription(description);
+        module.setCourse(course);
+        module.setOrderIndex(orderIndex);
+        module.setIsActive(true);
+        return moduleRepository.save(module);
+    }
+
+    private Lesson createLesson(Module module, int orderIndex, String title, String type, String youtubeUrl, int durationSeconds) {
+        Lesson lesson = new Lesson();
+        lesson.setTitle(title);
+        lesson.setDescription("Descripción de la lección: " + title);
+        lesson.setType(type);
+        lesson.setContent("Contenido adicional de la lección");
+        lesson.setModule(module);
+        lesson.setOrderIndex(orderIndex);
+        lesson.setYoutubeUrl(youtubeUrl);
+        lesson.setYoutubeVideoId(extractVideoId(youtubeUrl));
+        lesson.setDurationSeconds(durationSeconds);
+        lesson.setIsActive(true);
+        return lessonRepository.save(lesson);
+    }
+
+    private String extractVideoId(String youtubeUrl) {
+        if (youtubeUrl == null || !youtubeUrl.contains("youtube.com/watch?v=")) {
+            return "dQw4w9WgXcQ"; // Video ID por defecto
+        }
+        String[] parts = youtubeUrl.split("v=");
+        if (parts.length > 1) {
+            String videoId = parts[1].split("&")[0];
+            return videoId;
+        }
+        return "dQw4w9WgXcQ";
     }
 }
