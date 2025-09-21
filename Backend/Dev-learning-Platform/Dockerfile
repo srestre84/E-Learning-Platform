@@ -1,5 +1,5 @@
 # Multi-stage build para optimizar el tamaño de la imagen
-FROM maven:3.9.6-openjdk-21-slim AS build
+FROM maven:3.9.6-openjdk-17-slim AS build
 
 # Establecer directorio de trabajo
 WORKDIR /app
@@ -19,7 +19,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Imagen de runtime
-FROM openjdk:21-jre-slim
+FROM openjdk:17-jre-slim
 
 # Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
