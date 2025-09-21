@@ -12,4 +12,4 @@ Configuration Files:
 - nixpacks.toml: Build configuration
 - start.sh: Startup script
 
-Last Updated: 2025-01-21 19:15:00 - Added HikariCP config and improved database detection
+Last Updated: 2025-01-21 19:25:00 - Fixed PostgreSQL URL parsing with individual components
