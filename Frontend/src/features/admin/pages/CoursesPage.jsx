@@ -37,8 +37,8 @@ import {
   Cancel,
   Filter,
   X,
-  ArrowUpward,
-  ArrowDownward,
+  ArrowUp,
+  ArrowDown,
   BookOpen,
   School,
   AttachMoney,
@@ -507,9 +507,9 @@ export default function CoursesPage() {
                     ID
                     {sortBy === "id" &&
                       (sortOrder === "asc" ? (
-                        <ArrowUpward fontSize="small" />
+                        <ArrowUp fontSize="small" />
                       ) : (
-                        <ArrowDownward fontSize="small" />
+                        <ArrowDown fontSize="small" />
                       ))}
                   </Box>
                 </TableCell>
@@ -525,9 +525,9 @@ export default function CoursesPage() {
                     Título
                     {sortBy === "title" &&
                       (sortOrder === "asc" ? (
-                        <ArrowUpward fontSize="small" />
+                        <ArrowUp fontSize="small" />
                       ) : (
-                        <ArrowDownward fontSize="small" />
+                        <ArrowDown fontSize="small" />
                       ))}
                   </Box>
                 </TableCell>
@@ -559,9 +559,9 @@ export default function CoursesPage() {
                     Precio
                     {sortBy === "price" &&
                       (sortOrder === "asc" ? (
-                        <ArrowUpward fontSize="small" />
+                        <ArrowUp fontSize="small" />
                       ) : (
-                        <ArrowDownward fontSize="small" />
+                        <ArrowDown fontSize="small" />
                       ))}
                   </Box>
                 </TableCell>
@@ -586,9 +586,9 @@ export default function CoursesPage() {
                     Estudiantes
                     {sortBy === "students" &&
                       (sortOrder === "asc" ? (
-                        <ArrowUpward fontSize="small" />
+                        <ArrowUp fontSize="small" />
                       ) : (
-                        <ArrowDownward fontSize="small" />
+                        <ArrowDown fontSize="small" />
                       ))}
                   </Box>
                 </TableCell>
@@ -605,9 +605,9 @@ export default function CoursesPage() {
                     Fecha
                     {sortBy === "createdAt" &&
                       (sortOrder === "asc" ? (
-                        <ArrowUpward fontSize="small" />
+                        <ArrowUp fontSize="small" />
                       ) : (
-                        <ArrowDownward fontSize="small" />
+                        <ArrowDown fontSize="small" />
                       ))}
                   </Box>
                 </TableCell>
