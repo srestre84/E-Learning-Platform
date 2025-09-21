@@ -12,7 +12,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "https://e-learning-platform-backend.railway.app/api/$1"
+      "dest": "https://e-learning-backend.onrender.com/api/$1"
     },
     {
       "src": "/(.*)",
@@ -20,11 +20,6 @@
     }
   ],
   "env": {
-    "VITE_API_BASE_URL": "https://e-learning-platform-backend.railway.app/api"
-  },
-  "functions": {
-    "app/api/**/*.js": {
-      "runtime": "nodejs18.x"
-    }
+    "VITE_API_BASE_URL": "https://e-learning-backend.onrender.com/api"
   }
 }

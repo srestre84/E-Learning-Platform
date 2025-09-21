@@ -5,7 +5,7 @@ const isProd = import.meta.env.MODE === 'production' || import.meta.env.VITE_ENV
 
 // 🌐 Base URL según el entorno
 const API_URL = isProd
-  ? ''
+  ? 'https://e-learning-backend.onrender.com/api'
   : 'http://localhost:8081';
 
 
