@@ -1,0 +1,9 @@
+# Render Configuration for Frontend
+type: web
+env: static
+plan: free
+buildCommand: pnpm install && pnpm run build
+staticPublishPath: dist
+envVars:
+  - key: VITE_API_BASE_URL
+    value: https://e-learning-backend.onrender.com/api
