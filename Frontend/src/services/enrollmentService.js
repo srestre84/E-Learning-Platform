@@ -3,7 +3,7 @@ import api from './api';
 
 export const enrollInCourse = async (courseId) => {
   try {
-    const response = await api.post('/api/enrollments', { courseId });
+    const response = await api.post('/enrollments', { courseId });
     return response.data;
   } catch (error) {
     console.error('Enrollment error:', error.response);
@@ -21,7 +21,7 @@ export const enrollInCourse = async (courseId) => {
 
 export const getActiveEnrollments = async () => {
   try {
-    const response = await api.get(`/api/enrollments/my-courses`);
+    const response = await api.get(`/enrollments/my-courses`);
     return response.data;
   } catch (error) {
     console.error("Error al obtener los cursos activos:", error);
@@ -33,7 +33,7 @@ export const getActiveEnrollments = async () => {
 
 export const getCompletedEnrollments = async () => {
   try {
-    const response = await api.get(`/api/enrollments/my-courses/completed`);
+    const response = await api.get(`/enrollments/my-courses/completed`);
     return response.data;
   } catch (error) {
     console.error("Error al obtener los cursos completados:", error);
@@ -46,7 +46,7 @@ export const getCompletedEnrollments = async () => {
 export const getAllEnrollments = async () => {
   try {
     console.log("🔍 Obteniendo todas las inscripciones...");
-    const response = await api.get(`/api/enrollments/my-courses/all`);
+    const response = await api.get(`/enrollments/my-courses/all`);
     console.log("�� Respuesta completa de getAllEnrollments:", response);
     console.log("📊 Datos de la respuesta:", response.data);
     console.log("📊 Tipo de datos:", typeof response.data);
@@ -78,7 +78,7 @@ export const getAllEnrollments = async () => {
 
 export const getEnrolledCourses = async () => {
   try {
-    const response = await api.get(`/api/enrollments/my-courses`);
+    const response = await api.get(`/enrollments/my-courses`);
     return response.data;
   } catch (error) {
     console.error("Error al obtener los cursos a los cuales estoy inscrito:", error);
@@ -94,7 +94,7 @@ export const checkEnrollment = async (courseId) => {
 
     // Intentar primero con el endpoint específico
     try {
-      const response = await api.get(`/api/enrollments/check/${courseId}`);
+      const response = await api.get(`/enrollments/check/${courseId}`);
       console.log("�� Respuesta de checkEnrollment:", response.data);
       return response.data;
     } catch (checkError) {
@@ -148,7 +148,7 @@ export const checkEnrollment = async (courseId) => {
  */
 export const unenrollFromCourse = async (enrollmentId) => {
   try {
-    const response = await api.delete(`/api/enrollments/${enrollmentId}`);
+    const response = await api.delete(`/enrollments/${enrollmentId}`);
     return response.data;
   } catch (error) {
     console.error("Error al desinscribirse del curso:", error);
@@ -178,7 +178,7 @@ export const unenrollFromCourse = async (enrollmentId) => {
  */
 export const updateCourseProgress = async (enrollmentId, progress) => {
   try {
-    const response = await api.put(`/api/enrollments/${enrollmentId}/progress`, {
+    const response = await api.put(`/enrollments/${enrollmentId}/progress`, {
       progressPercentage: progress
     });
     return response.data;
@@ -209,7 +209,7 @@ export const updateCourseProgress = async (enrollmentId, progress) => {
  */
 export const markCourseAsCompleted = async (enrollmentId) => {
   try {
-    const response = await api.put(`/api/enrollments/${enrollmentId}/complete`);
+    const response = await api.put(`/enrollments/${enrollmentId}/complete`);
     return response.data;
   } catch (error) {
     console.error("Error al marcar curso como completado:", error);

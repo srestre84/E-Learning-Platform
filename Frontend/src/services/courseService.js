@@ -99,7 +99,7 @@ const cleanMalformedJson = (jsonString) => {
 // Obtener subcategorías por categoría (para edición de curso)
 export const getSubcategoriesByCategory = async (categoryId) => {
   try {
-    const response = await api.get(`/api/subcategories/category/${categoryId}`);
+    const response = await api.get(`/subcategories/category/${categoryId}`);
     return ensureArray(processApiResponse(response.data));
   } catch (error) {
     console.error("Error al cargar subcategorías:", error);
@@ -111,7 +111,7 @@ export const deleteCourse = async (courseId) => {
   try {
     const token = localStorage.getItem('token');
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    const response = await api.delete(`/api/courses/${courseId}`, { headers });
+    const response = await api.delete(`/courses/${courseId}`, { headers });
     return response.data;
   } catch (error) {
     let errorMessage = "Error al eliminar el curso. Por favor, inténtalo de nuevo.";
@@ -140,7 +140,7 @@ export const deleteCourse = async (courseId) => {
 export const getCourses = async () => {
   try {
     // Intentar obtener cursos del backend
-    const response = await api.get("/api/courses");
+    const response = await api.get("/courses");
     const backendCourses = ensureArray(processApiResponse(response.data));
     console.log("📚 Cursos del backend:", backendCourses.length);
     
@@ -168,7 +168,7 @@ export const getCourses = async () => {
 // Obtener las categorías de la API
 export const getCategories = async () => {
   try {
-    const response = await api.get("/api/categories");
+    const response = await api.get("/categories");
     return ensureArray(processApiResponse(response.data));
   } catch (error) {
     console.error("Error al cargar las categorías:", error);
@@ -178,7 +178,7 @@ export const getCategories = async () => {
 // Obtener los niveles de la API
 export const getLevels = async () => {
   try {
-    const response = await api.get("/api/levels");
+    const response = await api.get("/levels");
     return ensureArray(processApiResponse(response.data));
   } catch (error) {
     console.error("Error al cargar los niveles:", error);
@@ -188,7 +188,7 @@ export const getLevels = async () => {
 // Actualizar un curso de la API
 export const updateCourse = async (id, courseData) => {
   try {
-    const response = await api.put(`/api/courses/${id}`, courseData);
+    const response = await api.put(`/courses/${id}`, courseData);
     return ensureObject(processApiResponse(response.data));
   } catch (error) {
     console.error("Error al actualizar el curso:", error);
@@ -211,7 +211,7 @@ export const updateCourse = async (id, courseData) => {
 export const getCourseById = async (id) => {
   try {
     // Intentar obtener del backend primero
-    const response = await api.get(`/api/courses/${id}`);
+    const response = await api.get(`/courses/${id}`);
     console.log("📚 Curso obtenido del backend:", response.data);
     return response.data;
   } catch (error) {
@@ -230,7 +230,7 @@ export const getCourseById = async (id) => {
   
   /* Código original del backend comentado
   try {
-    const response = await api.get(`/api/courses/${id}`);
+    const response = await api.get(`/courses/${id}`);
     console.log("📊 Respuesta completa del backend:", response.data);
 
     // Si la respuesta es un string JSON muy largo, extraer solo los datos esenciales
@@ -341,7 +341,7 @@ export const createCourse = async (courseData) => {
     }
     
     console.log("✅ Validación exitosa, enviando al backend...");
-    const response = await api.post("/api/courses", normalizedData);
+    const response = await api.post("/courses", normalizedData);
     console.log("✅ Curso creado exitosamente:", response.data);
     return ensureObject(processApiResponse(response.data));
   } catch (error) {
@@ -379,7 +379,7 @@ export const getCoursesByInstructorId = async (instructorId) => {
     console.log("🎯 Obteniendo cursos reales del backend para instructor:", instructorId);
     
     // Obtener cursos reales del backend
-    const response = await api.get(`/api/courses/instructor/${instructorId}`);
+    const response = await api.get(`/courses/instructor/${instructorId}`);
     const backendCourses = ensureArray(processApiResponse(response.data));
     console.log("📚 Cursos del instructor desde backend:", backendCourses.length);
     
@@ -400,7 +400,7 @@ export const getCoursesByInstructorEmail = async (email) => {
     console.log("📚 Obteniendo cursos del instructor email:", email);
     
     // Intentar obtener cursos del backend usando email
-    const response = await api.get(`/api/courses/instructor/email/${email}`);
+    const response = await api.get(`/courses/instructor/email/${email}`);
     const backendCourses = ensureArray(processApiResponse(response.data));
     console.log("📚 Cursos del instructor desde backend:", backendCourses.length);
     
@@ -432,7 +432,7 @@ export const getCoursesByInstructorEmail = async (email) => {
 // Obtener los estudiantes de un curso de la API
 export const getStudentsByCourseId = async (courseId) => {
   try {
-    const response = await api.get(`/api/enrollments/course/${courseId}`);
+    const response = await api.get(`/enrollments/course/${courseId}`);
     return ensureArray(processApiResponse(response.data));
   } catch (error) {
     console.error(`Error al obtener estudiantes para el curso ${courseId}:`, error);
@@ -443,7 +443,7 @@ export const getStudentsByCourseId = async (courseId) => {
 // Función para obtener el número de estudiantes inscritos en un curso
 export const getStudentCountByCourseId = async (courseId) => {
   try {
-    const response = await api.get(`/api/enrollments/course/${courseId}`);
+    const response = await api.get(`/enrollments/course/${courseId}`);
     const enrollments = ensureArray(processApiResponse(response.data));
     return enrollments.length;
   } catch (error) {

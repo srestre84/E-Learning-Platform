@@ -29,7 +29,7 @@ const extractYouTubeVideoId = (url) => {
            console.log("🎬 Obteniendo videos para el curso:", courseId);
            
            // Intentar obtener videos del nuevo endpoint que incluye lecciones
-           const videosResponse = await api.get(`/api/course-videos/course/${courseId}/lessons`);
+           const videosResponse = await api.get(`/course-videos/course/${courseId}/lessons`);
            const videos = videosResponse.data;
            console.log("🎬 Videos obtenidos del backend:", videos);
            
@@ -63,7 +63,7 @@ export const getCourseModules = async (courseId) => {
     console.log("📚 Obteniendo módulos para el curso:", courseId);
     
     // Intentar obtener el curso completo con módulos y lecciones
-    const courseResponse = await api.get(`/api/courses/${courseId}`);
+    const courseResponse = await api.get(`/courses/${courseId}`);
     const course = courseResponse.data;
     console.log("📚 Curso obtenido:", course);
     
@@ -74,7 +74,7 @@ export const getCourseModules = async (courseId) => {
     
     // Si no hay módulos en el curso, intentar obtener módulos directamente
     console.log("📚 No hay módulos en el curso, intentando endpoint de módulos...");
-    const modulesResponse = await api.get(`/api/modules/course/${courseId}`);
+    const modulesResponse = await api.get(`/modules/course/${courseId}`);
     console.log("📚 Módulos obtenidos del backend:", modulesResponse.data);
     
     // Manejar diferentes formatos de respuesta
@@ -114,7 +114,7 @@ export const getCourseModules = async (courseId) => {
  */
 export const getVideoDetails = async (videoId) => {
   try {
-    const response = await api.get(`/api/course-videos/${videoId}`);
+    const response = await api.get(`/course-videos/${videoId}`);
     return response.data;
   } catch (error) {
     console.error("Error al obtener detalles del video:", error);
@@ -129,7 +129,7 @@ export const getVideoDetails = async (videoId) => {
  */
 export const checkVideoManagementPermissions = async (courseId) => {
   try {
-    const response = await api.get(`/api/course-videos/course/${courseId}/can-manage`);
+    const response = await api.get(`/course-videos/course/${courseId}/can-manage`);
     return response.data;
   } catch (error) {
     console.error("Error al verificar permisos de gestión:", error);

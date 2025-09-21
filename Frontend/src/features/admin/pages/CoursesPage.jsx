@@ -83,7 +83,7 @@ export default function CoursesPage() {
       setLoading(true);
       setError(null);
 
-      const response = await api.get("/api/courses");
+      const response = await api.get("/courses");
       // Asegurar que siempre sea un array
       const coursesData = Array.isArray(response.data) ? response.data : [];
       setCourses(coursesData);
@@ -97,7 +97,7 @@ export default function CoursesPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await api.get("/api/categories");
+      const response = await api.get("/categories");
       // Asegurar que siempre sea un array
       const categoriesData = Array.isArray(response.data) ? response.data : [];
       setCategories(categoriesData);
@@ -131,7 +131,7 @@ export default function CoursesPage() {
   // Función para guardar cambios del curso
   const handleSaveCourse = async () => {
     try {
-      await api.put(`/api/courses/${selectedCourse.id}`, editForm);
+      await api.put(`/courses/${selectedCourse.id}`, editForm);
 
       // Actualizar la lista de cursos localmente
       setCourses(
@@ -160,7 +160,7 @@ export default function CoursesPage() {
   // Función para eliminar curso
   const handleConfirmDelete = async () => {
     try {
-      await api.delete(`/api/courses/${selectedCourse.id}`);
+      await api.delete(`/courses/${selectedCourse.id}`);
 
       // Actualizar la lista de cursos localmente
       setCourses(
