@@ -39,7 +39,7 @@ import {
   Clear,
   ArrowUpward,
   ArrowDownward,
-  MenuBook,
+  BookOpen,
   School,
   AttachMoney,
   People,
@@ -322,7 +322,7 @@ export default function CoursesPage() {
         <Button
           variant="contained"
           color="error"
-          startIcon={<MenuBook />}
+          startIcon={<BookOpen />}
           onClick={() => navigate("/admin/cursos/nuevo")}
           sx={{
             borderRadius: 2,
@@ -985,7 +985,7 @@ export default function CoursesPage() {
                 }}>
                 <Box
                   sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-                  <MenuBook sx={{ fontSize: 40, color: "error.main" }} />
+                  <BookOpen sx={{ fontSize: 40, color: "error.main" }} />
                   <Box>
                     <Typography variant="h6" fontWeight={600}>
                       {selectedCourse.title}
