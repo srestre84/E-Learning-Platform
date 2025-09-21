@@ -1,10 +1,30 @@
 {
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "http://149.130.176.157:8080/api/$1" },
-    { "source": "/auth/(.*)", "destination": "http://149.130.176.157:8080/auth/$1" },
-    { "source": "/(.*)", "destination": "/" }
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "https://e-learning-platform-backend.railway.app/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
   ],
   "env": {
-    "VITE_API_URL": "http://149.130.176.157:8080"
+    "VITE_API_BASE_URL": "https://e-learning-platform-backend.railway.app/api"
+  },
+  "functions": {
+    "app/api/**/*.js": {
+      "runtime": "nodejs18.x"
+    }
   }
 }
