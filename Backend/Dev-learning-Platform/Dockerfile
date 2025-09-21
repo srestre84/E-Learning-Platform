@@ -1,5 +1,5 @@
 # Multi-stage build para optimizar el tamaño de la imagen
-FROM maven:3.9.6-openjdk-17 AS build
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 
 # Establecer directorio de trabajo
 WORKDIR /app
@@ -19,7 +19,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Imagen de runtime
-FROM openjdk:17-jre
+FROM eclipse-temurin:17-jre
 
 # Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
