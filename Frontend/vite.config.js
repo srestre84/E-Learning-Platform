@@ -68,7 +68,7 @@ export default defineConfig(({ mode }) => {
             react: ['react', 'react-dom', 'react-router-dom'],
             mui: ['@mui/material', '@emotion/react', '@emotion/styled'],
             charts: ['recharts', 'chart.js'],
-            icons: ['@heroicons/react', 'lucide-react', '@mui/icons-material']
+            icons: ['@heroicons/react', 'lucide-react']
           },
           entryFileNames: 'assets/[name]-[hash].js',
           chunkFileNames: 'assets/[name]-[hash].js',
