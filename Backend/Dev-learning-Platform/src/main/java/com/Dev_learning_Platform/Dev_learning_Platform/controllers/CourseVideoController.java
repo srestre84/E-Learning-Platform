@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.Dev_learning_Platform.Dev_learning_Platform.dtos.CourseVideoDto;
+import com.Dev_learning_Platform.Dev_learning_Platform.dtos.VideoDto;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.CourseVideo;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.User;
 import com.Dev_learning_Platform.Dev_learning_Platform.services.CourseVideoService;
@@ -84,6 +85,19 @@ public class CourseVideoController {
         }
 
         List<CourseVideo> videos = courseVideoService.getVideosByCourse(courseId, userId);
+        return ResponseEntity.ok(videos);
+    }
+
+    @GetMapping("/course/{courseId}/lessons")
+    public ResponseEntity<List<VideoDto>> getCourseLessonsAsVideos(@PathVariable Long courseId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = null;
+
+        if (authentication != null && authentication.isAuthenticated()) {
+            userId = getUserIdFromAuthentication(authentication);
+        }
+
+        List<VideoDto> videos = courseVideoService.getCourseLessonsAsVideos(courseId, userId);
         return ResponseEntity.ok(videos);
     }
 

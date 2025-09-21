@@ -45,6 +45,7 @@ import {
 import { processCoursePayment } from "@/services/stripeService";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import CourseModules from "@/shared/components/CourseModules";
 
 const CourseDetail = () => {
   const { courseId } = useParams();
@@ -597,6 +598,25 @@ const CourseDetail = () => {
               </div>
             </div>
           )}
+
+          {/* Módulos del Curso */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+              <BookOpen className="w-6 h-6 mr-2 text-red-500" />
+              Contenido del Curso
+            </h2>
+            <CourseModules 
+              courseId={course.id} 
+              isEnrolled={enrollmentData.isEnrolled}
+              onVideoClick={(video) => {
+                if (enrollmentData.isEnrolled) {
+                  navigate(`/curso/${courseId}/content`);
+                } else {
+                  toast.error("Debes estar inscrito para ver el contenido del curso");
+                }
+              }}
+            />
+          </div>
 
           {/* Requisitos del Curso MEJORADOS */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">

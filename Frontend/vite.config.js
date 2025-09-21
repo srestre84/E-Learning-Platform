@@ -115,6 +115,40 @@ export default defineConfig(({ mode }) => {
         '@emotion/styled'
       ],
       entries: ['./src/main.jsx', './src/App.jsx']
+    },
+
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true
+    },
+
+    build: {
+      target: 'esnext',
+      minify: 'terser',
+      sourcemap: mode !== 'production',
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            react: ['react', 'react-dom', 'react-router-dom'],
+            mui: ['@mui/material', '@emotion/react', '@emotion/styled'],
+            charts: ['recharts', 'chart.js'],
+            icons: ['@heroicons/react', 'lucide-react']
+          },
+          entryFileNames: 'assets/[name]-[hash].js',
+          chunkFileNames: 'assets/[name]-[hash].js',
+          assetFileNames: 'assets/[name]-[hash][extname]'
+        },
+        treeshake: true,
+        external: []
+      },
+      reportCompressedSize: false,
+      chunkSizeWarningLimit: 1000,
+      terserOptions: {
+        compress: {
+          drop_console: mode === 'production',
+          drop_debugger: mode === 'production'
+        }
+      }
     }
   }
 })

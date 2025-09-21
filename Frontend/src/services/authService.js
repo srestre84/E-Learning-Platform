@@ -107,7 +107,7 @@ const login = async ({ email, password }) => {
     localStorage.setItem('user', JSON.stringify(userData));
     
     // Configurar interceptor de autenticación
-    setupAuthInterceptor(logout);
+    setupAuthInterceptor();
     
     return userData;
   } catch (error) {

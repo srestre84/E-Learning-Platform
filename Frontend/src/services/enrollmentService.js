@@ -56,13 +56,13 @@ export const getAllEnrollments = async () => {
       console.log("📊 Cantidad de inscripciones:", response.data.length);
       response.data.forEach((enrollment, index) => {
         console.log(` Inscripción ${index}:`, enrollment);
-        console.log(`📊 Curso ${index}:`, enrollment.course);
-        console.log(`📊 Claves del curso ${index}:`, Object.keys(enrollment.course || {}));
+        console.log(`📊 Curso ${index}:`, enrollment.courseTitle);
+        console.log(`📊 Claves del enrollment ${index}:`, Object.keys(enrollment || {}));
 
-        // Verificar si el curso tiene título
-        if (enrollment.course) {
-          console.log(`📊 Título del curso ${index}:`, enrollment.course.title);
-          console.log(`📊 ID del curso ${index}:`, enrollment.course.id);
+        // Verificar si el enrollment tiene título del curso
+        if (enrollment.courseTitle) {
+          console.log(`📊 Título del curso ${index}:`, enrollment.courseTitle);
+          console.log(`📊 ID del curso ${index}:`, enrollment.courseId);
         }
       });
     }
@@ -106,7 +106,7 @@ export const checkEnrollment = async (courseId) => {
       console.log("📊 Todas las inscripciones:", allEnrollments);
 
       const userEnrollment = allEnrollments.find(enrollment =>
-        enrollment.course && enrollment.course.id === parseInt(courseId)
+        enrollment.courseId === parseInt(courseId)
       );
 
       if (userEnrollment) {

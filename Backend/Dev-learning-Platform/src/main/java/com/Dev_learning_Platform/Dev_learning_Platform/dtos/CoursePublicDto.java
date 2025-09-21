@@ -13,6 +13,7 @@ public class CoursePublicDto {
     private Boolean isPublished;
     private Boolean isActive;
     private Integer estimatedHours;
+    private String level;
 
     // Getters y setters
     public Long getId() { return id; }
@@ -35,4 +36,6 @@ public class CoursePublicDto {
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
     public Integer getEstimatedHours() { return estimatedHours; }
     public void setEstimatedHours(Integer estimatedHours) { this.estimatedHours = estimatedHours; }
+    public String getLevel() { return level; }
+    public void setLevel(String level) { this.level = level; }
 }

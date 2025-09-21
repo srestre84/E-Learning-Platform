@@ -11,13 +11,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.Dev_learning_Platform.Dev_learning_Platform.dtos.CourseCreateDto;
+import com.Dev_learning_Platform.Dev_learning_Platform.dtos.ModuleDto;
+import com.Dev_learning_Platform.Dev_learning_Platform.dtos.LessonDto;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Category;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Course;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Enrollment;
+import com.Dev_learning_Platform.Dev_learning_Platform.models.Module;
+import com.Dev_learning_Platform.Dev_learning_Platform.models.Lesson;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Subcategory;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.User;
 import com.Dev_learning_Platform.Dev_learning_Platform.repositories.CourseRepository;
 import com.Dev_learning_Platform.Dev_learning_Platform.repositories.EnrollmentRepository;
+import com.Dev_learning_Platform.Dev_learning_Platform.repositories.ModuleRepository;
+import com.Dev_learning_Platform.Dev_learning_Platform.repositories.LessonRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,6 +38,8 @@ public class CourseService {
     private final CategoryService categoryService;
     private final SubcategoryService subcategoryService;
     private final EnrollmentRepository enrollmentRepository;
+    private final ModuleRepository moduleRepository;
+    private final LessonRepository lessonRepository;
 
     @Autowired
     @Lazy
@@ -59,7 +67,14 @@ public class CourseService {
         }
 
         Course course = mapDtoToEntity(courseDto, instructor, category, subcategory);
-        return courseRepository.save(course);
+        course = courseRepository.save(course);
+        
+        // Crear módulos y lecciones si existen
+        if (courseDto.getModules() != null && !courseDto.getModules().isEmpty()) {
+            createModulesAndLessons(course, courseDto.getModules());
+        }
+        
+        return course;
     }
 
     public List<Course> getPublicCourses() {
@@ -73,6 +88,17 @@ public class CourseService {
     public Course findById(Long courseId) {
         return courseRepository.findById(courseId).orElseThrow(
                 () -> new IllegalArgumentException("Curso no encontrado con ID: " + courseId));
+    }
+    
+    public Course findByIdWithModules(Long courseId) {
+        Course course = courseRepository.findById(courseId).orElseThrow(
+                () -> new IllegalArgumentException("Curso no encontrado con ID: " + courseId));
+        
+        // Cargar módulos y lecciones
+        List<Module> modules = moduleRepository.findActiveModulesByCourseId(courseId);
+        course.setModules(modules);
+        
+        return course;
     }
 
 
@@ -140,6 +166,7 @@ public class CourseService {
         course.setIsPublished(dto.getIsPublished());
         course.setIsActive(dto.getIsActive());
         course.setEstimatedHours(dto.getEstimatedHours());
+        course.setLevel(dto.getLevel());
 
         return course;
     }
@@ -183,6 +210,7 @@ public class CourseService {
         existingCourse.setIsPublished(courseDto.getIsPublished());
         existingCourse.setIsActive(courseDto.getIsActive());
         existingCourse.setEstimatedHours(courseDto.getEstimatedHours());
+        existingCourse.setLevel(courseDto.getLevel());
 
         return courseRepository.save(existingCourse);
     }
@@ -329,5 +357,42 @@ public class CourseService {
         
         course.setIsPublished(!course.getIsPublished());
         return courseRepository.save(course);
+    }
+    
+    @Transactional
+    private void createModulesAndLessons(Course course, List<ModuleDto> moduleDtos) {
+        for (ModuleDto moduleDto : moduleDtos) {
+            Module module = new Module();
+            module.setTitle(moduleDto.getTitle());
+            module.setDescription(moduleDto.getDescription());
+            module.setOrderIndex(moduleDto.getOrderIndex());
+            module.setIsActive(moduleDto.getIsActive() != null ? moduleDto.getIsActive() : true);
+            module.setCourse(course);
+            
+            module = moduleRepository.save(module);
+            
+            // Crear lecciones del módulo
+            if (moduleDto.getLessons() != null && !moduleDto.getLessons().isEmpty()) {
+                for (LessonDto lessonDto : moduleDto.getLessons()) {
+                    Lesson lesson = new Lesson();
+                    lesson.setTitle(lessonDto.getTitle());
+                    lesson.setDescription(lessonDto.getDescription());
+                    lesson.setType(lessonDto.getType());
+                    lesson.setYoutubeUrl(lessonDto.getYoutubeUrl());
+                    lesson.setYoutubeVideoId(Lesson.extractVideoId(lessonDto.getYoutubeUrl()));
+                    lesson.setContent(lessonDto.getContent());
+                    lesson.setOrderIndex(lessonDto.getOrderIndex());
+                    lesson.setDurationSeconds(lessonDto.getDurationSeconds());
+                    lesson.setIsActive(lessonDto.getIsActive() != null ? lessonDto.getIsActive() : true);
+                    lesson.setModule(module);
+                    
+                    lessonRepository.save(lesson);
+                }
+            }
+        }
+    }
+
+    public List<Course> getCoursesByLevel(String level) {
+        return courseRepository.findByLevelAndIsActiveAndIsPublished(level, true, true);
     }
 }

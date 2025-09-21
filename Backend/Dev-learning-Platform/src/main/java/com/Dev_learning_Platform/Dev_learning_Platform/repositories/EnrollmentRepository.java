@@ -23,10 +23,10 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     boolean existsByStudentIdAndCourseId(Long studentId, Long courseId);
     boolean existsByCourseIdAndStudentId(Long courseId, Long studentId);
 
-    @Query("SELECT e FROM Enrollment e WHERE e.student.id = :studentId ORDER BY e.enrolledAt DESC")
+    @Query("SELECT e FROM Enrollment e LEFT JOIN FETCH e.course LEFT JOIN FETCH e.course.instructor WHERE e.student.id = :studentId ORDER BY e.enrolledAt DESC")
     List<Enrollment> findByStudentId(@Param("studentId") Long studentId);
 
-    @Query("SELECT e FROM Enrollment e WHERE e.student.id = :studentId AND e.status = 'ACTIVE' ORDER BY e.enrolledAt DESC")
+    @Query("SELECT e FROM Enrollment e LEFT JOIN FETCH e.course LEFT JOIN FETCH e.course.instructor WHERE e.student.id = :studentId AND e.status = 'ACTIVE' ORDER BY e.enrolledAt DESC")
     List<Enrollment> findActiveByStudentId(@Param("studentId") Long studentId);
 
     @Query("SELECT e FROM Enrollment e WHERE e.course.id = :courseId ORDER BY e.enrolledAt DESC")
@@ -43,7 +43,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     @Query("SELECT e FROM Enrollment e WHERE e.student.id = :studentId AND e.status = :status ORDER BY e.enrolledAt DESC")
     List<Enrollment> findByStudentIdAndStatus(@Param("studentId") Long studentId, @Param("status") EnrollmentStatus status);
 
-    @Query("SELECT e FROM Enrollment e WHERE e.student.id = :studentId AND e.status = 'COMPLETED' ORDER BY e.completedAt DESC")
+    @Query("SELECT e FROM Enrollment e LEFT JOIN FETCH e.course LEFT JOIN FETCH e.course.instructor WHERE e.student.id = :studentId AND e.status = 'COMPLETED' ORDER BY e.completedAt DESC")
     List<Enrollment> findCompletedByStudentId(@Param("studentId") Long studentId);
 
     @Query("SELECT e.course.id, COUNT(e) FROM Enrollment e WHERE e.status = 'ACTIVE' GROUP BY e.course.id")

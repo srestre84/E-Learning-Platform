@@ -60,4 +60,10 @@ public class CourseCreateDto {
     @Min(value = 1, message = "Las horas estimadas deben ser al menos 1")
     @Max(value = 1000, message = "Las horas estimadas no pueden exceder 1000")
     private Integer estimatedHours;
+    
+    @Pattern(regexp = "^(BEGINNER|INTERMEDIATE|ADVANCED|EXPERT)$", 
+             message = "El nivel debe ser BEGINNER, INTERMEDIATE, ADVANCED o EXPERT")
+    private String level = "BEGINNER";
+    
+    private List<ModuleDto> modules;
 }

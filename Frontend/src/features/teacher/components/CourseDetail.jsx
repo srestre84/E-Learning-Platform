@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeftIcon,
   PencilIcon,
@@ -14,13 +14,17 @@ import {
 } from "@heroicons/react/24/solid";
 import { getCourseById, deleteCourse } from "@/services/courseService";
 import { getStudentsByCourseId } from "@/services/courseService";
+import { getCourseVideos } from "@/services/courseVideoService";
+import { getCourseLevelInfo } from "@/shared/constants/courseConstants";
 import { generateCoursePlaceholder } from "@/utils/imageUtils";
 import LoadingSpinner from "@/shared/components/LoadingSpinner";
+import TeacherVideoViewer from "./TeacherVideoViewer";
 import { toast } from "react-toastify";
 
 const CourseDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [course, setCourse] = useState(null);
   const [students, setStudents] = useState([]);
   const [studentCount, setStudentCount] = useState(0);
@@ -30,77 +34,102 @@ const CourseDetail = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [expandedLessons, setExpandedLessons] = useState(new Set());
+  const [courseVideos, setCourseVideos] = useState([]);
+  const [organizedModules, setOrganizedModules] = useState([]);
 
-  // Cargar datos reales del curso
+  // Manejar parámetro de URL para abrir pestaña específica
   useEffect(() => {
-    const fetchCourseData = async () => {
-      if (!id) {
-        setError("ID de curso no válido");
-        setLoading(false);
-        return;
+    const tab = searchParams.get('tab');
+    if (tab && ['overview', 'content', 'videos', 'students', 'analytics'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
+  // Escuchar eventos de actualización del curso
+  useEffect(() => {
+    const handleCourseUpdate = (event) => {
+      if (event.detail.courseId === parseInt(id)) {
+        console.log("🔄 Curso actualizado, recargando datos...");
+        fetchCourseData();
+        setRefreshTrigger(prev => prev + 1);
       }
+    };
 
-      try {
-        setLoading(true);
-        setError(null);
+    window.addEventListener('courseUpdated', handleCourseUpdate);
+    return () => {
+      window.removeEventListener('courseUpdated', handleCourseUpdate);
+    };
+  }, [id]);
 
-        console.log(`🔍 Cargando curso con ID: ${id}`);
+  // Función para cargar datos del curso
+  const fetchCourseData = useCallback(async () => {
+    // Validar que el ID sea un número válido
+    if (!id || id === 'unknown' || isNaN(parseInt(id))) {
+      console.error("❌ ID de curso inválido:", id);
+      setError("ID de curso no válido");
+      setLoading(false);
+      return;
+    }
 
-        // Cargar datos del curso
-        const courseData = await getCourseById(id);
-        console.log("📋 Datos del curso recibidos:", courseData);
+    try {
+      setLoading(true);
+      setError(null);
 
-        // Adaptar los datos del backend al formato esperado por el componente
-        const adaptedCourse = {
-          id: courseData.id,
-          title: courseData.title || "Sin título",
-          description:
-            courseData.description ||
-            courseData.shortDescription ||
-            "Sin descripción",
-          instructor:
-            courseData.instructorName ||
-            courseData.instructor ||
-            "Sin instructor",
-          students:
-            courseData.enrollmentCount || courseData.studentsEnrolled || 0,
-          rating: courseData.rating || 4.5,
-          duration: courseData.estimatedHours
-            ? `${courseData.estimatedHours} horas`
-            : "No especificado",
-          level: courseData.difficulty || courseData.level || "No especificado",
-          category:
-            courseData.categoryName || courseData.category || "Sin categoría",
-          price: courseData.price || 0,
-          status:
-            courseData.status ||
-            (courseData.isPublished ? "published" : "draft"),
-          imageUrl:
-            courseData.thumbnailUrl ||
-            courseData.imageUrl ||
-            generateCoursePlaceholder(courseData.title),
-          // Datos adicionales que podríamos necesitar
-          isPublished: courseData.isPublished || false,
-          isActive: courseData.isActive || false,
-          createdAt: courseData.createdAt,
-          updatedAt: courseData.updatedAt,
-          // Datos mock para campos que no vienen del backend aún
-          modules: courseData.modules || [
-            {
-              id: 1,
-              title: "Contenido del curso",
-              lessons: [
-                {
-                  id: 1,
-                  title: "Introducción",
-                  type: "video",
-                  duration: "15 min",
-                  completed: false,
-                },
-              ],
-            },
-          ],
-          statistics: {
+      console.log(`🔍 Cargando curso con ID: ${id} (tipo: ${typeof id})`);
+
+      // Cargar datos del curso
+      const courseData = await getCourseById(id);
+      console.log("📋 Datos del curso recibidos:", courseData);
+
+      // Adaptar los datos del backend al formato esperado por el componente
+      const adaptedCourse = {
+        id: courseData.id,
+        title: courseData.title || "Sin título",
+        description:
+          courseData.description ||
+          courseData.shortDescription ||
+          "Sin descripción",
+        instructor: courseData.instructor,
+        students:
+          courseData.enrollmentCount || courseData.studentsEnrolled || 0,
+        rating: courseData.rating || 4.5,
+        duration: courseData.estimatedHours
+          ? `${courseData.estimatedHours} horas`
+          : "No especificado",
+        level: courseData.difficulty || courseData.level || "No especificado",
+        category: courseData.category,
+        price: courseData.price || 0,
+        status:
+          courseData.status ||
+          (courseData.isPublished ? "published" : "draft"),
+        imageUrl:
+          courseData.thumbnailUrl ||
+          courseData.imageUrl ||
+          generateCoursePlaceholder(courseData.title),
+        // Datos adicionales que podríamos necesitar
+        isPublished: courseData.isPublished || false,
+        isActive: courseData.isActive || false,
+        createdAt: courseData.createdAt,
+        updatedAt: courseData.updatedAt,
+        // Datos mock para campos que no vienen del backend aún
+        modules: courseData.modules || [
+          {
+            id: 1,
+            title: "Contenido del curso",
+            lessons: [
+              {
+                id: 1,
+                title: "Introducción",
+                type: "video",
+                duration: "15 min",
+                completed: false,
+              },
+            ],
+          },
+        ],
+        statistics: {
             completionRate: courseData.completionRate || 0,
             avgScore: courseData.avgScore || 0,
             totalEnrollments: courseData.enrollmentCount || 0,
@@ -109,6 +138,22 @@ const CourseDetail = () => {
         };
 
         setCourse(adaptedCourse);
+
+        // Cargar videos del curso y organizarlos por módulos
+        try {
+          const videos = await getCourseVideos(id);
+          console.log("🎬 Videos cargados:", videos);
+          setCourseVideos(videos);
+          
+          // Organizar videos por módulos
+          const modules = organizeVideosIntoModules(videos);
+          console.log("📚 Módulos organizados:", modules);
+          setOrganizedModules(modules);
+        } catch (videoError) {
+          console.error("❌ Error al cargar videos:", videoError);
+          setCourseVideos([]);
+          setOrganizedModules([]);
+        }
 
         // Cargar estudiantes del curso si es necesario
         try {
@@ -136,10 +181,60 @@ const CourseDetail = () => {
       } finally {
         setLoading(false);
       }
-    };
+    }, [id]);
 
+  // Función para organizar videos en módulos
+  const organizeVideosIntoModules = (videos) => {
+    if (!videos || videos.length === 0) return [];
+
+    // Crear un mapa de módulos basado en los videos
+    const moduleMap = new Map();
+    
+    videos.forEach(video => {
+      const moduleId = video.moduleId || 'default';
+      const moduleTitle = video.moduleTitle || 'Contenido General';
+      
+      if (!moduleMap.has(moduleId)) {
+        moduleMap.set(moduleId, {
+          id: moduleId,
+          title: moduleTitle,
+          description: video.moduleDescription || '',
+          orderIndex: video.moduleOrderIndex || 1,
+          isActive: true,
+          lessons: []
+        });
+      }
+      
+      // Agregar el video como lección
+      moduleMap.get(moduleId).lessons.push({
+        id: video.id,
+        title: video.title,
+        description: video.description || '',
+        type: video.type || 'video',
+        youtubeUrl: video.youtubeUrl,
+        youtubeVideoId: video.youtubeVideoId,
+        content: video.content,
+        orderIndex: video.orderIndex || 1,
+        durationSeconds: video.durationSeconds || 0,
+        isActive: video.isActive !== false
+      });
+    });
+    
+    // Convertir mapa a array y ordenar
+    const modules = Array.from(moduleMap.values()).sort((a, b) => a.orderIndex - b.orderIndex);
+    
+    // Ordenar lecciones dentro de cada módulo
+    modules.forEach(module => {
+      module.lessons.sort((a, b) => a.orderIndex - b.orderIndex);
+    });
+    
+    return modules;
+  };
+
+  // Cargar datos del curso al montar el componente
+  useEffect(() => {
     fetchCourseData();
-  }, [id]);
+  }, [fetchCourseData]);
 
   // Función para eliminar curso
   const handleDelete = async () => {
@@ -293,6 +388,54 @@ const CourseDetail = () => {
     }
   };
 
+  // Función para obtener el nombre del instructor de manera segura
+  const getInstructorName = (instructor) => {
+    if (typeof instructor === 'string') {
+      return instructor;
+    }
+    if (instructor && typeof instructor === 'object') {
+      return instructor.userName || instructor.name || `${instructor.firstName || ''} ${instructor.lastName || ''}`.trim() || "Sin instructor";
+    }
+    return "Sin instructor";
+  };
+
+  // Función para obtener el nombre de la categoría de manera segura
+  const getCategoryName = (category) => {
+    if (typeof category === 'string') {
+      return category;
+    }
+    if (category && typeof category === 'object') {
+      return category.name || "Sin categoría";
+    }
+    return "Sin categoría";
+  };
+
+  // Función para alternar la expansión de una lección
+  const toggleLessonExpansion = (lessonId) => {
+    setExpandedLessons(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(lessonId)) {
+        newSet.delete(lessonId);
+      } else {
+        newSet.add(lessonId);
+      }
+      return newSet;
+    });
+  };
+
+  // Función para formatear la duración de la lección
+  const formatLessonDuration = (durationSeconds) => {
+    if (!durationSeconds) return "Duración no especificada";
+    
+    const minutes = Math.floor(durationSeconds / 60);
+    const seconds = durationSeconds % 60;
+    
+    if (minutes > 0) {
+      return seconds > 0 ? `${minutes}m ${seconds}s` : `${minutes}m`;
+    }
+    return `${seconds}s`;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header with back button and actions */}
@@ -308,14 +451,14 @@ const CourseDetail = () => {
             <div className="flex items-center space-x-4 mt-1">
               <span
                 className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                  course.status
+                  course.isPublished ? 'published' : 'draft'
                 )}`}>
-                {getStatusText(course.status)}
+                {getStatusText(course.isPublished ? 'published' : 'draft')}
               </span>
               {course.category && (
                 <>
                   <span className="text-gray-500 text-sm">
-                    {course.category}
+                    {getCategoryName(course.category)}
                   </span>
                   <span className="text-gray-500 text-sm">•</span>
                 </>
@@ -360,7 +503,7 @@ const CourseDetail = () => {
               {course.title}
             </h3>
             <p className="mt-1 max-w-2xl text-sm text-gray-500">
-              Por {course.instructor}
+              Por {getInstructorName(course.instructor)}
             </p>
             {course.price > 0 && (
               <p className="mt-1 text-lg font-semibold text-green-600">
@@ -392,10 +535,11 @@ const CourseDetail = () => {
       {/* Tabs */}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
-          {["overview", "content", "students", "analytics"].map((tab) => {
+          {["overview", "content", "videos", "students", "analytics"].map((tab) => {
             const tabTitles = {
               overview: "Resumen",
               content: "Contenido",
+              videos: "Videos",
               students: "Estudiantes",
               analytics: "Análisis",
             };
@@ -435,22 +579,46 @@ const CourseDetail = () => {
                 <dl className="space-y-2">
                   <div className="flex justify-between">
                     <dt className="text-sm text-gray-500">Nivel:</dt>
-                    <dd className="text-sm text-gray-900">{course.level}</dd>
+                    <dd className="text-sm text-gray-900">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCourseLevelInfo(course.level)?.color || 'bg-gray-100 text-gray-800'}`}>
+                        {getCourseLevelInfo(course.level)?.label || course.level || 'No especificado'}
+                      </span>
+                    </dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-sm text-gray-500">Categoría:</dt>
-                    <dd className="text-sm text-gray-900">{course.category}</dd>
+                    <dd className="text-sm text-gray-900">{getCategoryName(course.category)}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-sm text-gray-500">
-                      Duración estimada:
-                    </dt>
-                    <dd className="text-sm text-gray-900">{course.duration}</dd>
+                    <dt className="text-sm text-gray-500">Subcategoría:</dt>
+                    <dd className="text-sm text-gray-900">{getCategoryName(course.subcategory)}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-sm text-gray-500">Horas estimadas:</dt>
+                    <dd className="text-sm text-gray-900">{course.estimatedHours || 'No especificado'}h</dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-sm text-gray-500">Precio:</dt>
                     <dd className="text-sm text-gray-900">
                       {course.price === 0 ? "Gratis" : `$${course.price}`}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-sm text-gray-500">Tipo:</dt>
+                    <dd className="text-sm text-gray-900">
+                      {course.isPremium ? 'Premium' : 'Gratuito'}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-sm text-gray-500">Creado:</dt>
+                    <dd className="text-sm text-gray-900">
+                      {course.createdAt ? new Date(course.createdAt).toLocaleDateString() : 'No disponible'}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-sm text-gray-500">Actualizado:</dt>
+                    <dd className="text-sm text-gray-900">
+                      {course.updatedAt ? new Date(course.updatedAt).toLocaleDateString() : 'No disponible'}
                     </dd>
                   </div>
                 </dl>
@@ -474,7 +642,7 @@ const CourseDetail = () => {
                   <div className="flex justify-between">
                     <dt className="text-sm text-gray-500">Estado:</dt>
                     <dd className="text-sm text-gray-900">
-                      {getStatusText(course.status)}
+                      {getStatusText(course.isPublished ? 'published' : 'draft')}
                     </dd>
                   </div>
                 </dl>
@@ -490,55 +658,174 @@ const CourseDetail = () => {
                 Contenido del curso
               </h3>
               <p className="mt-1 text-sm text-gray-500">
-                {course.modules.length} módulo(s) disponible(s)
+                {organizedModules?.length || 0} módulo(s) disponible(s)
               </p>
             </div>
             <ul className="divide-y divide-gray-200">
-              {course.modules.map((module) => (
+              {organizedModules?.map((module) => (
                 <li key={module.id} className="px-6 py-4">
                   <div className="flex items-center justify-between">
                     <h4 className="text-lg font-medium text-gray-900">
-                      {module.title}
+                      {module.title || "Módulo sin título"}
                     </h4>
                     <span className="text-sm text-gray-500">
-                      {module.lessons.length} lección(es)
+                      {module.lessons?.length || 0} lección(es)
                     </span>
                   </div>
-                  <ul className="mt-2 divide-y divide-gray-100">
-                    {module.lessons.map((lesson) => (
-                      <li
-                        key={lesson.id}
-                        className="py-3 flex items-center justify-between">
-                        <div className="flex items-center">
-                          {lesson.type === "video" && (
-                            <VideoCameraIcon className="h-5 w-5 text-gray-400 mr-3" />
+                  {module.description && (
+                    <p className="mt-1 text-sm text-gray-600">
+                      {module.description}
+                    </p>
+                  )}
+                  <ul className="mt-3 divide-y divide-gray-100">
+                    {module.lessons?.map((lesson) => {
+                      const isExpanded = expandedLessons.has(lesson.id);
+                      return (
+                        <li key={lesson.id} className="py-3">
+                          <div 
+                            className="flex items-center justify-between cursor-pointer hover:bg-gray-50 p-2 rounded-md transition-colors"
+                            onClick={() => toggleLessonExpansion(lesson.id)}
+                          >
+                            <div className="flex items-center">
+                              {lesson.type === "video" && (
+                                <VideoCameraIcon className="h-5 w-5 text-red-500 mr-3" />
+                              )}
+                              {lesson.type === "quiz" && (
+                                <DocumentTextIcon className="h-5 w-5 text-yellow-500 mr-3" />
+                              )}
+                              {lesson.type === "exercise" && (
+                                <DocumentTextIcon className="h-5 w-5 text-blue-500 mr-3" />
+                              )}
+                              {lesson.type === "text" && (
+                                <DocumentTextIcon className="h-5 w-5 text-green-500 mr-3" />
+                              )}
+                              <div>
+                                <span className="text-sm font-medium text-gray-900">
+                                  {lesson.title || "Lección sin título"}
+                                </span>
+                                {lesson.youtubeUrl && (
+                                  <div className="flex items-center mt-1">
+                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                      📺 Video de YouTube
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center">
+                              <span className="text-sm text-gray-500 mr-4">
+                                {lesson.durationSeconds ? 
+                                  formatLessonDuration(lesson.durationSeconds) : 
+                                  (lesson.duration || "Duración no especificada")
+                                }
+                              </span>
+                              <div className="flex items-center">
+                                {lesson.completed ? (
+                                  <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                                ) : (
+                                  <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
+                                )}
+                                <svg
+                                  className={`ml-2 h-4 w-4 text-gray-400 transition-transform ${
+                                    isExpanded ? 'rotate-180' : ''
+                                  }`}
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M19 9l-7 7-7-7"
+                                  />
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Contenido expandible */}
+                          {isExpanded && (
+                            <div className="mt-3 ml-8 p-4 bg-gray-50 rounded-lg border-l-4 border-indigo-400">
+                              <div className="space-y-3">
+                                {lesson.description && (
+                                  <div>
+                                    <h5 className="text-sm font-medium text-gray-900 mb-2">
+                                      Descripción:
+                                    </h5>
+                                    <p className="text-sm text-gray-600">
+                                      {lesson.description}
+                                    </p>
+                                  </div>
+                                )}
+                                
+                                {lesson.youtubeUrl && (
+                                  <div>
+                                    <h5 className="text-sm font-medium text-gray-900 mb-2">
+                                      Enlace del video:
+                                    </h5>
+                                    <a
+                                      href={lesson.youtubeUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center text-sm text-red-600 hover:text-red-800 underline"
+                                    >
+                                      <VideoCameraIcon className="h-4 w-4 mr-1" />
+                                      Ver en YouTube
+                                    </a>
+                                  </div>
+                                )}
+                                
+                                {lesson.content && (
+                                  <div>
+                                    <h5 className="text-sm font-medium text-gray-900 mb-2">
+                                      Contenido:
+                                    </h5>
+                                    <p className="text-sm text-gray-600">
+                                      {lesson.content}
+                                    </p>
+                                  </div>
+                                )}
+                                
+                                <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-200">
+                                  <div>
+                                    <span className="text-xs font-medium text-gray-500">Tipo:</span>
+                                    <span className="ml-1 text-xs text-gray-700 capitalize">
+                                      {lesson.type || "No especificado"}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <span className="text-xs font-medium text-gray-500">Estado:</span>
+                                    <span className={`ml-1 text-xs px-2 py-1 rounded-full ${
+                                      lesson.isActive !== false 
+                                        ? 'bg-green-100 text-green-800' 
+                                        : 'bg-red-100 text-red-800'
+                                    }`}>
+                                      {lesson.isActive !== false ? 'Activo' : 'Inactivo'}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           )}
-                          {lesson.type === "quiz" && (
-                            <DocumentTextIcon className="h-5 w-5 text-yellow-500 mr-3" />
-                          )}
-                          {lesson.type === "exercise" && (
-                            <DocumentTextIcon className="h-5 w-5 text-blue-500 mr-3" />
-                          )}
-                          <span className="text-sm font-medium text-gray-900">
-                            {lesson.title}
-                          </span>
-                        </div>
-                        <div className="flex items-center">
-                          <span className="text-sm text-gray-500 mr-4">
-                            {lesson.duration}
-                          </span>
-                          {lesson.completed ? (
-                            <CheckCircleIcon className="h-5 w-5 text-green-500" />
-                          ) : (
-                            <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
-                          )}
-                        </div>
-                      </li>
-                    ))}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </li>
               ))}
             </ul>
+          </div>
+        )}
+
+        {activeTab === "videos" && (
+          <div className="space-y-6">
+            <TeacherVideoViewer
+              courseId={parseInt(id)}
+              courseTitle={course.title}
+              isDraft={!course.isPublished}
+              refreshTrigger={refreshTrigger}
+            />
           </div>
         )}
 

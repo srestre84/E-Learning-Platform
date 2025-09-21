@@ -5,10 +5,12 @@ import React, {
   useEffect,
   useCallback,
   useContext,
+  useMemo,
 } from "react";
+import PropTypes from "prop-types";
 import { ROLE_PERMISSIONS } from "@/shared/constants/roles";
 import authService from "@/services/authService";
-import { setupResponseInterceptors } from "@/services/authInterceptor";
+import { setupResponseInterceptors, removeResponseInterceptors } from "@/services/authInterceptor";
 import api from "@/services/api";
 
 export const AuthContext = createContext();
@@ -31,6 +33,11 @@ export const AuthProvider = ({ children, onLogout }) => {
       if (onLogoutCallback) onLogoutCallback();
     };
     setupResponseInterceptors(handleLogout);
+    
+    // Cleanup function to remove interceptors
+    return () => {
+      removeResponseInterceptors();
+    };
   }, [onLogoutCallback]);
 
   // Verificar autenticación al cargar el contexto
@@ -54,9 +61,9 @@ export const AuthProvider = ({ children, onLogout }) => {
         }
 
         // Validar token con servidor usando la función optimizada
-        const response = await authService.validateToken(token);
+        const response = await authService.validateToken();
 
-        if (!response || !response.valid) {
+        if (!response?.valid) {
           console.log("Token inválido según el servidor, cerrando sesión...");
           authService.logout();
           setUser(null);
@@ -113,21 +120,28 @@ export const AuthProvider = ({ children, onLogout }) => {
         console.log("=== AUTH CONTEXT: Iniciando logout ===");
         console.log("Options:", options);
 
-        // authService.logout() no es asíncrono, pero limpia los datos
+        // Limpiar token y datos del usuario
         authService.logout();
         setUser(null);
         setError(null);
 
-        let redirectTo = "/";
-        if (options.redirectTo) redirectTo = options.redirectTo;
-        else if (onLogoutCallback) {
-          const result = onLogoutCallback();
-          if (result) redirectTo = result;
-        }
+        // Limpiar headers de axios
+        delete api.defaults.headers.common["Authorization"];
 
-        console.log("=== AUTH CONTEXT: Redirigiendo a ===", redirectTo);
-        if (options.redirect !== false && redirectTo) {
-          window.location.href = redirectTo;
+        // Solo redirigir si no se especifica lo contrario
+        if (options.redirect !== false) {
+          let redirectTo = "/authentication/login";
+          if (options.redirectTo) redirectTo = options.redirectTo;
+          else if (onLogoutCallback) {
+            const result = onLogoutCallback();
+            if (result) redirectTo = result;
+          }
+
+          console.log("=== AUTH CONTEXT: Redirigiendo a ===", redirectTo);
+          // Usar window.location.href solo si es necesario
+          if (redirectTo) {
+            window.location.href = redirectTo;
+          }
         }
 
         return { success: true };
@@ -154,7 +168,7 @@ export const AuthProvider = ({ children, onLogout }) => {
       });
 
       // authService.register() hace auto-login, así que response ya contiene datos del usuario
-      if (response && response.id) {
+      if (response?.id) {
         // Establecer el usuario como autenticado
         setUser(response);
 
@@ -220,7 +234,7 @@ export const AuthProvider = ({ children, onLogout }) => {
     }
   }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     loading,
     error,
@@ -234,7 +248,7 @@ export const AuthProvider = ({ children, onLogout }) => {
     fetchProfile,
     updateProfile,
     setError,
-  };
+  }), [user, loading, error, login, logout, register, hasPermission, setLogoutCallback, fetchProfile, updateProfile, setError]);
 
   return (
     <AuthContext.Provider value={value}>
@@ -248,6 +262,11 @@ export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth debe usarse dentro de AuthProvider");
   return context;
+};
+
+AuthProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+  onLogout: PropTypes.func,
 };
 
 export default AuthContext;

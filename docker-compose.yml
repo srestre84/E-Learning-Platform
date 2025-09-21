@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: elearning_postgres
+    environment:
+      POSTGRES_DB: elearning_platform
+      POSTGRES_USER: elearning_user
+      POSTGRES_PASSWORD: elearning_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - elearning_network
+    restart: unless-stopped
+
+  # Backend Spring Boot
+  backend:
+    build:
+      context: ./Backend/Dev-learning-Platform
+      dockerfile: Dockerfile
+    container_name: elearning_backend
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/elearning_platform
+      SPRING_DATASOURCE_USERNAME: elearning_user
+      SPRING_DATASOURCE_PASSWORD: elearning_password
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-4c6fb40397598dd8c1dbb3155fba3ca208a16fe8d5d90162b74f1874a4dc12b6}
+      JWT_EXPIRATION_TIME: ${JWT_EXPIRATION_TIME:-86400000}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8080}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - elearning_network
+    restart: unless-stopped
+    volumes:
+      - ./uploads:/app/uploads
+
+  # Frontend React
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: elearning_frontend
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - elearning_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  elearning_network:
+    driver: bridge

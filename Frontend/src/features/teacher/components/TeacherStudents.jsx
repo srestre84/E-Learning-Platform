@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { Box, Typography, TextField, InputAdornment, Button, FormControl, InputLabel, Select, MenuItem, Grid, Alert } from "@mui/material";
-import { Search as SearchIcon, PersonAdd as PersonAddIcon } from "@mui/icons-material";
+import { Search as SearchIcon, UserPlus as PersonAddIcon } from "lucide-react";
 import LoadingSpinner from "@/shared/components/LoadingSpinner";
 import api from "@/services/api"; // ⚡ usar cliente Axios real
 import StudentCard from "./StudentCard";  // 💡 separar en subcomponentes

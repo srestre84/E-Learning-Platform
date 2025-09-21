@@ -17,10 +17,10 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtTokenGenerator {
 
-    @Value("${JWT_SECRET_KEY}")
+    @Value("${jwt.secret.key}")
     private String secretKey;
 
-    @Value("${JWT_EXPIRATION_TIME}")
+    @Value("${jwt.expiration.time}")
     private long jwtExpirationInMillis;
 
     public String generateToken(UserDetails userDetails) {

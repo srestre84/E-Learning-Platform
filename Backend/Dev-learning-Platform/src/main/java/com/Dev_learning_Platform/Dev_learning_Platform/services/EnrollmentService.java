@@ -1,5 +1,7 @@
 package com.Dev_learning_Platform.Dev_learning_Platform.services;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,15 +50,33 @@ public class EnrollmentService {
             throw new IllegalArgumentException("El curso no está disponible para inscripciones");
         }
 
+        if (!course.getIsPublished()) {
+            throw new IllegalArgumentException("El curso no está publicado");
+        }
+
         if (enrollmentRepository.existsByStudentIdAndCourseId(studentId, courseId)) {
             throw new IllegalArgumentException("El estudiante ya está inscrito en este curso");
         }
+
+        // Verificar si el curso es gratis o de pago
+        boolean isFreeCourse = course.getPrice() == null || course.getPrice().compareTo(BigDecimal.ZERO) == 0;
+        
+        // Temporalmente permitir inscripciones en cursos premium sin pago para pruebas
+        // if (!isFreeCourse && course.getIsPremium()) {
+        //     throw new IllegalArgumentException("Los cursos premium requieren pago. Use el endpoint de pago.");
+        // }
 
         Enrollment enrollment = new Enrollment();
         enrollment.setStudent(student);
         enrollment.setCourse(course);
         enrollment.setStatus(EnrollmentStatus.ACTIVE);
         enrollment.setProgressPercentage(0);
+        enrollment.setEnrolledAt(LocalDateTime.now());
+        
+        // Para cursos gratis, no se requiere pago
+        if (isFreeCourse) {
+            enrollment.setPayment(null);
+        }
 
         return enrollmentRepository.save(enrollment);
     }

@@ -79,10 +79,12 @@ public class Securityconfig {
                 .requestMatchers("/api/users/register").permitAll() // Registro público  
                 .requestMatchers("/api/courses").permitAll() // Catálogo público
                 .requestMatchers("/api/courses/{id}").permitAll() // Detalle público de curso
+                .requestMatchers("/api/course-videos/course/{courseId}").permitAll() // Videos públicos del curso
 
                 // ✅ Herramientas de desarrollo
                 .requestMatchers("/h2-console/**").permitAll()      // H2 para desarrollo
                 .requestMatchers("/actuator/health").permitAll()    // Health check
+                .requestMatchers("/api/test/**").permitAll()        // Endpoints de test para desarrollo
                 
                 // ✅ Testing de Stripe (temporal para desarrollo)
                 .requestMatchers("/api/stripe/**").permitAll()      // Stripe endpoints para testing

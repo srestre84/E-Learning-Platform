@@ -20,6 +20,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -85,6 +86,9 @@ public class Course {
     @Column(name = "estimated_hours")
     private Integer estimatedHours;
 
+    @Column(name = "level", length = 20)
+    private String level;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -92,10 +96,17 @@ public class Course {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonBackReference("course-payments")
     private List<Payment> payments = new ArrayList<>();
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonBackReference("course-payment-sessions")
     private List<PaymentSession> paymentSessions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OrderBy("orderIndex ASC")
+    @JsonBackReference("course-modules")
+    private List<Module> modules = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {

@@ -30,14 +30,14 @@ import {
 import {
   Search as SearchIcon,
   Download as DownloadIcon,
-  PersonAdd as PersonAddIcon,
-  Message as MessageIcon,
-  Visibility as VisibilityIcon,
-  People as PeopleIcon,
+  UserPlus as PersonAddIcon,
+  MessageSquare as MessageIcon,
+  Eye as VisibilityIcon,
+  Users as PeopleIcon,
   CheckCircle as CheckCircleIcon,
-  PersonOff as PersonOffIcon,
+  UserMinus as PersonOffIcon,
   School as SchoolIcon,
-} from '@mui/icons-material';
+} from 'lucide-react';
 import { getStudentsByCourseId } from '@/services/courseService'; // 🚀 Importación del servicio de API
 
 const getStatusColor = (status) => {

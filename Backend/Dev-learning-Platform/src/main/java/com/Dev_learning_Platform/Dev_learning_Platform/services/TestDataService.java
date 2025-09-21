@@ -1,35 +1,20 @@
-
 package com.Dev_learning_Platform.Dev_learning_Platform.services;
 
-/*
- * ARCHIVO COMENTADO - TestDataService solo para desarrollo/testing
- * 
- * Para habilitar en desarrollo, descomenta todo el contenido de este archivo.
- * Este servicio crea datos de prueba automáticamente al iniciar la aplicación.
- * 
- * NO debe ejecutarse en producción.
- */
-
-/*
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
 
 import org.springframework.boot.CommandLineRunner;
-// import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
-// import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Category;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Course;
-import com.Dev_learning_Platform.Dev_learning_Platform.models.Enrollment;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Subcategory;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.User;
 import com.Dev_learning_Platform.Dev_learning_Platform.repositories.CategoryRepository;
 import com.Dev_learning_Platform.Dev_learning_Platform.repositories.CourseRepository;
-import com.Dev_learning_Platform.Dev_learning_Platform.repositories.EnrollmentRepository;
 import com.Dev_learning_Platform.Dev_learning_Platform.repositories.SubcategoryRepository;
 import com.Dev_learning_Platform.Dev_learning_Platform.repositories.UserRepository;
 
@@ -37,114 +22,126 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Servicio para crear datos de prueba para las estadísticas administrativas
- * COMENTADO - Solo para desarrollo/testing - NO se ejecuta en producción
- * 
- * Para habilitar en desarrollo, descomenta las anotaciones @Service y @Profile
+ * Servicio para crear datos iniciales mínimos del sistema
+ * Solo se ejecuta en perfiles de desarrollo y test
  */
-// @Service
-// @Profile({"dev", "test"}) // Solo se ejecuta en perfiles de desarrollo y test
-// @RequiredArgsConstructor
-// @Slf4j
-// CLASE COMENTADA - Solo para desarrollo/testing
-/*
+@Service
+@Profile({"dev", "test", "local"})
+@RequiredArgsConstructor
+@Slf4j
 public class TestDataService implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final SubcategoryRepository subcategoryRepository;
     private final CourseRepository courseRepository;
-    private final EnrollmentRepository enrollmentRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
     public void run(String... args) throws Exception {
+        log.info("Iniciando creación de datos iniciales...");
+        
         // Solo crear datos si no existen
-        if (userRepository.count() > 1) {
-            log.info("Los datos de prueba ya existen, saltando creación");
-            return;
+        if (userRepository.count() == 0) {
+            createInitialData();
+        } else {
+            log.info("Datos ya existen, saltando creación inicial");
         }
-
-        log.info("Creando datos de prueba para estadísticas...");
-        createTestData();
-        log.info("Datos de prueba creados exitosamente");
     }
 
-    private void createTestData() {
-        // Crear categorías
-        Category programacion = createCategory("Programación", "Cursos de programación y desarrollo", 1, true);
-        Category diseno = createCategory("Diseño", "Cursos de diseño gráfico y web", 2, true);
-        Category marketing = createCategory("Marketing", "Cursos de marketing digital", 3, true);
-        Category negocios = createCategory("Negocios", "Cursos de emprendimiento y negocios", 4, true);
+    private void createInitialData() {
+        log.info("Creando datos iniciales del sistema...");
+
+        // Crear usuario administrador
+        User admin = getOrCreateUser("Admin", "Sistema", "admin@elearning.com", "Admin123", User.Role.ADMIN, true);
+        
+        // Crear instructor demo
+        User instructor = getOrCreateUser("Profesor", "Demo", "instructor@elearning.com", "Instructor123", User.Role.INSTRUCTOR, true);
+        
+        // Crear estudiante demo
+        User student = getOrCreateUser("Estudiante", "Demo", "student@elearning.com", "Student123", User.Role.STUDENT, true);
+
+        // Crear categorías principales
+        Category frontend = getOrCreateCategory("Frontend", "Desarrollo de interfaces de usuario", 1, true);
+        Category backend = getOrCreateCategory("Backend", "Desarrollo de servidores y APIs", 2, true);
+        Category dataScience = getOrCreateCategory("Data Science", "Ciencia de datos y análisis", 3, true);
+        Category ai = getOrCreateCategory("Inteligencia Artificial", "IA y Machine Learning", 4, true);
 
         // Crear subcategorías
-        Subcategory java = createSubcategory("Java", "Desarrollo con Java", programacion, 1, true);
-        Subcategory spring = createSubcategory("Spring", "Framework Spring", programacion, 2, true);
-        Subcategory react = createSubcategory("React", "Biblioteca React", programacion, 3, true);
-        Subcategory python = createSubcategory("Python", "Lenguaje Python", programacion, 4, true);
-        
-        Subcategory ui = createSubcategory("UI/UX", "Diseño de interfaces", diseno, 1, true);
-        Subcategory photoshop = createSubcategory("Photoshop", "Edición con Photoshop", diseno, 2, true);
-        
-        Subcategory social = createSubcategory("Redes Sociales", "Marketing en redes sociales", marketing, 1, true);
-        Subcategory ads = createSubcategory("Publicidad", "Publicidad digital", marketing, 2, true);
-        
-        Subcategory emprendimiento = createSubcategory("Emprendimiento", "Crear tu negocio", negocios, 1, true);
-        Subcategory gestion = createSubcategory("Gestión", "Gestión de proyectos", negocios, 2, true);
+        Subcategory react = getOrCreateSubcategory("React", "Biblioteca de JavaScript para interfaces", frontend, 1, true);
+        Subcategory vue = getOrCreateSubcategory("Vue.js", "Framework progresivo de JavaScript", frontend, 2, true);
+        Subcategory angular = getOrCreateSubcategory("Angular", "Framework de TypeScript", frontend, 3, true);
+        Subcategory javascript = getOrCreateSubcategory("JavaScript", "Lenguaje de programación web", frontend, 4, true);
 
-        // Crear usuarios
-        User admin = createUser("admin", "admin", "admin@test.com", "Password123", User.Role.ADMIN, true);
-        User instructor1 = createUser("Juan", "Pérez", "juan@example.com", "Password123", User.Role.INSTRUCTOR, true);
-        User instructor2 = createUser("María", "García", "maria@example.com", "Password123", User.Role.INSTRUCTOR, true);
-        User instructor3 = createUser("Carlos", "López", "carlos@example.com", "Password123", User.Role.INSTRUCTOR, true);
+        Subcategory springBoot = getOrCreateSubcategory("Spring Boot", "Framework de Java", backend, 1, true);
+        Subcategory python = getOrCreateSubcategory("Python", "Lenguaje de programación", backend, 2, true);
+        Subcategory django = getOrCreateSubcategory("Django", "Framework web de Python", backend, 3, true);
 
-        // Crear estudiantes
-        List<User> estudiantes = Arrays.asList(
-            createUser("Ana", "Martínez", "ana@student.com", "Password123", User.Role.STUDENT, true),
-            createUser("Luis", "Rodríguez", "luis@student.com", "Password123", User.Role.STUDENT, true),
-            createUser("Sofia", "Hernández", "sofia@student.com", "Password123", User.Role.STUDENT, true),
-            createUser("Diego", "González", "diego@student.com", "Password123", User.Role.STUDENT, true),
-            createUser("Elena", "Morales", "elena@student.com", "Password123", User.Role.STUDENT, true),
-            createUser("Roberto", "Jiménez", "roberto@student.com", "Password123", User.Role.STUDENT, true),
-            createUser("Carmen", "Ruiz", "carmen@student.com", "Password123", User.Role.STUDENT, true),
-            createUser("Fernando", "Díaz", "fernando@student.com", "Password123", User.Role.STUDENT, true),
-            createUser("Isabel", "Moreno", "isabel@student.com", "Password123", User.Role.STUDENT, true),
-            createUser("Antonio", "Vega", "antonio@student.com", "Password123", User.Role.STUDENT, true)
-        );
+        Subcategory pythonDS = getOrCreateSubcategory("Python DS", "Python para ciencia de datos", dataScience, 1, true);
+        Subcategory analytics = getOrCreateSubcategory("Analytics", "Análisis de datos", dataScience, 2, true);
 
-        // Crear cursos
-        List<Course> cursos = Arrays.asList(
-            createCourse("Java desde Cero", "Aprende Java desde los fundamentos", instructor1, programacion, java, 
-                        BigDecimal.valueOf(99.99), true, true, true),
-            createCourse("Spring Boot Avanzado", "Desarrollo de aplicaciones con Spring Boot", instructor1, programacion, spring, 
-                        BigDecimal.valueOf(149.99), true, true, true),
-            createCourse("React para Principiantes", "Introducción a React y JavaScript", instructor2, programacion, react, 
-                        BigDecimal.valueOf(79.99), true, true, false),
-            createCourse("Diseño UI/UX", "Principios de diseño de interfaces", instructor2, diseno, ui, 
-                        BigDecimal.valueOf(129.99), true, true, true),
-            createCourse("Photoshop Avanzado", "Técnicas avanzadas de Photoshop", instructor3, diseno, photoshop, 
-                        BigDecimal.valueOf(89.99), true, true, false),
-            createCourse("Marketing Digital", "Estrategias de marketing en redes sociales", instructor1, marketing, social, 
-                        BigDecimal.valueOf(199.99), true, true, true),
-            createCourse("Google Ads", "Publicidad efectiva en Google", instructor2, marketing, ads, 
-                        BigDecimal.valueOf(159.99), true, true, false),
-            createCourse("Emprendimiento", "Cómo iniciar tu propio negocio", instructor3, negocios, emprendimiento, 
-                        BigDecimal.valueOf(249.99), true, true, true),
-            createCourse("Gestión de Proyectos", "Metodologías ágiles y gestión", instructor1, negocios, gestion, 
-                        BigDecimal.valueOf(179.99), true, true, false),
-            createCourse("Python para Data Science", "Análisis de datos con Python", instructor3, programacion, python, 
-                        BigDecimal.valueOf(219.99), true, true, true)
-        );
+        Subcategory machineLearning = getOrCreateSubcategory("Machine Learning", "Aprendizaje automático", ai, 1, true);
+        Subcategory tensorflow = getOrCreateSubcategory("TensorFlow", "Framework de deep learning", ai, 2, true);
 
-        // Crear inscripciones
-        createEnrollments(estudiantes, cursos);
+        // Crear algunos cursos de ejemplo
+        createCourse("Introducción a React", 
+                    "Aprende los fundamentos de React desde cero. Incluye componentes, estado, props y hooks básicos.", 
+                    instructor, frontend, react, 
+                    BigDecimal.valueOf(49.99), false, true, true, 
+                    "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=225&fit=crop", 15);
 
-        log.info("Datos de prueba creados:");
-        log.info("- {} usuarios total", userRepository.count());
-        log.info("- {} categorías", categoryRepository.count());
-        log.info("- {} cursos", courseRepository.count());
-        log.info("- {} inscripciones", enrollmentRepository.count());
+        createCourse("Spring Boot Básico", 
+                    "Desarrollo de aplicaciones web con Spring Boot. Incluye REST APIs, JPA y autenticación.", 
+                    instructor, backend, springBoot, 
+                    BigDecimal.valueOf(79.99), true, true, true, 
+                    "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=225&fit=crop", 25);
+
+        createCourse("Python para Data Science", 
+                    "Introducción al análisis de datos con Python. Incluye pandas, numpy y visualizaciones.", 
+                    instructor, dataScience, pythonDS, 
+                    BigDecimal.valueOf(89.99), true, true, true, 
+                    "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=225&fit=crop", 20);
+
+        createCourse("Machine Learning con Python", 
+                    "Aprende machine learning desde cero con scikit-learn y proyectos prácticos.", 
+                    instructor, ai, machineLearning, 
+                    BigDecimal.valueOf(149.99), true, true, true, 
+                    "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=225&fit=crop", 35);
+
+        log.info("Datos iniciales creados exitosamente");
+    }
+
+    private User getOrCreateUser(String userName, String lastName, String email, String password, User.Role role, boolean isActive) {
+        User existingUser = userRepository.findByEmail(email);
+        if (existingUser != null) {
+            log.info("Usuario '{}' ya existe, usando existente", email);
+            return existingUser;
+        } else {
+            log.info("Usuario '{}' no existe, creando nuevo", email);
+            return createUser(userName, lastName, email, password, role, isActive);
+        }
+    }
+
+    private User createUser(String userName, String lastName, String email, String password, User.Role role, boolean isActive) {
+        User user = new User();
+        user.setUserName(userName);
+        user.setLastName(lastName);
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setRole(role);
+        user.setActive(isActive);
+        user.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+        user.setUpdatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+        return userRepository.save(user);
+    }
+
+    private Category getOrCreateCategory(String name, String description, int sortOrder, boolean isActive) {
+        return categoryRepository.findByName(name)
+                .orElseGet(() -> {
+                    log.info("Categoría '{}' no existe, creando nueva", name);
+                    return createCategory(name, description, sortOrder, isActive);
+                });
     }
 
     private Category createCategory(String name, String description, int sortOrder, boolean isActive) {
@@ -153,20 +150,17 @@ public class TestDataService implements CommandLineRunner {
         category.setDescription(description);
         category.setSortOrder(sortOrder);
         category.setIsActive(isActive);
-        // createdAt y updatedAt se establecen automáticamente con @PrePersist
+        category.setCreatedAt(LocalDateTime.now());
+        category.setUpdatedAt(LocalDateTime.now());
         return categoryRepository.save(category);
     }
 
-    private User createUser(String userName, String lastName, String email, String password, User.Role role, boolean isActive) {
-        User user = new User();
-        user.setUserName(userName);
-        user.setLastName(lastName);
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password)); // Hashear la contraseña
-        user.setRole(role);
-        user.setActive(isActive);
-        // createdAt y updatedAt se establecen automáticamente con @PrePersist
-        return userRepository.save(user);
+    private Subcategory getOrCreateSubcategory(String name, String description, Category category, int sortOrder, boolean isActive) {
+        return subcategoryRepository.findByNameAndCategoryId(name, category.getId())
+                .orElseGet(() -> {
+                    log.info("Subcategoría '{}' no existe en categoría '{}', creando nueva", name, category.getName());
+                    return createSubcategory(name, description, category, sortOrder, isActive);
+                });
     }
 
     private Subcategory createSubcategory(String name, String description, Category category, int sortOrder, boolean isActive) {
@@ -176,53 +170,29 @@ public class TestDataService implements CommandLineRunner {
         subcategory.setCategory(category);
         subcategory.setSortOrder(sortOrder);
         subcategory.setIsActive(isActive);
-        // createdAt y updatedAt se establecen automáticamente con @PrePersist
+        subcategory.setCreatedAt(LocalDateTime.now());
+        subcategory.setUpdatedAt(LocalDateTime.now());
         return subcategoryRepository.save(subcategory);
     }
 
-    private Course createCourse(String title, String description, User instructor, Category category, Subcategory subcategory,
-                               BigDecimal price, boolean isActive, boolean isPublished, boolean isPremium) {
+    private Course createCourse(String title, String description, User instructor, Category category, Subcategory subcategory, 
+                               BigDecimal price, boolean isPremium, boolean isPublished, boolean isActive, String thumbnailUrl, int estimatedHours) {
         Course course = new Course();
         course.setTitle(title);
         course.setDescription(description);
+        course.setShortDescription(description.length() > 100 ? description.substring(0, 100) + "..." : description);
         course.setInstructor(instructor);
         course.setCategory(category);
         course.setSubcategory(subcategory);
         course.setPrice(price);
-        course.setIsActive(isActive);
-        course.setIsPublished(isPublished);
         course.setIsPremium(isPremium);
-        // createdAt y updatedAt se establecen automáticamente con @PrePersist
+        course.setIsPublished(isPublished);
+        course.setIsActive(isActive);
+        course.setThumbnailUrl(thumbnailUrl);
+        course.setEstimatedHours(estimatedHours);
+        course.setLevel("INTERMEDIATE");
+        course.setCreatedAt(LocalDateTime.now());
+        course.setUpdatedAt(LocalDateTime.now());
         return courseRepository.save(course);
     }
-
-    private void createEnrollments(List<User> estudiantes, List<Course> cursos) {
-        // Crear inscripciones variadas
-        for (int i = 0; i < estudiantes.size(); i++) {
-            User estudiante = estudiantes.get(i);
-            
-            // Cada estudiante se inscribe en 3-5 cursos aleatorios
-            int numCursos = 3 + (i % 3); // 3, 4, o 5 cursos
-            for (int j = 0; j < numCursos && j < cursos.size(); j++) {
-                Course curso = cursos.get((i + j) % cursos.size());
-                
-                Enrollment enrollment = new Enrollment();
-                enrollment.setStudent(estudiante);
-                enrollment.setCourse(curso);
-                enrollment.setStatus(Enrollment.EnrollmentStatus.ACTIVE);
-                enrollment.setProgressPercentage(10 + (j * 20)); // Progreso variado
-                enrollment.setEnrolledAt(LocalDateTime.now().minusDays(30 + j * 5));
-                
-                // Algunos cursos completados
-                if (j == 0) {
-                    enrollment.setStatus(Enrollment.EnrollmentStatus.COMPLETED);
-                    enrollment.setProgressPercentage(100);
-                    enrollment.setCompletedAt(LocalDateTime.now().minusDays(5));
-                }
-                
-                enrollmentRepository.save(enrollment);
-            }
-        }
-    }
 }
-*/

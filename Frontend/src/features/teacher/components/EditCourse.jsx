@@ -7,6 +7,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-toastify';
 import { getCourseById, updateCourse, getCategories, getSubcategoriesByCategory } from '@/services/courseService';
 import LoadingSpinner from '@/shared/components/LoadingSpinner';
+import CourseBadges from '@/shared/components/CourseBadges';
+import { 
+  COURSE_STATUS, 
+  COURSE_TYPES, 
+  COURSE_LEVELS_CONST,
+  DEFAULT_COURSE_CONFIG,
+  isCourseFree
+} from '@/shared/constants/courseConstants';
 import {
   Save,
   ArrowLeft,
@@ -22,7 +30,12 @@ import {
   AlertCircle,
   CheckCircle,
   Eye,
-  Edit3
+  Edit3,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
+  Play,
+  FileText
 } from 'lucide-react';
 
 const EditCourse = () => {
@@ -46,13 +59,23 @@ const EditCourse = () => {
     shortDescription: '',
     categoryId: '',
     subcategoryId: '',
-    price: 0,
+    price: DEFAULT_COURSE_CONFIG.price,
+    level: DEFAULT_COURSE_CONFIG.level.toLowerCase(),
+    courseType: DEFAULT_COURSE_CONFIG.courseType,
+    status: DEFAULT_COURSE_CONFIG.status,
     estimatedHours: 1,
     thumbnailUrl: '',
-    youtubeUrls: [''],
-    isPremium: false,
-    isPublished: false,
-    isActive: true
+    courseUrl: '',
+    isPublished: DEFAULT_COURSE_CONFIG.isPublished,
+    isActive: DEFAULT_COURSE_CONFIG.isActive,
+    modules: [
+      {
+        id: 1,
+        title: 'Módulo 1',
+        description: '',
+        lessons: []
+      }
+    ]
   });
 
   // Errores de validación
@@ -72,13 +95,23 @@ const EditCourse = () => {
           shortDescription: courseData.shortDescription || '',
           categoryId: courseData.category?.id ? String(courseData.category.id) : '',
           subcategoryId: courseData.subcategory?.id ? String(courseData.subcategory.id) : '',
-          price: courseData.price || 0,
+          price: courseData.price || DEFAULT_COURSE_CONFIG.price,
+          level: courseData.level?.toLowerCase() || DEFAULT_COURSE_CONFIG.level.toLowerCase(),
+          courseType: courseData.courseType || DEFAULT_COURSE_CONFIG.courseType,
+          status: courseData.status || DEFAULT_COURSE_CONFIG.status,
           estimatedHours: courseData.estimatedHours || 1,
           thumbnailUrl: courseData.thumbnailUrl || '',
-          youtubeUrls: courseData.youtubeUrls?.length ? courseData.youtubeUrls : [''],
-          isPremium: Boolean(courseData.isPremium),
-          isPublished: Boolean(courseData.isPublished),
-          isActive: courseData.isActive !== false
+          courseUrl: courseData.courseUrl || '',
+          isPublished: courseData.isPublished !== undefined ? courseData.isPublished : DEFAULT_COURSE_CONFIG.isPublished,
+          isActive: courseData.isActive !== false,
+          modules: courseData.modules || [
+            {
+              id: 1,
+              title: 'Módulo 1',
+              description: '',
+              lessons: []
+            }
+          ]
         });
 
         setCategories(categoriesData || []);
@@ -122,6 +155,35 @@ const EditCourse = () => {
     }
   };
 
+  // Manejar cambio de tipo de curso
+  const handleCourseTypeChange = (newCourseType) => {
+    const updatedFormData = { ...formData, courseType: newCourseType };
+    
+    if (newCourseType === COURSE_TYPES.FREE) {
+      updatedFormData.price = 0;
+    }
+    
+    if (newCourseType === COURSE_TYPES.PREMIUM && updatedFormData.price === 0) {
+      updatedFormData.price = 29.99;
+    }
+    
+    setFormData(updatedFormData);
+  };
+
+  // Manejar cambio de precio
+  const handlePriceChange = (newPrice) => {
+    const price = parseFloat(newPrice) || 0;
+    const updatedFormData = { ...formData, price };
+    
+    if (price === 0) {
+      updatedFormData.courseType = COURSE_TYPES.FREE;
+    } else {
+      updatedFormData.courseType = COURSE_TYPES.PREMIUM;
+    }
+    
+    setFormData(updatedFormData);
+  };
+
   // Cargar subcategorías
   const loadSubcategories = async (categoryId) => {
     try {
@@ -136,22 +198,28 @@ const EditCourse = () => {
     }
   };
 
-  // Manejar URLs de YouTube
-  const handleYoutubeUrlChange = (index, value) => {
-    const newUrls = [...formData.youtubeUrls];
-    newUrls[index] = value;
-    setFormData(prev => ({ ...prev, youtubeUrls: newUrls }));
+  // Funciones para manejar módulos y lecciones (simplificadas para edición)
+  const addModule = () => {
+    const newModule = {
+      id: Date.now(),
+      title: `Módulo ${formData.modules.length + 1}`,
+      description: '',
+      lessons: []
+    };
+    setFormData(prev => ({ ...prev, modules: [...prev.modules, newModule] }));
   };
 
-  const addYoutubeUrl = () => {
-    setFormData(prev => ({ ...prev, youtubeUrls: [...prev.youtubeUrls, ''] }));
-  };
-
-  const removeYoutubeUrl = (index) => {
-    if (formData.youtubeUrls.length > 1) {
-      const newUrls = formData.youtubeUrls.filter((_, i) => i !== index);
-      setFormData(prev => ({ ...prev, youtubeUrls: newUrls }));
+  const removeModule = (moduleIndex) => {
+    if (formData.modules.length > 1) {
+      const updatedModules = formData.modules.filter((_, i) => i !== moduleIndex);
+      setFormData(prev => ({ ...prev, modules: updatedModules }));
     }
+  };
+
+  const updateModule = (moduleIndex, field, value) => {
+    const updatedModules = [...formData.modules];
+    updatedModules[moduleIndex] = { ...updatedModules[moduleIndex], [field]: value };
+    setFormData(prev => ({ ...prev, modules: updatedModules }));
   };
 
   // Validar formulario
@@ -199,10 +267,13 @@ const EditCourse = () => {
         categoryId: parseInt(formData.categoryId),
         subcategoryId: parseInt(formData.subcategoryId),
         price: parseFloat(formData.price) || 0,
+        level: formData.level.toUpperCase(),
+        courseType: formData.courseType,
+        status: formData.status,
         estimatedHours: parseInt(formData.estimatedHours) || 1,
-        isPremium: Boolean(formData.isPremium),
         isPublished: Boolean(formData.isPublished),
-        isActive: Boolean(formData.isActive)
+        isActive: Boolean(formData.isActive),
+        modules: formData.modules
       };
 
       if (formData.shortDescription && formData.shortDescription.trim()) {
@@ -213,18 +284,15 @@ const EditCourse = () => {
         courseData.thumbnailUrl = formData.thumbnailUrl.trim();
       }
 
-      const validYoutubeUrls = formData.youtubeUrls
-        .filter(url => url && url.trim() !== '')
-        .map(url => url.trim());
-
-      if (validYoutubeUrls.length > 0) {
-        courseData.youtubeUrls = validYoutubeUrls;
+      if (formData.courseUrl && formData.courseUrl.trim()) {
+        courseData.courseUrl = formData.courseUrl.trim();
       }
 
       await updateCourse(courseId, courseData);
       window.dispatchEvent(new CustomEvent('courseUpdated', { detail: { courseId } }));
       toast.success('Curso actualizado exitosamente');
-      navigate('/teacher/courses');
+      // Navegar de vuelta al detalle del curso y abrir la pestaña de videos
+      navigate(`/teacher/courses/${courseId}?tab=videos`);
     } catch (err) {
       if (err.message && err.message.includes('Errores de validación:')) {
         toast.error(err.message);
@@ -475,11 +543,55 @@ const EditCourse = () => {
                       </p>
                     </div>
 
-                    {/* Precio y Duración */}
+                    {/* Tipo de Curso y Estado */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Precio
+                          Tipo de Curso
+                        </label>
+                        <select
+                          value={formData.courseType}
+                          onChange={(e) => handleCourseTypeChange(e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                        >
+                          {Object.entries(COURSE_TYPES).map(([key, value]) => (
+                            <option key={key} value={value}>
+                              {value === COURSE_TYPES.FREE ? '🆓 Gratis' : 
+                               value === COURSE_TYPES.PREMIUM ? '💎 Premium' :
+                               value === COURSE_TYPES.SUBSCRIPTION ? '📅 Suscripción' :
+                               '📦 Paquete'}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Estado del Curso
+                        </label>
+                        <select
+                          name="status"
+                          value={formData.status}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                        >
+                          {Object.entries(COURSE_STATUS).map(([key, value]) => (
+                            <option key={key} value={value}>
+                              {value === COURSE_STATUS.DRAFT ? '📝 Borrador' :
+                               value === COURSE_STATUS.PUBLISHED ? '✅ Publicado' :
+                               value === COURSE_STATUS.ARCHIVED ? '📁 Archivado' :
+                               '⏸️ Suspendido'}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Precio y Nivel */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Precio ($)
                         </label>
                         <div className="relative">
                           <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -487,7 +599,7 @@ const EditCourse = () => {
                             type="number"
                             name="price"
                             value={formData.price}
-                            onChange={handleChange}
+                            onChange={(e) => handlePriceChange(e.target.value)}
                             min="0"
                             step="0.01"
                             className={`w-full pl-10 pr-4 py-3 border rounded-xl shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 ${
@@ -503,37 +615,73 @@ const EditCourse = () => {
                           </p>
                         ) : (
                           <p className="mt-1 text-sm text-gray-500">
-                            Dejar en 0 para hacer el curso gratuito
+                            {isCourseFree({ price: formData.price }) ? 'Curso gratuito' : 'Curso de pago'}
                           </p>
                         )}
                       </div>
 
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Horas Estimadas
+                          Nivel
                         </label>
-                        <div className="relative">
-                          <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <input
-                            type="number"
-                            name="estimatedHours"
-                            value={formData.estimatedHours}
-                            onChange={handleChange}
-                            min="1"
-                            max="1000"
-                            className={`w-full pl-10 pr-4 py-3 border rounded-xl shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 ${
-                              formErrors.estimatedHours ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                            }`}
-                            placeholder="1"
-                          />
-                        </div>
-                        {formErrors.estimatedHours && (
-                          <p className="mt-1 text-sm text-red-600 flex items-center">
-                            <AlertCircle className="w-4 h-4 mr-1" />
-                            {formErrors.estimatedHours}
-                          </p>
-                        )}
+                        <select
+                          name="level"
+                          value={formData.level}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                        >
+                          {COURSE_LEVELS_CONST.map((level) => (
+                            <option key={level.id} value={level.id.toLowerCase()}>
+                              {level.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
+                    </div>
+
+                    {/* Horas Estimadas */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Horas Estimadas
+                      </label>
+                      <div className="relative">
+                        <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="number"
+                          name="estimatedHours"
+                          value={formData.estimatedHours}
+                          onChange={handleChange}
+                          min="1"
+                          max="1000"
+                          className={`w-full pl-10 pr-4 py-3 border rounded-xl shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 ${
+                            formErrors.estimatedHours ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                          }`}
+                          placeholder="1"
+                        />
+                      </div>
+                      {formErrors.estimatedHours && (
+                        <p className="mt-1 text-sm text-red-600 flex items-center">
+                          <AlertCircle className="w-4 h-4 mr-1" />
+                          {formErrors.estimatedHours}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Preview de Badges */}
+                    <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4">Vista Previa de Badges</h4>
+                      <div className="flex flex-wrap gap-2">
+                        <CourseBadges 
+                          course={formData}
+                          showStatus={true}
+                          showType={true}
+                          showLevel={true}
+                          showPrice={true}
+                        />
+                      </div>
+                      <p className="text-sm text-gray-600 mt-3">
+                        Así se verán los badges en el catálogo y en la página del curso
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -563,45 +711,96 @@ const EditCourse = () => {
                     />
                   </div>
 
-                  {/* Videos de YouTube */}
+                  {/* URL del curso */}
+                  <div className="mb-8">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      URL del Curso (Opcional)
+                    </label>
+                    <input
+                      type="url"
+                      name="courseUrl"
+                      value={formData.courseUrl}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                      placeholder="https://ejemplo.com/curso"
+                    />
+                    <p className="mt-1 text-sm text-gray-500">
+                      URL externa del curso si está alojado en otra plataforma
+                    </p>
+                  </div>
+
+                  {/* Módulos y Lecciones */}
                   <div>
                     <div className="flex items-center justify-between mb-6">
                       <div>
-                        <h3 className="text-xl font-semibold text-gray-900">Videos de YouTube</h3>
-                        <p className="text-gray-600">Agrega URLs de videos para el contenido del curso</p>
+                        <h3 className="text-xl font-semibold text-gray-900">Módulos y Lecciones</h3>
+                        <p className="text-gray-600">Organiza el contenido del curso en módulos con lecciones</p>
                       </div>
                       <button
                         type="button"
-                        onClick={addYoutubeUrl}
+                        onClick={addModule}
                         className="flex items-center px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all duration-200 font-medium"
                       >
                         <Plus className="w-4 h-4 mr-2" />
-                        Agregar Video
+                        Agregar Módulo
                       </button>
                     </div>
 
-                    <div className="space-y-4">
-                      {formData.youtubeUrls.map((url, index) => (
-                        <div key={index} className="flex items-center space-x-3 bg-gray-50 p-4 rounded-xl">
-                          <div className="flex-shrink-0">
-                            <Video className="w-6 h-6 text-red-500" />
-                          </div>
-                          <input
-                            type="url"
-                            value={url}
-                            onChange={(e) => handleYoutubeUrlChange(index, e.target.value)}
-                            className="flex-1 px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
-                            placeholder={`https://www.youtube.com/watch?v=... (Video ${index + 1})`}
-                          />
-                          {formData.youtubeUrls.length > 1 && (
+                    <div className="space-y-6">
+                      {formData.modules.map((module, moduleIndex) => (
+                        <div key={module.id} className="border rounded-lg p-4 bg-gray-50">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex-1">
+                              <input
+                                type="text"
+                                value={module.title}
+                                onChange={(e) => updateModule(moduleIndex, 'title', e.target.value)}
+                                className="flex-1 text-lg font-semibold bg-transparent border-b border-transparent focus:border-gray-400 focus:outline-none"
+                                placeholder="Título del módulo"
+                              />
+                              <textarea
+                                value={module.description}
+                                onChange={(e) => updateModule(moduleIndex, 'description', e.target.value)}
+                                className="w-full mt-2 text-sm text-gray-600 bg-transparent border-none focus:outline-none"
+                                placeholder="Descripción del módulo"
+                                rows="2"
+                              />
+                            </div>
                             <button
                               type="button"
-                              onClick={() => removeYoutubeUrl(index)}
-                              className="flex-shrink-0 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                              onClick={() => removeModule(moduleIndex)}
+                              disabled={formData.modules.length === 1}
+                              className="text-red-500 hover:text-red-700 p-1 disabled:opacity-30 disabled:cursor-not-allowed"
                             >
-                              <Minus className="w-5 h-5" />
+                              <Trash2 className="h-4 w-4" />
                             </button>
-                          )}
+                          </div>
+
+                          {/* Lecciones del módulo */}
+                          <div className="space-y-3">
+                            {module.lessons && module.lessons.length > 0 ? (
+                              module.lessons.map((lesson, lessonIndex) => (
+                                <div key={lesson.id} className="bg-white rounded p-3 border">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center">
+                                      <span className="flex-shrink-0 w-6 h-6 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center text-xs font-medium mr-3">
+                                        {lessonIndex + 1}
+                                      </span>
+                                      <span className="font-medium">{lesson.title}</span>
+                                    </div>
+                                    <span className="text-xs text-gray-500">
+                                      {lesson.type === 'video' ? 'Video' : 'Texto'}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="text-center py-4 text-gray-500">
+                                <p className="text-sm">No hay lecciones en este módulo</p>
+                                <p className="text-xs">Las lecciones se gestionan desde el detalle del curso</p>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -620,28 +819,6 @@ const EditCourse = () => {
                     {/* Configuraciones */}
                     <div className="space-y-6">
                       <h3 className="text-lg font-semibold text-gray-900">Opciones del Curso</h3>
-
-                      {/* Curso Premium */}
-                      <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-xl border border-yellow-200">
-                        <div className="flex items-center">
-                          <input
-                            type="checkbox"
-                            name="isPremium"
-                            checked={formData.isPremium}
-                            onChange={handleChange}
-                            className="w-5 h-5 text-yellow-600 bg-gray-100 border-gray-300 rounded focus:ring-yellow-500 focus:ring-2"
-                          />
-                          <div className="ml-3">
-                            <label className="text-sm font-medium text-gray-900">Curso Premium</label>
-                            <p className="text-xs text-gray-600">Marca este curso como premium</p>
-                          </div>
-                        </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          formData.isPremium ? 'bg-yellow-500 text-white' : 'bg-gray-200 text-gray-600'
-                        }`}>
-                          {formData.isPremium ? 'PREMIUM' : 'ESTÁNDAR'}
-                        </span>
-                      </div>
 
                       {/* Curso Publicado */}
                       <div className="flex items-center justify-between p-4 bg-green-50 rounded-xl border border-green-200">
@@ -686,6 +863,20 @@ const EditCourse = () => {
                           {formData.isActive ? 'ACTIVO' : 'INACTIVO'}
                         </span>
                       </div>
+
+                      {/* Resumen de configuración */}
+                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <h4 className="text-sm font-semibold text-gray-900 mb-3">Configuración Actual</h4>
+                        <div className="flex flex-wrap gap-2">
+                          <CourseBadges 
+                            course={formData}
+                            showStatus={true}
+                            showType={true}
+                            showLevel={true}
+                            showPrice={true}
+                          />
+                        </div>
+                      </div>
                     </div>
 
                     {/* Estado actual */}
@@ -725,15 +916,38 @@ const EditCourse = () => {
                         </div>
 
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">Multimedia:</span>
+                          <span className="text-sm text-gray-600">Configuración:</span>
                           <div className="flex items-center">
-                            {formData.thumbnailUrl || formData.youtubeUrls.some(url => url.trim()) ? (
+                            {formData.courseType && formData.status && formData.level ? (
                               <CheckCircle className="w-4 h-4 text-green-500 mr-1" />
                             ) : (
                               <AlertCircle className="w-4 h-4 text-yellow-500 mr-1" />
                             )}
                             <span className="text-sm font-medium">
-                              {formData.thumbnailUrl || formData.youtubeUrls.some(url => url.trim()) ? 'Configurado' : 'Opcional'}
+                              {formData.courseType && formData.status && formData.level ? 'Configurado' : 'Pendiente'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Multimedia:</span>
+                          <div className="flex items-center">
+                            {formData.thumbnailUrl || formData.modules.some(module => module.lessons?.length > 0) ? (
+                              <CheckCircle className="w-4 h-4 text-green-500 mr-1" />
+                            ) : (
+                              <AlertCircle className="w-4 h-4 text-yellow-500 mr-1" />
+                            )}
+                            <span className="text-sm font-medium">
+                              {formData.thumbnailUrl || formData.modules.some(module => module.lessons?.length > 0) ? 'Configurado' : 'Opcional'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Módulos:</span>
+                          <div className="flex items-center">
+                            <span className="text-sm font-medium">
+                              {formData.modules.length} módulo{formData.modules.length !== 1 ? 's' : ''}
                             </span>
                           </div>
                         </div>

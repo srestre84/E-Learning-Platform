@@ -6,7 +6,7 @@ const isProd = import.meta.env.MODE === 'production' || import.meta.env.VITE_ENV
 // 🌐 Base URL según el entorno
 const API_URL = isProd
   ? ''
-  : import.meta.env.VITE_API_URL;
+  : 'http://localhost:8081';
 
 
 // ✅ Crear instancia de Axios
@@ -45,6 +45,102 @@ const validateApiResponse = (data) => {
   }
 
   return data;
+};
+
+// 🧹 Función para limpiar JSON malformado del backend
+const cleanMalformedJson = (jsonString) => {
+  if (!jsonString || typeof jsonString !== 'string') {
+    return jsonString;
+  }
+
+  let cleaned = jsonString;
+  
+  // Patrones específicos de corrupción que hemos observado
+  const corruptionPatterns = [
+    // Patrones de enrollments corruptos
+    /"enrollments":\]\}\}\}\]\}\}\}\]\}\}\}\]/g,
+    /"enrollments":\]\}\}\}\]\}\}\}\]/g,
+    /"enrollments":\]\}\}\}\]/g,
+    /"enrollments":\]\}\}\]/g,
+    /"enrollments":\]\}\}/g,
+    /"enrollments":\]\}/g,
+    /"enrollments":\]/g,
+    
+    // Patrones de payments corruptos
+    /"payments":\]\}\}\}\]\}\}\}\]\}\}\}\]/g,
+    /"payments":\]\}\}\}\]\}\}\}\]/g,
+    /"payments":\]\}\}\}\]/g,
+    /"payments":\]\}\}\]/g,
+    /"payments":\]\}\}/g,
+    /"payments":\]\}/g,
+    /"payments":\]/g,
+    
+    // Patrones de paymentSessions corruptos
+    /"paymentSessions":\]\}\}\}\]\}\}\}\]\}\}\}\]/g,
+    /"paymentSessions":\]\}\}\}\]\}\}\}\]/g,
+    /"paymentSessions":\]\}\}\}\]/g,
+    /"paymentSessions":\]\}\}\]/g,
+    /"paymentSessions":\]\}\}/g,
+    /"paymentSessions":\]\}/g,
+    /"paymentSessions":\]/g,
+    
+    // Patrones de modules corruptos
+    /"modules":\]\}\}\}\]\}\}\}\]\}\}\}\]/g,
+    /"modules":\]\}\}\}\]\}\}\}\]/g,
+    /"modules":\]\}\}\}\]/g,
+    /"modules":\]\}\}\]/g,
+    /"modules":\]\}\}/g,
+    /"modules":\]\}/g,
+    /"modules":\]/g,
+    
+    // Patrones de youtubeUrls corruptos
+    /"youtubeUrls":\]\}\}\}\]\}\}\}\]\}\}\}\]/g,
+    /"youtubeUrls":\]\}\}\}\]\}\}\}\]/g,
+    /"youtubeUrls":\]\}\}\}\]/g,
+    /"youtubeUrls":\]\}\}\]/g,
+    /"youtubeUrls":\]\}\}/g,
+    /"youtubeUrls":\]\}/g,
+    /"youtubeUrls":\]/g,
+  ];
+  
+  // Aplicar cada patrón de corrupción
+  corruptionPatterns.forEach(pattern => {
+    cleaned = cleaned.replace(pattern, '[]');
+  });
+  
+  // Buscar y corregir arrays malformados específicos
+  const malformedArrays = [
+    { pattern: /"enrollments":\]/g, replacement: '"enrollments":[]' },
+    { pattern: /"payments":\]/g, replacement: '"payments":[]' },
+    { pattern: /"paymentSessions":\]/g, replacement: '"paymentSessions":[]' },
+    { pattern: /"modules":\]/g, replacement: '"modules":[]' },
+    { pattern: /"youtubeUrls":\]/g, replacement: '"youtubeUrls":[]' }
+  ];
+  
+  malformedArrays.forEach(({ pattern, replacement }) => {
+    cleaned = cleaned.replace(pattern, replacement);
+  });
+  
+  // Buscar el último objeto válido y truncar ahí si es necesario
+  const lastValidObject = cleaned.lastIndexOf('}');
+  if (lastValidObject !== -1) {
+    // Buscar el siguiente carácter después del último }
+    let truncatePoint = lastValidObject + 1;
+    
+    // Si hay caracteres malformados después, truncar ahí
+    const remaining = cleaned.substring(truncatePoint);
+    if (remaining.includes(']}}]') || remaining.includes(']}}]}}]')) {
+      cleaned = cleaned.substring(0, truncatePoint) + '}';
+      console.log("🔧 JSON truncado después del último objeto válido");
+    }
+  }
+  
+  // Asegurar que el JSON termine correctamente
+  if (!cleaned.endsWith('}') && !cleaned.endsWith(']')) {
+    cleaned += '}';
+  }
+  
+  return cleaned;
 };
 
 const cleanApiData = (data) => {
@@ -95,7 +191,9 @@ api.interceptors.response.use(
     // ✅ Solo procesar si la respuesta es string (no ya parseada)
     if (response.data && typeof response.data === 'string') {
       try {
-        response.data = JSON.parse(response.data);
+        // Intentar limpiar el JSON antes de parsearlo
+        const cleanedJson = cleanMalformedJson(response.data);
+        response.data = JSON.parse(cleanedJson);
       } catch (error) {
         console.warn('⚠️ Error parsing JSON response:', error.message);
         // Mantener la respuesta original si no se puede parsear
@@ -132,12 +230,14 @@ api.interceptors.response.use(
     // 🔍 Usar datos de error directamente sin procesar
     const errorData = data;
 
-    // 🔑 Sesión expirada
+    // 🔑 Error 401 - Diferenciar entre credenciales inválidas y sesión expirada
     if (status === 401) {
-      clearAuth();
-      if (window.location.pathname !== "/authentication") {
-        window.location.href = "/authentication/login";
+      // Si es un endpoint de login, no limpiar auth (es credenciales inválidas)
+      if (error.config?.url?.includes('/auth/login')) {
+        return Promise.reject(error);
       }
+      // Si es otro endpoint, es sesión expirada
+      clearAuth();
       return Promise.reject(
         new Error("Tu sesión ha expirado. Inicia sesión nuevamente.")
       );

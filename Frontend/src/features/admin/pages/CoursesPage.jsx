@@ -43,7 +43,7 @@ import {
   School,
   AttachMoney,
   People,
-} from "@mui/icons-material";
+} from "lucide-react";
 import api from "@/services/api";
 
 export default function CoursesPage() {

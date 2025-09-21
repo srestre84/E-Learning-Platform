@@ -21,6 +21,9 @@ import {
   updateCourseProgress,
   markCourseAsCompleted,
 } from "@/services/enrollmentService";
+import CourseModules from "@/shared/components/CourseModules";
+import VideoPlayer from "@/shared/components/VideoPlayer";
+import StudentVideoViewer from "@/features/student/components/StudentVideoViewer";
 // import { useAuth } from "@/shared/hooks/useAuth"; // No se usa actualmente
 import { toast } from "sonner";
 
@@ -28,9 +31,11 @@ const RETRY_INTERVAL = 2000; // ms
 const MAX_RETRIES = 10;
 
 const CourseContent = () => {
-  const { courseId } = useParams();
+  const { id: courseId } = useParams();
   const navigate = useNavigate();
   // const { user } = useAuth(); // No se usa actualmente
+
+  console.log("🎯 CourseContent - courseId recibido:", courseId);
 
   // Estados para datos del curso
   const [course, setCourse] = useState(null);
@@ -49,89 +54,77 @@ const CourseContent = () => {
   const [expandedModules, setExpandedModules] = useState([1]);
   const [updatingProgress, setUpdatingProgress] = useState(false);
 
-  const loadCourseData = useCallback(async (retrying = false) => {
+  const loadCourseData = useCallback(async () => {
+    console.log("🔄 CourseContent - Iniciando carga de datos para courseId:", courseId);
     setLoading(true);
     setError(null);
+    
     try {
-      const [courseData, videosData, enrollmentData] = await Promise.allSettled([
-        getCourseById(courseId),
-        getCourseVideos(courseId),
-        checkEnrollment(courseId),
-      ]);
+      // Cargar curso
+      console.log("📚 Cargando curso...");
+      const courseResponse = await getCourseById(courseId);
+      console.log("✅ Curso cargado:", courseResponse);
+      setCourse(courseResponse);
 
-      // Procesar datos del curso
-      if (courseData.status === "fulfilled") {
-        setCourse(courseData.value);
-      } else {
-        throw new Error("Error al cargar el curso");
-      }
+      // Cargar videos
+      console.log("🎬 Cargando videos...");
+      const videosResponse = await getCourseVideos(courseId);
+      console.log("✅ Videos cargados:", videosResponse);
+      setVideos(videosResponse || []);
 
-      // Procesar videos
-      if (videosData.status === "fulfilled") {
-        setVideos(videosData.value || []);
-        // Expandir el primer módulo por defecto
-        if (videosData.value && videosData.value.length > 0) {
-          setExpandedModules([1]);
-        }
-      } else {
-        console.warn("Error al cargar videos:", videosData.reason);
-        setVideos([]);
-      }
+      // Verificar inscripción
+      console.log("📋 Verificando inscripción...");
+      const enrollmentResponse = await checkEnrollment(courseId);
+      console.log("✅ Inscripción verificada:", enrollmentResponse);
+      setEnrollment(enrollmentResponse);
 
-      // Procesar inscripción
-      if (enrollmentData.status === "fulfilled") {
-        setEnrollment(enrollmentData.value);
-        if (retrying) {
-          setRetryingEnrollment(false);
-          setRetryCount(0);
-        }
-      } else {
-        // Si estamos reintentando, seguimos reintentando
-        if (retrying) {
-          setEnrollment({ isEnrolled: false });
-        } else {
-          setEnrollment({ isEnrolled: false });
-        }
-      }
     } catch (err) {
-      console.error("Error al cargar datos del curso:", err);
+      console.error("❌ Error al cargar datos del curso:", err);
       setError(err.message || "Error al cargar el curso");
     } finally {
+      console.log("🏁 Finalizando carga de datos - setLoading(false)");
       setLoading(false);
     }
   }, [courseId]);
 
   useEffect(() => {
+    console.log("🚀 useEffect ejecutado - courseId:", courseId);
     setIsClient(true);
     if (courseId) {
       loadCourseData();
+      
+      // Timeout de seguridad - si después de 10 segundos sigue cargando, mostrar error
+      const safetyTimeout = setTimeout(() => {
+        console.warn("⚠️ Timeout de seguridad activado - forzando setLoading(false)");
+        setLoading(false);
+        setError("Tiempo de espera agotado. Por favor, recarga la página.");
+      }, 10000);
+      
+      return () => clearTimeout(safetyTimeout);
     }
-    // Limpiar timeout al desmontar
-    return () => {
-      if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
-    };
   }, [courseId, loadCourseData]);
 
-  // Reintentar verificación de inscripción si no está inscrito
-  useEffect(() => {
-    if (
-      course &&
-      enrollment &&
-      !enrollment.isEnrolled &&
-      retryCount < MAX_RETRIES &&
-      !retryingEnrollment
-    ) {
-      setRetryingEnrollment(true);
-      retryTimeoutRef.current = setTimeout(() => {
-        setRetryCount((prev) => prev + 1);
-        loadCourseData(true);
-      }, RETRY_INTERVAL);
-    }
-    if (enrollment && enrollment.isEnrolled) {
-      setRetryingEnrollment(false);
-      setRetryCount(0);
-    }
-  }, [course, enrollment, retryCount, retryingEnrollment, loadCourseData]);
+  // Comentado temporalmente para evitar bucles infinitos
+  // useEffect(() => {
+  //   if (
+  //     course &&
+  //     enrollment &&
+  //     !enrollment.isEnrolled &&
+  //     retryCount < MAX_RETRIES &&
+  //     !retryingEnrollment
+  //   ) {
+  //     console.log(`🔄 Reintentando verificación de inscripción (${retryCount + 1}/${MAX_RETRIES})`);
+  //     setRetryingEnrollment(true);
+  //     retryTimeoutRef.current = setTimeout(() => {
+  //       setRetryCount((prev) => prev + 1);
+  //       loadCourseData(true);
+  //     }, RETRY_INTERVAL);
+  //   }
+  //   if (enrollment && enrollment.isEnrolled) {
+  //     setRetryingEnrollment(false);
+  //     setRetryCount(0);
+  //   }
+  // }, [course, enrollment, retryCount, retryingEnrollment]);
 
 
 
@@ -219,13 +212,31 @@ const CourseContent = () => {
     );
   }
 
+  console.log("🎭 CourseContent - Estado actual:", { loading, error, course: !!course, videos: videos.length, enrollment: !!enrollment });
+
   if (loading) {
+    console.log("⏳ Mostrando pantalla de carga...");
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin text-red-500 mx-auto mb-4" />
             <p className="text-gray-600">Cargando contenido del curso...</p>
+            <p className="text-sm text-gray-500 mt-2">CourseId: {courseId}</p>
+            <button
+              onClick={() => {
+                console.log("🔄 Recarga manual iniciada");
+                setLoading(false);
+                setError("Recarga manual - intentando nuevamente...");
+                setTimeout(() => {
+                  setError(null);
+                  loadCourseData();
+                }, 1000);
+              }}
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              Recargar
+            </button>
           </div>
         </div>
       </div>
@@ -338,68 +349,11 @@ const CourseContent = () => {
               </p>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                {videos.length > 0 ? (
-                  <div className="border rounded-md overflow-hidden">
-                    <button
-                      onClick={() => toggleModule(1)}
-                      className="w-full text-left p-4 flex justify-between items-center bg-gray-50">
-                      <div className="flex items-center">
-                        <BookOpen className="h-5 w-5 text-gray-500 mr-3" />
-                        <span className="font-medium">Videos del Curso</span>
-                      </div>
-                      {expandedModules.includes(1) ? (
-                        <ChevronDown className="h-5 w-5 text-gray-500" />
-                      ) : (
-                        <ChevronRight className="h-5 w-5 text-gray-500" />
-                      )}
-                    </button>
-
-                    {expandedModules.includes(1) && (
-                      <div className="pl-12 pr-4 pb-2">
-                        <ul className="space-y-1">
-                          {videos.map((video) => (
-                            <li key={video.id} className="py-2">
-                              <button
-                                onClick={() => handleVideoClick(video)}
-                                className={`flex items-center w-full text-left group ${
-                                  activeVideo?.id === video.id
-                                    ? "text-red-600 font-medium"
-                                    : "text-gray-700 hover:text-red-600"
-                                }`}>
-                                <span className="mr-2">
-                                  {video.completed ? (
-                                    <CheckCircle className="h-4 w-4 text-green-500" />
-                                  ) : (
-                                    <Play className="h-4 w-4 text-gray-400 group-hover:text-red-500" />
-                                  )}
-                                </span>
-                                <div className="flex-1 min-w-0">
-                                  <div className="truncate">{video.title}</div>
-                                  <div className="flex items-center text-xs text-gray-500 mt-1">
-                                    <Clock className="h-3 w-3 mr-1" />
-                                    {formatDuration(video.duration)}
-                                    {video.isPreview && (
-                                      <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs">
-                                        Preview
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <BookOpen className="h-8 w-8 mx-auto mb-2" />
-                    <p>No hay videos disponibles</p>
-                  </div>
-                )}
-              </div>
+              <CourseModules 
+                courseId={courseId} 
+                isEnrolled={enrollment?.isEnrolled}
+                onVideoClick={handleVideoClick}
+              />
             </CardContent>
           </Card>
         </div>
@@ -454,135 +408,15 @@ const CourseContent = () => {
           </div>
 
           {/* Video Player */}
-          <Card className="mb-6 overflow-hidden">
-            <div className="aspect-video relative rounded-lg overflow-hidden">
-              {currentVideo ? (
-                isYoutubeUrl(currentVideo) ? (
-                  <>
-                    <iframe
-                      src={`${getYoutubeEmbedUrl(
-                        currentVideo
-                      )}?modestbranding=1&rel=0&showinfo=0&controls=1&color=ef4444&iv_load_policy=3&fs=1&theme=light&color=white`}
-                      title={activeVideo?.title || ""}
-                      className="w-full h-full youtube-player"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen></iframe>
-                    <style
-                      dangerouslySetInnerHTML={{
-                        __html: `
-                        .youtube-player {
-                          background: #f3f4f6;
-                          border-radius: 0.5rem;
-                          overflow: hidden;
-                        }
-                        .youtube-player::before {
-                          content: '';
-                          position: absolute;
-                          top: 0;
-                          left: 0;
-                          right: 0;
-                          bottom: 0;
-                          box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
-                          pointer-events: none;
-                          border-radius: 0.5rem;
-                        }
-                        /* Ocultar título de YouTube */
-                        .ytp-title {
-                          display: none !important;
-                        }
-                        /* Personalizar controles */
-                        .ytp-chrome-top {
-                          padding-top: 0 !important;
-                        }
-                        /* Color de la barra de progreso */
-                        .ytp-play-progress {
-                          background: #ef4444 !important;
-                        }
-                        .ytp-scrubber-container {
-                          background: #ef4444 !important;
-                        }
-                      `,
-                      }}
-                    />
-                  </>
-                ) : (
-                  <video src={currentVideo} controls className="w-full h-full">
-                    Tu navegador no soporta la reproducción de videos.
-                  </video>
-                )
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                  <div className="text-center">
-                    <Play className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600 mb-2">
-                      Selecciona un video para comenzar
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {videos.length > 0
-                        ? `Tienes ${videos.length} videos disponibles`
-                        : "No hay videos disponibles en este curso"}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Información del Video Actual */}
-            {activeVideo && (
-              <div className="p-4 border-t">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 mb-1">
-                      {activeVideo.title}
-                    </h3>
-                    {activeVideo.description && (
-                      <p className="text-sm text-gray-600 mb-2">
-                        {activeVideo.description}
-                      </p>
-                    )}
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Clock className="h-4 w-4 mr-1" />
-                      {formatDuration(activeVideo.duration)}
-                      {activeVideo.isPreview && (
-                        <span className="ml-3 px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs">
-                          Video Preview
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Botón para marcar como completado */}
-                  {!activeVideo.completed && (
-                    <Button
-                      onClick={() => handleVideoComplete(activeVideo.id)}
-                      disabled={updatingProgress}
-                      size="sm"
-                      className="bg-green-600 hover:bg-green-700">
-                      {updatingProgress ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Marcando...
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Marcar Completado
-                        </>
-                      )}
-                    </Button>
-                  )}
-
-                  {activeVideo.completed && (
-                    <div className="flex items-center text-green-600">
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      <span className="text-sm font-medium">Completado</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </Card>
+          <StudentVideoViewer
+            courseId={courseId}
+            courseTitle={course?.title || "Curso"}
+            enrollmentData={enrollment}
+            onProgressUpdate={(newProgress) => {
+              // Actualizar progreso local si es necesario
+              console.log("Progress updated:", newProgress);
+            }}
+          />
         </div>
       </div>
     </div>

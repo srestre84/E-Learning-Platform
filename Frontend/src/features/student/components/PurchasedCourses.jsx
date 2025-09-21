@@ -104,6 +104,8 @@ export default function PurchasedCourses() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [completedCourses, setCompletedCourses] = useState([]);
+  const [loadingCompleted, setLoadingCompleted] = useState(false);
 
   // === ESTADOS DE UI ===
   const [viewMode, setViewMode] = useState(VIEW_MODES.GRID);
@@ -131,50 +133,6 @@ export default function PurchasedCourses() {
       return null;
     }
   }, []);
-
-  const enrichCourseData = useCallback(
-    async (enrollments) => {
-      const enrichedCourses = [];
-
-      for (const enrollment of enrollments) {
-        let courseData = enrollment.course;
-
-        if (!courseData || !courseData.title) {
-          console.log("📚 Enriqueciendo datos del curso:", enrollment.id);
-          setLoadingCourses((prev) => new Set([...prev, enrollment.id]));
-
-          const fetchedCourseData = await fetchCourseData(enrollment.id);
-          if (fetchedCourseData) {
-            courseData = fetchedCourseData;
-          }
-
-          setLoadingCourses((prev) => {
-            const newSet = new Set(prev);
-            newSet.delete(enrollment.id);
-            return newSet;
-          });
-        }
-
-        enrichedCourses.push({
-          ...enrollment,
-          course: courseData,
-          // Normalizar fechas
-          enrollmentDate: enrollment.enrollmentDate
-            ? new Date(enrollment.enrollmentDate)
-            : new Date(),
-          lastAccessed: enrollment.lastAccessed
-            ? new Date(enrollment.lastAccessed)
-            : null,
-          completedAt: enrollment.completedAt
-            ? new Date(enrollment.completedAt)
-            : null,
-        });
-      }
-
-      return enrichedCourses;
-    },
-    [fetchCourseData]
-  );
 
   // Reemplazar la función loadCourseDetails con esta versión mejorada
   const loadCourseDetails = useCallback(async (enrollment) => {
@@ -271,7 +229,7 @@ export default function PurchasedCourses() {
       console.log("�� Iniciando carga de cursos comprados...");
 
       // Obtener inscripciones
-      const enrollments = await getActiveStudentEnrollments();
+      const enrollments = await getActiveEnrollments();
       console.log(`📚 Encontradas ${enrollments?.length || 0} inscripciones`);
 
       if (!enrollments || enrollments.length === 0) {
@@ -309,14 +267,14 @@ export default function PurchasedCourses() {
       setError("Error al cargar los cursos. Intenta más tarde.");
       setLoading(false);
     }
-  }, [loadCourseDetails]);
+  }, []); // Solo ejecutar una vez al montar
 
   // Función mejorada para cargar cursos completados
   const loadCompletedCourses = useCallback(async () => {
     try {
       console.log("�� Iniciando carga de cursos completados...");
 
-      const enrollments = await getCompletedStudentEnrollments();
+      const enrollments = await getCompletedEnrollments();
       console.log(
         `🏆 Encontrados ${enrollments?.length || 0} cursos completados`
       );
@@ -352,16 +310,16 @@ export default function PurchasedCourses() {
       setError("Error al cargar los cursos completados. Intenta más tarde.");
       setLoadingCompleted(false);
     }
-  }, [loadCourseDetails]);
+  }, []); // Solo ejecutar una vez al montar
 
   // === EFECTOS ===
   useEffect(() => {
     loadAllCourses();
-  }, [loadAllCourses]);
+  }, []); // Solo ejecutar una vez al montar el componente
 
   useEffect(() => {
     loadCompletedCourses();
-  }, [loadCompletedCourses]);
+  }, []); // Solo ejecutar una vez al montar el componente
 
   // === FUNCIONES DE ACCIÓN ===
   const handleUnenrollCourse = useCallback(

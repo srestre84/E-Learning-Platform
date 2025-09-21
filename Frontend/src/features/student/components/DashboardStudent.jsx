@@ -79,21 +79,25 @@ const validateEnrollmentData = (enrollments) => {
       return false;
     }
 
-    // Validar que tenga curso asociado
-    if (!enrollment.course || typeof enrollment.course !== "object") {
-      console.warn("⚠️ Inscripción sin curso válido:", enrollment);
+    // Validar que tenga datos del curso (pueden estar anidados o directos)
+    const hasNestedCourse = enrollment.course && typeof enrollment.course === "object";
+    const hasDirectCourseData = enrollment.courseTitle && enrollment.courseId;
+    
+    if (!hasNestedCourse && !hasDirectCourseData) {
+      console.warn("⚠️ Inscripción sin datos de curso válidos:", enrollment);
       return false;
     }
 
-    // Validar que el curso tenga título
-    if (!enrollment.course.title || enrollment.course.title.trim() === "") {
-      console.warn("⚠️ Curso sin título:", enrollment.course);
+    // Validar que el curso tenga título (verificar ambas estructuras)
+    const courseTitle = enrollment.course?.title || enrollment.courseTitle;
+    if (!courseTitle || courseTitle.trim() === "") {
+      console.warn("⚠️ Curso sin título:", enrollment);
       return false;
     }
 
     console.log("✅ Inscripción válida:", {
       id: enrollment.id,
-      courseTitle: enrollment.course.title,
+      courseTitle: courseTitle,
       progress: enrollment.progressPercentage || 0,
       status: enrollment.status,
     });
@@ -153,7 +157,7 @@ const debugEnrollmentData = async () => {
         console.log(`📋 Inscripción ${index + 1}:`, {
           id: enrollment.id,
           status: enrollment.status,
-          courseTitle: enrollment.course?.title,
+          courseTitle: enrollment.course?.title || enrollment.courseTitle,
           progress: enrollment.progressPercentage,
           enrolledAt: enrollment.enrolledAt,
         });
@@ -329,10 +333,10 @@ export default function DashboardStudent() {
 
       // Cursos sugeridos (cursos disponibles que no estoy inscrito)
       const enrolledIds = validEnrolledCourses
-        .map((e) => e.course?.id)
+        .map((e) => e.course?.id || e.courseId)
         .filter(Boolean);
       const completedIds = validCompletedCourses
-        .map((e) => e.course?.id)
+        .map((e) => e.course?.id || e.courseId)
         .filter(Boolean);
       const takenIds = [...enrolledIds, ...completedIds];
 
@@ -352,7 +356,7 @@ export default function DashboardStudent() {
 
       // Calcular estadísticas mejoradas
       const totalHours = validEnrolledCourses.reduce((acc, enrollment) => {
-        const estimatedHours = enrollment.course?.estimatedHours || 0;
+        const estimatedHours = enrollment.course?.estimatedHours || enrollment.estimatedHours || 0;
         const progress = enrollment.progressPercentage || 0;
         return acc + (estimatedHours * progress) / 100;
       }, 0);
@@ -405,16 +409,16 @@ export default function DashboardStudent() {
 
   // === FILTRAR CURSOS MEJORADO ===
   const filteredEnrolledCourses = enrolledCourses.filter((enrollment) => {
-    if (!enrollment || !enrollment.course) return false;
+    if (!enrollment) return false;
 
     const searchTermLower = searchTerm.toLowerCase().trim();
     if (!searchTermLower) return true; // Si no hay término de búsqueda, mostrar todos
 
-    const title = enrollment.course.title?.toLowerCase() || "";
+    const title = (enrollment.course?.title || enrollment.courseTitle || "").toLowerCase();
     const instructorName =
-      enrollment.course.instructor?.userName?.toLowerCase() || "";
+      (enrollment.course?.instructor?.userName || enrollment.instructorName || "").toLowerCase();
     const instructorLastName =
-      enrollment.course.instructor?.lastName?.toLowerCase() || "";
+      (enrollment.course?.instructor?.lastName || enrollment.instructorLastName || "").toLowerCase();
 
     return (
       title.includes(searchTermLower) ||
@@ -434,7 +438,7 @@ export default function DashboardStudent() {
     const [updating, setUpdating] = useState(false);
 
     // Validación más estricta
-    if (!enrollment || !enrollment.course || !enrollment.id) {
+    if (!enrollment || !enrollment.id) {
       console.warn(
         "⚠️ EnrolledCourseCard: Datos de inscripción inválidos",
         enrollment
@@ -470,7 +474,16 @@ export default function DashboardStudent() {
       }
     };
 
-    const course = enrollment.course;
+    const course = enrollment.course || {
+      id: enrollment.courseId,
+      title: enrollment.courseTitle,
+      description: enrollment.courseDescription,
+      thumbnailUrl: enrollment.courseThumbnailUrl,
+      instructor: {
+        userName: enrollment.instructorName,
+        lastName: enrollment.instructorLastName
+      }
+    };
     const progress = enrollment.progressPercentage || 0;
 
     return (
@@ -537,7 +550,7 @@ export default function DashboardStudent() {
             <Button
               asChild
               className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold">
-              <Link to={`/course/${course.id}`}>
+              <Link to={`/curso/${course.id}/content`}>
                 <PlayCircle className="h-4 w-4 mr-2" />
                 Continuar
               </Link>
@@ -667,7 +680,7 @@ export default function DashboardStudent() {
                     <span className="font-mono">ID:{enrollment.id}</span> |
                     <span className="ml-1">{enrollment.status}</span> |
                     <span className="ml-1">
-                      {enrollment.course?.title || "Sin título"}
+                      {enrollment.course?.title || enrollment.courseTitle || "Sin título"}
                     </span>
                   </div>
                 ))}
@@ -992,7 +1005,7 @@ export default function DashboardStudent() {
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-900">
-                          Completaste "{course.course?.title || "Curso"}"
+                          Completaste "{course.course?.title || course.courseTitle || "Curso"}"
                         </p>
                         <p className="text-xs text-gray-500">
                           {course.completedAt

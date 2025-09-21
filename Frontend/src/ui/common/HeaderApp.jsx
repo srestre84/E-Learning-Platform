@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/useAuth";
-import { LogOut, User } from "lucide-react";
+import { LogOut } from "lucide-react";
+import { toast } from "sonner";
+import UserStatus from "@/shared/components/UserStatus";
 export default function HeaderApp() {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
@@ -46,9 +48,42 @@ export default function HeaderApp() {
     setShowConfirmDialog(true);
   };
 
-  const confirmLogout = () => {
-    logout();
-    navigate("/login");
+  const confirmLogout = async () => {
+    try {
+      // Cerrar el modal de confirmación
+      setShowConfirmDialog(false);
+      setIsDropdownOpen(false);
+      
+      // Mostrar notificación de logout
+      toast.loading("Cerrando sesión...", {
+        id: "logout-loading",
+        duration: 0,
+      });
+
+      // Ejecutar logout sin redirección automática
+      await logout({ redirect: false });
+      
+      // Cerrar notificación de loading
+      toast.dismiss("logout-loading");
+      
+      // Mostrar mensaje de éxito
+      toast.success("Sesión cerrada exitosamente", {
+        duration: 2000,
+        position: "top-center",
+      });
+
+      // Redirigir al login usando navigate (sin recargar página)
+      navigate("/authentication/login", { replace: true });
+      
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+      toast.dismiss("logout-loading");
+      toast.error("Error al cerrar sesión", {
+        description: "Por favor, intenta nuevamente",
+        duration: 3000,
+        position: "top-center",
+      });
+    }
   };
 
   const cancelLogout = () => {
@@ -72,6 +107,7 @@ export default function HeaderApp() {
           {getPageTitle()}
         </h2>
         <div className="flex items-center space-x-4">
+          <UserStatus />
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -79,7 +115,6 @@ export default function HeaderApp() {
               <span className="sr-only">Abrir menú de usuario</span>
               <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-semibold">
                 <img src={image} alt={getUserDisplayName()} className="w-8 h-8 rounded-full" />
-                {/* {getUserDisplayName().charAt(0).toUpperCase()} */}
               </div>
             </button>
 

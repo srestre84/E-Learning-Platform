@@ -41,9 +41,8 @@ public class Enrollment {
     @JsonBackReference("student-enrollments")
     private User student;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "course_id", nullable = false)
-    @JsonBackReference("course-enrollments")
     private Course course;
 
     @Enumerated(EnumType.STRING)

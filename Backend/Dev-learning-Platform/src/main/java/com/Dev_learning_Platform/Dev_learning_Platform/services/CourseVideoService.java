@@ -7,10 +7,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.Dev_learning_Platform.Dev_learning_Platform.dtos.CourseVideoDto;
+import com.Dev_learning_Platform.Dev_learning_Platform.dtos.VideoDto;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Course;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.CourseVideo;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.User;
+import com.Dev_learning_Platform.Dev_learning_Platform.models.Module;
+import com.Dev_learning_Platform.Dev_learning_Platform.models.Lesson;
 import com.Dev_learning_Platform.Dev_learning_Platform.repositories.CourseVideoRepository;
+import com.Dev_learning_Platform.Dev_learning_Platform.repositories.ModuleRepository;
+import com.Dev_learning_Platform.Dev_learning_Platform.repositories.LessonRepository;
+import com.Dev_learning_Platform.Dev_learning_Platform.repositories.CourseRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,9 +27,12 @@ import lombok.RequiredArgsConstructor;
 public class CourseVideoService {
 
     private final CourseVideoRepository courseVideoRepository;
+    private final CourseRepository courseRepository;
     private final CourseService courseService;
     private final EnrollmentService enrollmentService;
     private final UserService userService;
+    private final ModuleRepository moduleRepository;
+    private final LessonRepository lessonRepository;
 
     @Transactional
     public CourseVideo addVideoToCourse(CourseVideoDto videoDto, Long instructorId) {
@@ -74,11 +83,85 @@ public class CourseVideoService {
             }
         }
         
-        return courseVideoRepository.findByCourseIdAndIsActiveOrderByOrderIndexAsc(courseId, true);
+        // Obtener videos de la tabla course_videos
+        List<CourseVideo> courseVideos = courseVideoRepository.findByCourseIdAndIsActiveOrderByOrderIndexAsc(courseId, true);
+        
+        // También obtener lecciones de tipo "video" de los módulos
+        // TODO: Implementar conversión de Lesson a CourseVideo para mantener compatibilidad
+        
+        return courseVideos;
     }
 
     public List<CourseVideo> getVideosByCourse(Long courseId) {
         return courseVideoRepository.findByCourseIdAndIsActiveOrderByOrderIndexAsc(courseId, true);
+    }
+
+    /**
+     * Obtiene las lecciones de tipo "video" de un curso como VideoDto para evitar referencias circulares
+     */
+    public List<VideoDto> getCourseLessonsAsVideos(Long courseId, Long studentId) {
+        // Verificar que el curso existe
+        if (!courseRepository.existsById(courseId)) {
+            throw new IllegalArgumentException("Curso no encontrado con ID: " + courseId);
+        }
+        
+        // Si hay un usuario autenticado, verificar permisos completos
+        if (studentId != null) {
+            User user = userService.findById(studentId);
+            
+            // Verificar permisos de instructor
+            boolean isInstructor = courseRepository.findInstructorIdByCourseId(courseId)
+                .map(instructorId -> instructorId.equals(studentId))
+                .orElse(false);
+            
+            if (!isInstructor) {
+                if (user.getRole() == User.Role.STUDENT) {
+                    if (!enrollmentService.isStudentEnrolled(studentId, courseId)) {
+                        // Para usuarios no inscritos, devolver solo videos de preview
+                        return getPreviewVideos(courseId);
+                    }
+                }
+            }
+        } else {
+            // Para usuarios no autenticados, devolver solo videos de preview
+            return getPreviewVideos(courseId);
+        }
+
+        // Obtener todos los módulos activos del curso
+        List<Module> modules = moduleRepository.findActiveModulesByCourseId(courseId);
+        
+        // Convertir lecciones de tipo "video" a VideoDto
+        List<VideoDto> videos = new java.util.ArrayList<>();
+        
+        for (Module module : modules) {
+            List<Lesson> lessons = lessonRepository.findActiveLessonsByModuleId(module.getId());
+            
+            for (Lesson lesson : lessons) {
+                if ("video".equalsIgnoreCase(lesson.getType()) && lesson.getYoutubeUrl() != null) {
+                    VideoDto video = new VideoDto();
+                    video.setId(lesson.getId()); // Usar el ID de la lección
+                    video.setTitle(lesson.getTitle());
+                    video.setDescription(lesson.getDescription());
+                    video.setType(lesson.getType());
+                    video.setYoutubeUrl(lesson.getYoutubeUrl());
+                    video.setYoutubeVideoId(lesson.getYoutubeVideoId());
+                    video.setContent(lesson.getContent());
+                    video.setOrderIndex(lesson.getOrderIndex());
+                    video.setDurationSeconds(lesson.getDurationSeconds());
+                    video.setIsActive(lesson.getIsActive());
+                    
+                    // Información del módulo
+                    video.setModuleId(module.getId());
+                    video.setModuleTitle(module.getTitle());
+                    video.setModuleDescription(module.getDescription());
+                    video.setModuleOrderIndex(module.getOrderIndex());
+                    
+                    videos.add(video);
+                }
+            }
+        }
+        
+        return videos;
     }
 
     public CourseVideo getVideoById(Long videoId) {
@@ -173,5 +256,73 @@ public class CourseVideoService {
 
     public static boolean isOptimalDuration(int durationSeconds) {
         return durationSeconds >= 300 && durationSeconds <= 1200;
+    }
+
+    /**
+     * Obtiene solo las primeras lecciones de video de cada módulo como preview
+     * para usuarios no autenticados o no inscritos
+     */
+    private List<VideoDto> getPreviewVideos(Long courseId) {
+        // Obtener todos los módulos activos del curso
+        List<Module> modules = moduleRepository.findActiveModulesByCourseId(courseId);
+        
+        // Convertir solo la primera lección de video de cada módulo a VideoDto
+        List<VideoDto> previewVideos = new java.util.ArrayList<>();
+        
+        for (Module module : modules) {
+            List<Lesson> lessons = lessonRepository.findActiveLessonsByModuleId(module.getId());
+            
+            // Buscar la primera lección de video en el módulo
+            for (Lesson lesson : lessons) {
+                if ("video".equalsIgnoreCase(lesson.getType()) && lesson.getYoutubeUrl() != null) {
+                    VideoDto video = new VideoDto();
+                    video.setId(lesson.getId());
+                    video.setTitle(lesson.getTitle());
+                    video.setDescription(lesson.getDescription());
+                    video.setYoutubeUrl(lesson.getYoutubeUrl());
+                    video.setYoutubeVideoId(extractVideoId(lesson.getYoutubeUrl()));
+                    video.setThumbnailUrl("https://img.youtube.com/vi/" + extractVideoId(lesson.getYoutubeUrl()) + "/maxresdefault.jpg");
+                    video.setOrderIndex(lesson.getOrderIndex());
+                    video.setDurationSeconds(lesson.getDurationSeconds());
+                    video.setIsActive(lesson.getIsActive());
+                    video.setIsPreview(true); // Marcar como preview
+                    
+                    // Información del módulo
+                    video.setModuleId(module.getId());
+                    video.setModuleTitle(module.getTitle());
+                    video.setModuleDescription(module.getDescription());
+                    video.setModuleOrderIndex(module.getOrderIndex());
+                    
+                    previewVideos.add(video);
+                    break; // Solo tomar la primera lección de video del módulo
+                }
+            }
+        }
+        
+        return previewVideos;
+    }
+
+    /**
+     * Extrae el ID del video de YouTube desde la URL
+     */
+    private String extractVideoId(String youtubeUrl) {
+        if (youtubeUrl == null || youtubeUrl.trim().isEmpty()) {
+            return null;
+        }
+        
+        String videoId = null;
+        if (youtubeUrl.contains("watch?v=")) {
+            videoId = youtubeUrl.substring(youtubeUrl.indexOf("watch?v=") + 8);
+            if (videoId.contains("&")) {
+                videoId = videoId.substring(0, videoId.indexOf("&"));
+            }
+        } else if (youtubeUrl.contains("youtu.be/")) {
+            videoId = youtubeUrl.substring(youtubeUrl.indexOf("youtu.be/") + 9);
+            if (videoId.contains("?")) {
+                videoId = videoId.substring(0, videoId.indexOf("?"));
+            }
+        }
+        
+        return videoId;
     }
 }

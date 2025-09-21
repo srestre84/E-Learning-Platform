@@ -1,7 +1,6 @@
 import React, { lazy, Suspense } from "react";
 import { Navigate } from "react-router-dom";
 import LandingLayout from "@/ui/layout/LandingLayout";
-import LoadingSpinner from "@/shared/components/LoadingSpinner";
 import LoadingFallback from "@/shared/components/LoadingFallback";
 import ErrorPage from "@/pages/ErrorPage";
 
@@ -19,7 +18,10 @@ const CatalogoCursos = lazy(() =>
   import("@/features/marketing/pages/CatalogoCursos")
 );
 const CourseDetail = lazy(() =>
-  import("@/features/course/components/CourseDetail")
+  import("@/features/student/pages/CourseDetailPage")
+);
+const EnhancedCourseContent = lazy(() =>
+  import("@/features/course/components/EnhancedCourseContent")
 );
 const PaymentSuccess = lazy(() =>
   import("@/features/payment/pages/PaymentSuccess")
@@ -28,10 +30,15 @@ const PaymentCancel = lazy(() =>
   import("@/features/payment/pages/PaymentCancel")
 );
 const NotFoundPage = lazy(() => import("@/shared/ui/layout/NotFound"));
+const MockDataTest = lazy(() => import("@/test/MockDataTest"));
+const PricingPage = lazy(() => import("@/features/marketing/pages/PricingPage"));
 const ComoFunciona = lazy(() =>
   import("@/features/marketing/pages/comoFunciona")
 );
 const TestConnection = lazy(() => import("@/features/test/TextConnection"));
+const VideoTest = lazy(() => import("@/test/VideoTest"));
+const SimpleVideoTest = lazy(() => import("@/test/SimpleVideoTest"));
+const JsonParsingTest = lazy(() => import("@/test/JsonParsingTest"));
 
 const CentroAyuda = lazy(() => import("@/pages/CentroAyuda"));
 const Contacto = lazy(() => import("@/pages/Contacto"));
@@ -49,6 +56,14 @@ const publicRoutes = [
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <LandingPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "precios",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <PricingPage />
           </Suspense>
         ),
       },
@@ -101,6 +116,38 @@ const publicRoutes = [
         ),
       },
       {
+        path: "video-test",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <VideoTest />
+          </Suspense>
+        ),
+      },
+      {
+        path: "simple-video-test",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <SimpleVideoTest />
+          </Suspense>
+        ),
+      },
+      {
+        path: "json-parsing-test",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <JsonParsingTest />
+          </Suspense>
+        ),
+      },
+      {
+        path: "mock-data-test",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <MockDataTest />
+          </Suspense>
+        ),
+      },
+      {
         path: "cursos",
         element: (
           <Suspense fallback={<LoadingFallback />}>
@@ -129,6 +176,14 @@ const publicRoutes = [
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <CourseDetail />
+          </Suspense>
+        ),
+      },
+      {
+        path: "curso/:courseId/content",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <EnhancedCourseContent />
           </Suspense>
         ),
       },

@@ -2,6 +2,7 @@ package com.Dev_learning_Platform.Dev_learning_Platform.repositories;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -53,4 +54,14 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
     List<Course> findByIsPremium(boolean isPremium);
     List<Course> findByCategory(Category category);
+    
+    // Método para obtener solo el ID del instructor sin cargar el curso completo
+    @Query("SELECT c.instructor.id FROM Course c WHERE c.id = :courseId")
+    Optional<Long> findInstructorIdByCourseId(Long courseId);
+    
+    // Métodos para filtrar por nivel
+    List<Course> findByLevelAndIsActiveAndIsPublished(String level, boolean isActive, boolean isPublished);
+    List<Course> findByCategoryAndLevelAndIsActiveAndIsPublished(Category category, String level, boolean isActive, boolean isPublished);
+    List<Course> findBySubcategoryAndLevelAndIsActiveAndIsPublished(Subcategory subcategory, String level, boolean isActive, boolean isPublished);
+    List<Course> findByCategoryAndSubcategoryAndLevelAndIsActiveAndIsPublished(Category category, Subcategory subcategory, String level, boolean isActive, boolean isPublished);
 }

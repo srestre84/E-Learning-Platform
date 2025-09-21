@@ -175,17 +175,21 @@ export default function Home() {
           </Suspense>
         </LazyLoadWrapper>
 
-        <LazyLoadWrapper placeholderHeight="h-96">
-          <Suspense fallback={<LoadingPlaceholder height="h-96" />}>
-            <InstructoresCard />
-          </Suspense>
-        </LazyLoadWrapper>
+        <div id="instructores">
+          <LazyLoadWrapper placeholderHeight="h-96">
+            <Suspense fallback={<LoadingPlaceholder height="h-96" />}>
+              <InstructoresCard />
+            </Suspense>
+          </LazyLoadWrapper>
+        </div>
 
-        <LazyLoadWrapper placeholderHeight="h-96">
-          <Suspense fallback={<LoadingPlaceholder height="h-96" />}>
-            <TestimonioCard />
-          </Suspense>
-        </LazyLoadWrapper>
+        <div id="testimonios">
+          <LazyLoadWrapper placeholderHeight="h-96">
+            <Suspense fallback={<LoadingPlaceholder height="h-96" />}>
+              <TestimonioCard />
+            </Suspense>
+          </LazyLoadWrapper>
+        </div>
       </div>
     );
   }
@@ -203,13 +207,17 @@ export default function Home() {
         <Price />
       </LazyLoadWrapper>
 
-      <LazyLoadWrapper placeholderHeight="h-96">
-        <InstructoresCard />
-      </LazyLoadWrapper>
+      <div id="instructores">
+        <LazyLoadWrapper placeholderHeight="h-96">
+          <InstructoresCard />
+        </LazyLoadWrapper>
+      </div>
 
-      <LazyLoadWrapper placeholderHeight="h-96">
-        <TestimonioCard />
-      </LazyLoadWrapper>
+      <div id="testimonios">
+        <LazyLoadWrapper placeholderHeight="h-96">
+          <TestimonioCard />
+        </LazyLoadWrapper>
+      </div>
 
       <LazyLoadWrapper placeholderHeight="h-64">
         <CtaButton />

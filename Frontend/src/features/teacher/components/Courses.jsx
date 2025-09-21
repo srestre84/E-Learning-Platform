@@ -15,7 +15,7 @@ import {
   AccessTime as AccessTimeIcon,
   MoreVert as MoreVertIcon,
   Book as BookIcon
-} from '@mui/icons-material';
+} from 'lucide-react';
 import {
   Box,
   Button,
@@ -120,7 +120,7 @@ const Courses = () => {
   const filteredCourses = courses.filter(course => {
     const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          course.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesTab = tabValue === 'publicados' ? course.status === 'publicado' : course.status === 'borrador';
+    const matchesTab = tabValue === 'publicados' ? course.isPublished : !course.isPublished;
     return matchesSearch && matchesTab;
   });
 
@@ -176,8 +176,8 @@ const Courses = () => {
             alt={course.title}
           />
           <StatusChip 
-            label={course.status === 'publicado' ? 'Publicado' : 'Borrador'} 
-            status={course.status}
+            label={course.isPublished ? 'Publicado' : 'Borrador'} 
+            status={course.isPublished ? 'publicado' : 'borrador'}
             size="small"
           />
         </Box>
@@ -260,8 +260,8 @@ const Courses = () => {
               sx={{ height: '100%', objectFit: 'cover' }}
             />
             <StatusChip 
-              label={course.status === 'publicado' ? 'Publicado' : 'Borrador'} 
-              status={course.status}
+              label={course.isPublished ? 'Publicado' : 'Borrador'} 
+              status={course.isPublished ? 'publicado' : 'borrador'}
               size="small"
               sx={{ position: 'absolute', top: 8, right: 8 }}
             />

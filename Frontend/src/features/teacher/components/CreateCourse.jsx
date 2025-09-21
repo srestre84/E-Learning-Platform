@@ -21,8 +21,13 @@ import {
   XMarkIcon,
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
+import { Eye, Play } from 'lucide-react';
 import { useYoutubePlayer } from "@/shared/hooks/useYoutubePlayer";
 import { YoutubePlayer } from "@/shared/hooks/useYoutubePlayer";
+import CoursePreview from "./CoursePreview";
+import TeacherVideoViewer from "./TeacherVideoViewer";
+import VideoLinkButton from "@/shared/components/VideoLinkButton";
+import { CATEGORIES, COURSE_LEVELS, getCategoryMapping, getCategoryIdFromMapping, getSubcategoryIdFromMapping } from "@/services/categoryService";
 
 const CreateCourse = ({ isEditing = false }) => {
   const navigate = useNavigate();
@@ -33,12 +38,15 @@ const CreateCourse = ({ isEditing = false }) => {
   const [activePlayerId, setActivePlayerId] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [activeModule, setActiveModule] = useState(false);
+  const [showCoursePreview, setShowCoursePreview] = useState(false);
+  const [showVideoViewer, setShowVideoViewer] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     shortDescription: "",
     category: "",
+    subcategory: "",
     price: 0.0,
     level: "beginner",
     thumbnailUrl: null,
@@ -75,6 +83,9 @@ const CreateCourse = ({ isEditing = false }) => {
         const courseData = await getCourseById(id);
         setFormData({
           ...courseData,
+          // Mapear categorías del backend al frontend
+          category: getCategoryIdFromMapping(courseData.categoryId),
+          subcategory: getSubcategoryIdFromMapping(courseData.categoryId, courseData.subcategoryId),
           // Asegurar que los módulos y lecciones tengan los campos requeridos
           modules:
             courseData.modules?.map((module) => ({
@@ -82,7 +93,10 @@ const CreateCourse = ({ isEditing = false }) => {
               lessons:
                 module.lessons?.map((lesson) => ({
                   ...lesson,
-                  youtubeUrls: lesson.youtubeUrls || [],
+                  // Mapear youtubeUrl del backend a la estructura del frontend
+                  video: lesson.youtubeUrl ? { url: lesson.youtubeUrl, duration: lesson.durationSeconds } : null,
+                  youtubeUrls: lesson.youtubeUrl ? [lesson.youtubeUrl] : [],
+                  duration: lesson.durationSeconds || 0,
                   resources: lesson.resources || [],
                   completed: false,
                 })) || [],
@@ -151,9 +165,11 @@ const CreateCourse = ({ isEditing = false }) => {
       const youtubeUrls = [];
       formData.modules.forEach((module) => {
         module.lessons.forEach((lesson) => {
-          if (lesson.youtubeUrl && lesson.youtubeUrl.trim()) {
+          // Verificar tanto youtubeUrl como video.url para compatibilidad
+          const videoUrl = lesson.youtubeUrl || lesson.video?.url;
+          if (videoUrl && videoUrl.trim()) {
             // Limpiar URL de YouTube para que coincida con el regex del backend
-            let cleanUrl = lesson.youtubeUrl.trim();
+            let cleanUrl = videoUrl.trim();
 
             // Si contiene parámetros adicionales, extraer solo el ID del video
             const youtubeMatch = cleanUrl.match(
@@ -163,7 +179,7 @@ const CreateCourse = ({ isEditing = false }) => {
               cleanUrl = `https://www.youtube.com/watch?v=${youtubeMatch[1]}`;
             }
 
-            console.log("URL original:", lesson.youtubeUrl);
+            console.log("URL original:", videoUrl);
             console.log("URL limpia:", cleanUrl);
             youtubeUrls.push(cleanUrl);
           }
@@ -173,20 +189,8 @@ const CreateCourse = ({ isEditing = false }) => {
       // Calcular horas estimadas basándose en el número de videos
       const estimatedHours = Math.max(1, Math.ceil(youtubeUrls.length * 0.5)); // 30 min por video como estimación
 
-      // Mapeo de categorías
-      const categoryMap = {
-        programming: { categoryId: 1, subcategoryId: 1 },
-        design: { categoryId: 2, subcategoryId: 2 },
-        business: { categoryId: 3, subcategoryId: 3 },
-        marketing: { categoryId: 4, subcategoryId: 4 },
-        photography: { categoryId: 5, subcategoryId: 5 },
-        music: { categoryId: 6, subcategoryId: 6 },
-      };
-
-      const selectedCategory = categoryMap[formData.category] || {
-        categoryId: 1,
-        subcategoryId: 1,
-      };
+      // Mapeo de categorías usando el servicio
+      const categoryMapping = getCategoryMapping(formData.category, formData.subcategory);
 
       // Subir imagen si hay archivo nuevo
       let thumbnailUrl = formData.thumbnailUrl;
@@ -203,8 +207,8 @@ const CreateCourse = ({ isEditing = false }) => {
             ? formData.description.substring(0, 252) + "..."
             : formData.description,
         instructorId: user?.id || 1, // Usar ID del usuario autenticado
-        categoryId: selectedCategory.categoryId,
-        subcategoryId: selectedCategory.subcategoryId,
+        categoryId: categoryMapping.categoryId,
+        subcategoryId: categoryMapping.subcategoryId,
         youtubeUrls: youtubeUrls.length > 0 ? youtubeUrls : [], // Asegurar que sea un array
         thumbnailUrl, // Solo la URL pública
         price: parseFloat(formData.price) || 0.0, // Asegurar que sea número decimal
@@ -212,6 +216,24 @@ const CreateCourse = ({ isEditing = false }) => {
         isPublished: false, // Por defecto como borrador
         isActive: true,
         estimatedHours: estimatedHours || 1, // Valor por defecto si no se especifica
+        modules: formData.modules.map((module, moduleIndex) => ({
+          id: module.id,
+          title: module.title,
+          description: module.description || "",
+          orderIndex: moduleIndex + 1,
+          isActive: true,
+          lessons: module.lessons.map((lesson, lessonIndex) => ({
+            id: lesson.id,
+            title: lesson.title,
+            description: lesson.description || "",
+            type: lesson.type || "video",
+            youtubeUrl: lesson.video?.url || lesson.youtubeUrls?.[0] || "",
+            content: lesson.content || "",
+            orderIndex: lessonIndex + 1,
+            durationSeconds: lesson.video?.duration || lesson.duration || 0,
+            isActive: true,
+          })),
+        })),
       };
 
       console.log("=== DATOS DE VALIDACIÓN ===");
@@ -747,8 +769,8 @@ const CreateCourse = ({ isEditing = false }) => {
             </div>
 
             <div className="space-y-6">
-              {/* Categoría y Nivel */}
-              <div className="grid grid-cols-1 gap-6">
+              {/* Categoría y Subcategoría */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label
                     htmlFor="category"
@@ -761,16 +783,51 @@ const CreateCourse = ({ isEditing = false }) => {
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     value={formData.category}
-                    onChange={handleChange}>
+                    onChange={(e) => {
+                      const newCategory = e.target.value;
+                      setFormData(prev => ({
+                        ...prev,
+                        category: newCategory,
+                        subcategory: "" // Reset subcategoría al cambiar categoría
+                      }));
+                    }}>
                     <option value="">Selecciona una categoría</option>
-                    <option value="programming">💻 Programación</option>
-                    <option value="design">🎨 Diseño</option>
-                    <option value="business">💼 Negocios</option>
-                    <option value="marketing">📈 Marketing</option>
-                    <option value="photography">📸 Fotografía</option>
-                    <option value="music">🎵 Música</option>
+                    {CATEGORIES.map(category => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
+
+                <div>
+                  <label
+                    htmlFor="subcategory"
+                    className="block text-sm font-medium text-gray-700 mb-2">
+                    Subcategoría *
+                  </label>
+                  <select
+                    id="subcategory"
+                    name="subcategory"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    value={formData.subcategory}
+                    onChange={handleChange}
+                    disabled={!formData.category}>
+                    <option value="">Selecciona una subcategoría</option>
+                    {formData.category && CATEGORIES
+                      .find(cat => cat.id === formData.category)
+                      ?.subcategories.map(subcategory => (
+                        <option key={subcategory.id} value={subcategory.id}>
+                          {subcategory.name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Nivel */}
+              <div className="grid grid-cols-1 gap-6">
 
                 <div>
                   <label
@@ -784,10 +841,15 @@ const CreateCourse = ({ isEditing = false }) => {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     value={formData.level}
                     onChange={handleChange}>
-                    <option value="beginner">🟢 Principiante</option>
-                    <option value="intermediate">🟡 Intermedio</option>
-                    <option value="advanced">🔴 Avanzado</option>
+                    {COURSE_LEVELS.map(level => (
+                      <option key={level.id} value={level.id}>
+                        {level.name}
+                      </option>
+                    ))}
                   </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {COURSE_LEVELS.find(level => level.id === formData.level)?.description}
+                  </p>
                 </div>
 
                 <div>
@@ -825,7 +887,7 @@ const CreateCourse = ({ isEditing = false }) => {
                 !formData.title ||
                 !formData.description ||
                 formData.description.length < 200 ||
-                !formData.category
+                !formData.category || !formData.subcategory
               }
               className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">
               Continuar al Paso 2
@@ -895,12 +957,103 @@ const CreateCourse = ({ isEditing = false }) => {
 
             {/* Editor del módulo activo */}
             <div className="lg:col-span-2">
-              {formData.modules[activeModule] && (
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Título del módulo
-                    </label>
+             {/* Botones de vista previa */}
+             <div className="mb-4 flex justify-between items-center">
+               <h3 className="text-lg font-medium text-gray-900">
+                 Editor de Módulos
+               </h3>
+               <div className="flex space-x-2">
+                 <button
+                   type="button"
+                   onClick={() => setShowCoursePreview(!showCoursePreview)}
+                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                 >
+                   <Eye className="h-4 w-4 mr-2" />
+                   {showCoursePreview ? 'Ocultar Vista Previa' : 'Ver Vista Previa'}
+                 </button>
+                 {formData.id && (
+                   <button
+                     type="button"
+                     onClick={() => setShowVideoViewer(!showVideoViewer)}
+                     className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                   >
+                     <Play className="h-4 w-4 mr-2" />
+                     {showVideoViewer ? 'Ocultar Videos' : 'Ver Videos'}
+                   </button>
+                 )}
+               </div>
+             </div>
+
+              {showCoursePreview ? (
+                <CoursePreview 
+                  course={formData} 
+                  isDraft={!formData.isPublished}
+                />
+              ) : showVideoViewer ? (
+                <TeacherVideoViewer
+                  courseId={formData.id}
+                  courseTitle={formData.title}
+                  isDraft={!formData.isPublished}
+                />
+              ) : (
+                <>
+                  <div className="space-y-6">
+                    {/* Lista de Módulos */}
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4">Módulos del Curso</h3>
+                      <div className="space-y-3">
+                        {formData.modules.map((module, index) => (
+                          <div key={module.id} className="bg-white rounded-lg border border-gray-200 p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <h4 className="font-medium text-gray-900">{module.title}</h4>
+                                <p className="text-sm text-gray-500">
+                                  {module.lessons?.length || 0} lecciones
+                                </p>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setActiveModule(index)}
+                                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                >
+                                  Editar
+                                </button>
+                                {formData.modules.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => removeModule(index)}
+                                    className="text-red-600 hover:text-red-800 text-sm font-medium"
+                                  >
+                                    Eliminar
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={addModule}
+                        className="mt-4 w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-gray-600 hover:border-gray-400 hover:text-gray-800 transition-colors"
+                      >
+                        <PlusIcon className="w-5 h-5 mx-auto mb-2" />
+                        Agregar Módulo
+                      </button>
+                    </div>
+
+                    {/* Editor de Módulo Activo */}
+                    {formData.modules[activeModule] && (
+                      <div className="bg-white rounded-lg border border-gray-200 p-6">
+                        <h3 className="text-lg font-medium text-gray-900 mb-4">
+                          Editando: {formData.modules[activeModule].title}
+                        </h3>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Título del módulo
+                            </label>
                     <input
                       type="text"
                       value={formData.modules[activeModule].title}
@@ -984,55 +1137,71 @@ const CreateCourse = ({ isEditing = false }) => {
                               </button>
                             </div>
                             {lesson.type === "video" && (
-                              <div>
-                                {lesson.video?.url ? (
-                                  <div className="space-y-4">
-                                    {isYoutubeUrl(lesson.video.url) ? (
-                                      <div className="aspect-video relative rounded-lg overflow-hidden shadow-lg">
-                                        <div className="relative w-full h-full">
-                                          <div className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center">
-                                            <div className="text-center p-4">
-                                              <p className="text-gray-500">
-                                                Cargando video...
-                                              </p>
-                                            </div>
-                                          </div>
-                                          <div
-                                            className="w-full h-full relative"
-                                            style={{
-                                              paddingBottom:
-                                                "56.25%" /* 16:9 Aspect Ratio */,
-                                              height: 0,
-                                              overflow: "hidden",
-                                            }}>
-                                            <div
-                                              id={`youtube-player-${lesson.id}`}
-                                              className="w-full h-full absolute inset-0"
-                                              onMouseEnter={() =>
-                                                setActivePlayerId(lesson.id)
-                                              }>
-                                              {activePlayerId === lesson.id && (
-                                                <YoutubePlayer
-                                                  videoId={extractVideoId(
-                                                    lesson.video.url
-                                                  )}
-                                                  containerId={`youtube-player-${lesson.id}`}
-                                                />
-                                              )}
-                                            </div>
-                                            <div
-                                              className="absolute inset-0 pointer-events-none"
-                                              style={{
-                                                boxShadow:
-                                                  "inset 0 0 0 1px rgba(0,0,0,0.1)",
-                                                borderRadius: "0.5rem",
-                                                zIndex: 1,
-                                              }}></div>
-                                          </div>
+                              <div className="space-y-4">
+                                {/* Campo de URL de YouTube */}
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    URL de YouTube
+                                  </label>
+                                  <div className="flex space-x-2">
+                                    <input
+                                      type="url"
+                                      value={lesson.video?.url || lesson.youtubeUrls?.[0] || ""}
+                                      onChange={(e) => handleVideoUrlChange(e, activeModule, lessonIndex)}
+                                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                      placeholder="https://www.youtube.com/watch?v=..."
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => setShowVideoViewer(true)}
+                                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    >
+                                      <Eye className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Vista previa del video */}
+                                {lesson.video?.url && isYoutubeUrl(lesson.video.url) && (
+                                  <div className="aspect-video relative rounded-lg overflow-hidden shadow-lg">
+                                    <div className="relative w-full h-full">
+                                      <div className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center">
+                                        <div className="text-center p-4">
+                                          <p className="text-gray-500">
+                                            Vista previa del video
+                                          </p>
                                         </div>
-                                        <style
-                                          dangerouslySetInnerHTML={{
-                                            __html: `
+                                      </div>
+                                      <div
+                                        className="w-full h-full relative"
+                                        style={{
+                                          paddingBottom: "56.25%" /* 16:9 Aspect Ratio */,
+                                          height: 0,
+                                          overflow: "hidden",
+                                        }}>
+                                        <div
+                                          id={`youtube-player-${lesson.id}`}
+                                          className="w-full h-full absolute inset-0"
+                                          onMouseEnter={() => setActivePlayerId(lesson.id)}>
+                                          {activePlayerId === lesson.id && (
+                                            <YoutubePlayer
+                                              videoId={extractVideoId(lesson.video.url)}
+                                              containerId={`youtube-player-${lesson.id}`}
+                                            />
+                                          )}
+                                        </div>
+                                        <div
+                                          className="absolute inset-0 pointer-events-none"
+                                          style={{
+                                            boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.1)",
+                                            borderRadius: "0.5rem",
+                                            zIndex: 1,
+                                          }}></div>
+                                      </div>
+                                      
+                                      <style
+                                        dangerouslySetInnerHTML={{
+                                          __html: `
                                         /* Reset de estilos del reproductor */
                                         [id^="youtube-player-"] {
                                           position: absolute;
@@ -1106,10 +1275,10 @@ const CreateCourse = ({ isEditing = false }) => {
                                           padding: 0 !important;
                                         }
                                       `,
-                                          }}
-                                        />
-                                      </div>
-                                    ) : (
+                                        }}
+                                      />
+                                    </div>
+                                  ) : (
                                       <video
                                         src={lesson.video.url}
                                         controls
@@ -1157,27 +1326,7 @@ const CreateCourse = ({ isEditing = false }) => {
                                       </div>
                                     </div>
                                   </div>
-                                ) : (
-                                  <div className="space-y-2">
-                                    <input
-                                      type="url"
-                                      value={lesson.video?.url || ""}
-                                      onChange={(e) =>
-                                        handleVideoUrlChange(
-                                          e,
-                                          activeModule,
-                                          lessonIndex
-                                        )
-                                      }
-                                      placeholder="Pega la URL del video (YouTube, Vimeo, etc.)"
-                                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                                    />
-                                    <p className="text-xs text-gray-500">
-                                      Soporta YouTube, Vimeo, y otros servicios
-                                      de video
-                                    </p>
-                                  </div>
-                                )}
+                                </div>
                               </div>
                             )}
                           </div>
@@ -1187,10 +1336,9 @@ const CreateCourse = ({ isEditing = false }) => {
                   </div>
                 </div>
               )}
-            </div>
-          </div>
+              </>
 
-          <div className="flex justify-between mt-8">
+              <div className="flex justify-between mt-8">
             <button
               type="button"
               onClick={() => setCurrentStep(1)}
@@ -1231,7 +1379,17 @@ const CreateCourse = ({ isEditing = false }) => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Categoría:</span>
-                    <span className="font-medium">{formData.category}</span>
+                    <span className="font-medium">
+                      {CATEGORIES.find(cat => cat.id === formData.category)?.name || formData.category}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Subcategoría:</span>
+                    <span className="font-medium">
+                      {formData.category && CATEGORIES
+                        .find(cat => cat.id === formData.category)
+                        ?.subcategories.find(sub => sub.id === formData.subcategory)?.name || formData.subcategory}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Nivel:</span>

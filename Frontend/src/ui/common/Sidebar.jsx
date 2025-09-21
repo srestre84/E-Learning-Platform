@@ -27,12 +27,13 @@ import {
 } from "lucide-react";
 import { Button } from "@mui/material";
 import { cn } from "@/lib/utils";
-import { Logout } from "@mui/icons-material";
+import { LogOut } from "lucide-react";
 //import path from "path";
 
 // --- Definición de Links por Rol ---
 const getApprenticeLinks = () => [
   { path: "/dashboard", icon: Home, label: "Panel" },
+  { path: "/cursos", icon: BookOpen, label: "Explorar Cursos" },
   {
     path: "/mis-cursos",
     icon: BookOpen,
@@ -452,7 +453,7 @@ const confirmLogout = async () => {
                   isCollapsed ? "px-3" : ""
                 )}
                 title={isCollapsed ? "Cerrar sesión" : ""}>
-                <Logout className={cn("w-4 h-4 transition-all duration-300 group-hover:animate-pulse", isCollapsed ? "" : "mr-2")} />
+                <LogOut className={cn("w-4 h-4 transition-all duration-300 group-hover:animate-pulse", isCollapsed ? "" : "mr-2")} />
                 {!isCollapsed && (
                   <span className="transition-all duration-300 group-hover:font-semibold">
                     Cerrar sesión
@@ -471,7 +472,7 @@ const confirmLogout = async () => {
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex items-center mb-4">
               <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
-                <Logout className="w-5 h-5 text-red-600" />
+                <LogOut className="w-5 h-5 text-red-600" />
               </div>
               <h3 className="text-lg font-medium text-gray-900">
                 Cerrar sesión

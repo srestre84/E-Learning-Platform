@@ -14,7 +14,6 @@ import {
   GraduationCap,
   User,
 } from "lucide-react";
-// import { duration } from "@mui/material";
 
 export default function LoginForm() {
   const navigate = useNavigate();
@@ -296,12 +295,12 @@ export default function LoginForm() {
             <div className="flex items-center gap-2 mb-2">
               <Shield className="h-4 w-4 text-red-500" />
               <span className="text-xs font-medium text-gray-700">
-                Administrador
+                Admin
               </span>
               <button
                 type="button"
                 onClick={() =>
-                  fillCredentials("admin2@admin.com", "Password123")
+                  fillCredentials("admin@test.com", "Password123")
                 }
                 className="ml-auto text-xs bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors">
                 Usar
@@ -311,12 +310,12 @@ export default function LoginForm() {
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-600 w-12">Email:</span>
                 <code className="text-xs bg-gray-100 px-2 py-1 rounded flex-1">
-                  admin2@admin.com
+                  admin@test.com
                 </code>
                 <button
                   type="button"
                   onClick={() =>
-                    copyToClipboard("admin2@admin.com", "email", "admin")
+                    copyToClipboard("admin@test.com", "email", "admin")
                   }
                   className="p-1 hover:bg-gray-200 rounded transition-colors">
                   {copiedItems["admin-email"] ? (
@@ -352,12 +351,12 @@ export default function LoginForm() {
             <div className="flex items-center gap-2 mb-2">
               <GraduationCap className="h-4 w-4 text-purple-500" />
               <span className="text-xs font-medium text-gray-700">
-                Instructor
+                Instructor (Test)
               </span>
               <button
                 type="button"
                 onClick={() =>
-                  fillCredentials("test.instructor@test.com", "Password123")
+                  fillCredentials("instructor@test.com", "Password123")
                 }
                 className="ml-auto text-xs bg-purple-500 text-white px-2 py-1 rounded hover:bg-purple-600 transition-colors">
                 Usar
@@ -367,13 +366,13 @@ export default function LoginForm() {
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-600 w-12">Email:</span>
                 <code className="text-xs bg-gray-100 px-2 py-1 rounded flex-1">
-                  test.instructor@test.com
+                  instructor@test.com
                 </code>
                 <button
                   type="button"
                   onClick={() =>
                     copyToClipboard(
-                      "test.instructor@test.com",
+                      "instructor@test.com",
                       "email",
                       "instructor"
                     )
@@ -412,7 +411,7 @@ export default function LoginForm() {
             <div className="flex items-center gap-2 mb-2">
               <User className="h-4 w-4 text-green-500" />
               <span className="text-xs font-medium text-gray-700">
-                Estudiante
+                Estudiante (Test)
               </span>
               <button
                 type="button"

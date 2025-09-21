@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.Dev_learning_Platform.Dev_learning_Platform.dtos.CourseCreateDto;
 import com.Dev_learning_Platform.Dev_learning_Platform.dtos.CoursePublicDto;
+import com.Dev_learning_Platform.Dev_learning_Platform.dtos.CourseDetailDto;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Course;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.User;
 import com.Dev_learning_Platform.Dev_learning_Platform.services.CourseService;
@@ -117,15 +118,17 @@ public class CourseController {
             dto.setIsPublished(course.getIsPublished());
             dto.setIsActive(course.getIsActive());
             dto.setEstimatedHours(course.getEstimatedHours());
+            dto.setLevel(course.getLevel());
             return dto;
         });
         return ResponseEntity.ok(dtoPage);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Course> getCourseById(@PathVariable Long id) {
-        Course course = courseService.findById(id);
-        return ResponseEntity.ok(course);
+    public ResponseEntity<CourseDetailDto> getCourseById(@PathVariable Long id) {
+        Course course = courseService.findByIdWithModules(id);
+        CourseDetailDto courseDto = CourseDetailDto.fromCourse(course);
+        return ResponseEntity.ok(courseDto);
     }
 
     @GetMapping("/instructor/{instructorId}")
@@ -145,6 +148,7 @@ public class CourseController {
             dto.setIsPublished(course.getIsPublished());
             dto.setIsActive(course.getIsActive());
             dto.setEstimatedHours(course.getEstimatedHours());
+            dto.setLevel(course.getLevel());
             return dto;
     }).toList();
     return ResponseEntity.ok(dtos);
@@ -152,9 +156,24 @@ public class CourseController {
 
     @GetMapping("/admin/active")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Course>> getAllActiveCourses() {
+    public ResponseEntity<List<CoursePublicDto>> getAllActiveCourses() {
         List<Course> courses = courseService.getAllActiveCourses();
-        return ResponseEntity.ok(courses);
+        List<CoursePublicDto> dtos = courses.stream().map(course -> {
+            CoursePublicDto dto = new CoursePublicDto();
+            dto.setId(course.getId());
+            dto.setTitle(course.getTitle());
+            dto.setDescription(course.getDescription());
+            dto.setShortDescription(course.getShortDescription());
+            dto.setThumbnailUrl(course.getThumbnailUrl());
+            dto.setPrice(course.getPrice());
+            dto.setIsPremium(course.getIsPremium());
+            dto.setIsPublished(course.getIsPublished());
+            dto.setIsActive(course.getIsActive());
+            dto.setEstimatedHours(course.getEstimatedHours());
+            dto.setLevel(course.getLevel());
+            return dto;
+        }).toList();
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/category/{categoryId}")
@@ -188,6 +207,33 @@ public class CourseController {
         try {
             List<Course> courses = courseService.getCoursesByCategoryAndSubcategory(categoryId, subcategoryId);
             return ResponseEntity.ok(courses);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/level/{level}")
+    public ResponseEntity<List<CoursePublicDto>> getCoursesByLevel(@PathVariable String level) {
+        try {
+            List<Course> courses = courseService.getCoursesByLevel(level);
+            List<CoursePublicDto> dtos = courses.stream().map(course -> {
+                CoursePublicDto dto = new CoursePublicDto();
+                dto.setId(course.getId());
+                dto.setTitle(course.getTitle());
+                dto.setDescription(course.getDescription());
+                dto.setShortDescription(course.getShortDescription());
+                dto.setThumbnailUrl(course.getThumbnailUrl());
+                dto.setPrice(course.getPrice());
+                dto.setIsPremium(course.getIsPremium());
+                dto.setIsPublished(course.getIsPublished());
+                dto.setIsActive(course.getIsActive());
+                dto.setEstimatedHours(course.getEstimatedHours());
+                dto.setLevel(course.getLevel());
+                return dto;
+            }).toList();
+            return ResponseEntity.ok(dtos);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {

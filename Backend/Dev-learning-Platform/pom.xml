@@ -55,9 +55,24 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        
+        <!-- Flyway para migraciones de base de datos -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-mysql</artifactId>
         </dependency>
         
         <!-- JWT con versión actualizada -->
@@ -79,12 +94,14 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- OCI Object Storage -->
+        <!-- OCI Object Storage - REMOVIDO para despliegue estándar -->
+        <!-- 
         <dependency>
             <groupId>com.oracle.oci.sdk</groupId>
             <artifactId>oci-java-sdk-objectstorage</artifactId>
             <scope>provided</scope>
         </dependency>
+        -->
         
         <!-- Jersey Client compatible con Jakarta -->
         <dependency>

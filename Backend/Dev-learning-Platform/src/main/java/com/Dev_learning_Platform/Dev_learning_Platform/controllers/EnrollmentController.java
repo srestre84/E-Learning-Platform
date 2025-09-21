@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Enrollment;
 import com.Dev_learning_Platform.Dev_learning_Platform.models.Enrollment.EnrollmentStatus;
 import com.Dev_learning_Platform.Dev_learning_Platform.services.EnrollmentService;
+import com.Dev_learning_Platform.Dev_learning_Platform.dtos.EnrollmentWithCourseDto;
 
 
 @RestController
@@ -52,11 +53,14 @@ public class EnrollmentController {
 
     @GetMapping("/my-courses")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<List<Enrollment>> getMyEnrollments(Authentication authentication) {
+    public ResponseEntity<List<EnrollmentWithCourseDto>> getMyEnrollments(Authentication authentication) {
         try {
             Long studentId = getCurrentUserId(authentication);
             List<Enrollment> enrollments = enrollmentService.getActiveStudentEnrollments(studentId);
-            return ResponseEntity.ok(enrollments);
+            List<EnrollmentWithCourseDto> enrollmentDtos = enrollments.stream()
+                .map(EnrollmentWithCourseDto::fromEnrollment)
+                .collect(java.util.stream.Collectors.toList());
+            return ResponseEntity.ok(enrollmentDtos);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -64,11 +68,14 @@ public class EnrollmentController {
 
     @GetMapping("/my-courses/all")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<List<Enrollment>> getAllMyEnrollments(Authentication authentication) {
+    public ResponseEntity<List<EnrollmentWithCourseDto>> getAllMyEnrollments(Authentication authentication) {
         try {
             Long studentId = getCurrentUserId(authentication);
             List<Enrollment> enrollments = enrollmentService.getStudentEnrollments(studentId);
-            return ResponseEntity.ok(enrollments);
+            List<EnrollmentWithCourseDto> enrollmentDtos = enrollments.stream()
+                .map(EnrollmentWithCourseDto::fromEnrollment)
+                .collect(java.util.stream.Collectors.toList());
+            return ResponseEntity.ok(enrollmentDtos);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -76,13 +83,16 @@ public class EnrollmentController {
 
     @GetMapping("/my-courses/completed")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<List<Enrollment>> getMyCompletedEnrollments(
+    public ResponseEntity<List<EnrollmentWithCourseDto>> getMyCompletedEnrollments(
             Authentication authentication) {
         try {
             Long studentId = getCurrentUserId(authentication);
             List<Enrollment> enrollments =
                     enrollmentService.getCompletedStudentEnrollments(studentId);
-            return ResponseEntity.ok(enrollments);
+            List<EnrollmentWithCourseDto> enrollmentDtos = enrollments.stream()
+                .map(EnrollmentWithCourseDto::fromEnrollment)
+                .collect(java.util.stream.Collectors.toList());
+            return ResponseEntity.ok(enrollmentDtos);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

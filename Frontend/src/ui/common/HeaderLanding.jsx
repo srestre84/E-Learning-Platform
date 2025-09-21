@@ -1,11 +1,52 @@
-import { Menu, X } from "lucide-react";
-import { useState } from "react";
-import React from "react";
-import { Link, Links } from "react-router-dom";
+import React, { useState } from "react";
+import { Menu, X, LogOut } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/useAuth";
+import { toast } from "sonner";
 import logo from '@/assets/logo.svg';
+import { useScrollToSection } from '@/shared/hooks/useScrollToSection';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { scrollToSection } = useScrollToSection();
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      toast.loading("Cerrando sesión...", {
+        id: "logout-loading",
+        duration: 0,
+      });
+
+      await logout({ redirect: false });
+      
+      toast.dismiss("logout-loading");
+      toast.success("Sesión cerrada exitosamente", {
+        duration: 2000,
+        position: "top-center",
+      });
+
+      // Recargar la página para actualizar el estado
+      window.location.reload();
+      
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+      toast.dismiss("logout-loading");
+      toast.error("Error al cerrar sesión", {
+        description: "Por favor, intenta nuevamente",
+        duration: 3000,
+        position: "top-center",
+      });
+    }
+  };
+
+  const getUserDisplayName = () => {
+    if (!user) return "Usuario";
+    if (user.firstName && user.lastName)
+      return `${user.firstName} ${user.lastName}`;
+    if (user.name) return user.name;
+    return user.email || "Usuario";
+  };
 
   return (
     <header
@@ -34,54 +75,54 @@ export default function Header() {
               >
               Cursos
               </Link>
-            <a
-              href="#precios"
+            <Link
+              to="/precios"
               className="text-gray-700 hover:text-red-500 font-medium transition-colors"
-              onClick={(e) => {
-                e.preventDefault();
-                const element = document.getElementById("precios");
-                if (element) {
-                  element.scrollIntoView({ behavior: "smooth" });
-                }
-              }}
-              >
+            >
               Precios
-            </a>
+            </Link>
             <a
               href="#instructores"
-              className="text-gray-700 hover:text-red-500 font-medium transition-colors"
+              className="text-gray-700 hover:text-red-500 font-medium transition-colors cursor-pointer"
               onClick={(e) => {
                 e.preventDefault();
-                const element = document.getElementById("instructores");
-                if (element) {
-                  element.scrollIntoView({ behavior: "smooth" });
-                }
+                scrollToSection("instructores");
                 setIsMenuOpen(false);
               }}
-
-              >
+            >
               Instructores
             </a>
             <div className="flex items-center space-x-4">
               <a
                 href="#testimonios"
-                className="text-gray-700 hover:text-red-500 font-medium transition-colors"
+                className="text-gray-700 hover:text-red-500 font-medium transition-colors cursor-pointer"
                 onClick={(e) => {
                   e.preventDefault();
-                  const element = document.getElementById("testimonios");
-                  if (element) {
-                    element.scrollIntoView({ behavior: "smooth" });
-                  }
+                  scrollToSection("testimonios");
                   setIsMenuOpen(false);
                 }}
-                >
+              >
                 Testimonios
               </a>
-              <Link
-                to="/authentication"
-                className="bg-red-500 text-white px-6 py-2.5 rounded-lg hover:bg-red-600 transition-colors font-semibold shadow-lg hover:shadow-xl">
-                Empezar ahora
-              </Link>
+              {isAuthenticated ? (
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-gray-700 font-medium">
+                    ¡Hola, {getUserDisplayName()}!
+                  </span>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium">
+                    <LogOut className="w-4 h-4" />
+                    <span>Cerrar sesión</span>
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/authentication"
+                  className="bg-red-500 text-white px-6 py-2.5 rounded-lg hover:bg-red-600 transition-colors font-semibold shadow-lg hover:shadow-xl">
+                  Empezar ahora
+                </Link>
+              )}
             </div>
           </div>
           
@@ -120,37 +161,50 @@ export default function Header() {
               </a>
               <a
                 href="#instructores"
-                className="block px-3 py-2 text-gray-700 font-medium"
+                className="block px-3 py-2 text-gray-700 font-medium cursor-pointer"
                 onClick={(e) => {
                   e.preventDefault();
-                  const element = document.getElementById("instructores");
-                  if (element) {
-                    element.scrollIntoView({ behavior: "smooth" });
-                  }
+                  scrollToSection("instructores");
                   setIsMenuOpen(false);
                 }}
-                >
+              >
                 Instructores
               </a>
               <div className="px-3 py-2 space-y-2">
                 <a
                   href="#testimonios"
-                  className="block text-gray-700 font-medium"
+                  className="block text-gray-700 font-medium cursor-pointer"
                   onClick={(e) => {
                     e.preventDefault();
-                    const element = document.getElementById("testimonios");
-                    if (element) {
-                      element.scrollIntoView({ behavior: "smooth" });
-                    }
+                    scrollToSection("testimonios");
                     setIsMenuOpen(false);
                   }}>
                   Testimonios
                 </a>
-                <Link
-                  to="authentication"
-                  className="block bg-red-500 text-white px-2 py-1 cursor-pointer rounded-lg text-center font-semibold">
-                  Empezar ahora
-                </Link>
+                {isAuthenticated ? (
+                  <div className="space-y-2">
+                    <div className="px-3 py-2 text-sm text-gray-700 font-medium">
+                      ¡Hola, {getUserDisplayName()}!
+                    </div>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      className="block w-full bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-center font-medium hover:bg-gray-200 transition-colors">
+                      <div className="flex items-center justify-center space-x-2">
+                        <LogOut className="w-4 h-4" />
+                        <span>Cerrar sesión</span>
+                      </div>
+                    </button>
+                  </div>
+                ) : (
+                  <Link
+                    to="authentication"
+                    className="block bg-red-500 text-white px-2 py-1 cursor-pointer rounded-lg text-center font-semibold">
+                    Empezar ahora
+                  </Link>
+                )}
               </div>
             </div>
           </div>

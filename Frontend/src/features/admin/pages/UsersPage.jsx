@@ -29,17 +29,17 @@ import {
 import {
   Search,
   Edit,
-  Delete,
+  Trash2,
   Save,
-  Cancel,
-  FilterList,
-  Clear,
-  ArrowUpward,
-  ArrowDownward,
-  AdminPanelSettings,
-  School,
-  Person,
-} from "@mui/icons-material";
+  X,
+  Filter,
+  XCircle,
+  ArrowUp,
+  ArrowDown,
+  Shield,
+  GraduationCap,
+  User,
+} from "lucide-react";
 import api from "@/services/api";
 import { adminService } from "@/services/adminService";
 
@@ -376,7 +376,7 @@ export default function UsersPage() {
             flexWrap: "wrap",
           }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <FilterList sx={{ color: "error.main" }} />
+            <Filter className="w-5 h-5 text-red-500" />
             <Typography
               variant="subtitle2"
               fontWeight={600}
@@ -423,7 +423,7 @@ export default function UsersPage() {
               variant={roleFilter === "ADMIN" ? "contained" : "outlined"}
               size="small"
               onClick={() => setRoleFilter("ADMIN")}
-              startIcon={<AdminPanelSettings />}
+              startIcon={<Shield />}
               sx={{
                 borderRadius: 2,
                 textTransform: "none",
@@ -450,7 +450,7 @@ export default function UsersPage() {
               variant={roleFilter === "INSTRUCTOR" ? "contained" : "outlined"}
               size="small"
               onClick={() => setRoleFilter("INSTRUCTOR")}
-              startIcon={<School />}
+              startIcon={<GraduationCap />}
               sx={{
                 borderRadius: 2,
                 textTransform: "none",
@@ -477,7 +477,7 @@ export default function UsersPage() {
               variant={roleFilter === "STUDENT" ? "contained" : "outlined"}
               size="small"
               onClick={() => setRoleFilter("STUDENT")}
-              startIcon={<Person />}
+              startIcon={<User />}
               sx={{
                 borderRadius: 2,
                 textTransform: "none",
@@ -506,7 +506,7 @@ export default function UsersPage() {
               variant="text"
               size="small"
               onClick={() => setRoleFilter("ALL")}
-              startIcon={<Clear />}
+              startIcon={<XCircle />}
               sx={{
                 textTransform: "none",
                 color: "text.secondary",
@@ -536,7 +536,7 @@ export default function UsersPage() {
                 <Button
                   variant="outlined"
                   onClick={() => setSearchTerm("")}
-                  startIcon={<Clear />}>
+                  startIcon={<XCircle />}>
                   Limpiar búsqueda
                 </Button>
               )}
@@ -544,7 +544,7 @@ export default function UsersPage() {
                 <Button
                   variant="outlined"
                   onClick={() => setRoleFilter("ALL")}
-                  startIcon={<Clear />}>
+                  startIcon={<XCircle />}>
                   Limpiar filtros
                 </Button>
               )}
@@ -590,9 +590,9 @@ export default function UsersPage() {
                     ID
                     {sortBy === "id" &&
                       (sortOrder === "asc" ? (
-                        <ArrowUpward fontSize="small" />
+                        <ArrowUp className="w-4 h-4" />
                       ) : (
-                        <ArrowDownward fontSize="small" />
+                        <ArrowDown className="w-4 h-4" />
                       ))}
                   </Box>
                 </TableCell>
@@ -609,9 +609,9 @@ export default function UsersPage() {
                     Nombre
                     {sortBy === "userName" &&
                       (sortOrder === "asc" ? (
-                        <ArrowUpward fontSize="small" />
+                        <ArrowUp className="w-4 h-4" />
                       ) : (
-                        <ArrowDownward fontSize="small" />
+                        <ArrowDown className="w-4 h-4" />
                       ))}
                   </Box>
                 </TableCell>
@@ -629,9 +629,9 @@ export default function UsersPage() {
                     Apellido
                     {sortBy === "lastName" &&
                       (sortOrder === "asc" ? (
-                        <ArrowUpward fontSize="small" />
+                        <ArrowUp className="w-4 h-4" />
                       ) : (
-                        <ArrowDownward fontSize="small" />
+                        <ArrowDown className="w-4 h-4" />
                       ))}
                   </Box>
                 </TableCell>
@@ -648,9 +648,9 @@ export default function UsersPage() {
                     Email
                     {sortBy === "email" &&
                       (sortOrder === "asc" ? (
-                        <ArrowUpward fontSize="small" />
+                        <ArrowUp className="w-4 h-4" />
                       ) : (
-                        <ArrowDownward fontSize="small" />
+                        <ArrowDown className="w-4 h-4" />
                       ))}
                   </Box>
                 </TableCell>
@@ -667,9 +667,9 @@ export default function UsersPage() {
                     Rol
                     {sortBy === "role" &&
                       (sortOrder === "asc" ? (
-                        <ArrowUpward fontSize="small" />
+                        <ArrowUp className="w-4 h-4" />
                       ) : (
-                        <ArrowDownward fontSize="small" />
+                        <ArrowDown className="w-4 h-4" />
                       ))}
                   </Box>
                 </TableCell>
@@ -686,9 +686,9 @@ export default function UsersPage() {
                     Estado
                     {sortBy === "active" &&
                       (sortOrder === "asc" ? (
-                        <ArrowUpward fontSize="small" />
+                        <ArrowUp className="w-4 h-4" />
                       ) : (
-                        <ArrowDownward fontSize="small" />
+                        <ArrowDown className="w-4 h-4" />
                       ))}
                   </Box>
                 </TableCell>
@@ -706,9 +706,9 @@ export default function UsersPage() {
                     Fecha de Creación
                     {sortBy === "createdAt" &&
                       (sortOrder === "asc" ? (
-                        <ArrowUpward fontSize="small" />
+                        <ArrowUp className="w-4 h-4" />
                       ) : (
-                        <ArrowDownward fontSize="small" />
+                        <ArrowDown className="w-4 h-4" />
                       ))}
                   </Box>
                 </TableCell>
@@ -837,7 +837,7 @@ export default function UsersPage() {
                       <Button
                         size="small"
                         color="error"
-                        startIcon={<Delete />}
+                        startIcon={<Trash2 />}
                         variant="outlined"
                         onClick={() => handleDeleteUser(user)}
                         sx={{
@@ -1052,7 +1052,7 @@ export default function UsersPage() {
         <DialogActions sx={{ p: 3, bgcolor: "grey.50", gap: 1 }}>
           <Button
             onClick={handleCloseDialogs}
-            startIcon={<Cancel />}
+            startIcon={<X />}
             variant="outlined"
             sx={{
               borderRadius: 2,
@@ -1104,7 +1104,7 @@ export default function UsersPage() {
             py: 2,
           }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Delete sx={{ fontSize: "1.5rem" }} />
+            <Trash2 className="w-6 h-6" />
             Confirmar Eliminación
           </Box>
         </DialogTitle>
@@ -1198,7 +1198,7 @@ export default function UsersPage() {
         <DialogActions sx={{ p: 3, bgcolor: "grey.50", gap: 1 }}>
           <Button
             onClick={handleCloseDialogs}
-            startIcon={<Cancel />}
+            startIcon={<X />}
             variant="outlined"
             sx={{
               borderRadius: 2,

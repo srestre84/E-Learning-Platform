@@ -20,6 +20,8 @@ import {
   generateCoursePlaceholder,
   handleImageError,
 } from "@/utils/imageUtils";
+import { getCourseVideos } from "@/services/courseVideoService";
+import VideoPreview from "@/shared/components/VideoPreview";
 
 export default function CourseList({
   courses,
@@ -33,6 +35,8 @@ export default function CourseList({
   const [paymentError, setPaymentError] = useState("");
   const [unenrollingCourse, setUnenrollingCourse] = useState(null);
   const [showUnenrollConfirm, setShowUnenrollConfirm] = useState(false);
+  const [previewVideo, setPreviewVideo] = useState(null);
+  const [courseVideos, setCourseVideos] = useState({});
   const { user } = useAuth();
 
   // Debug: Ver qué datos están llegando
@@ -159,6 +163,39 @@ export default function CourseList({
     setUnenrollingCourse(null);
   };
 
+  // Función para cargar videos de un curso específico
+  const loadCourseVideos = async (courseId) => {
+    if (courseVideos[courseId]) return courseVideos[courseId];
+    
+    try {
+      const videos = await getCourseVideos(courseId);
+      setCourseVideos(prev => ({ ...prev, [courseId]: videos }));
+      return videos;
+    } catch (error) {
+      console.error('Error al cargar videos del curso:', error);
+      return [];
+    }
+  };
+
+  // Función para mostrar preview de video
+  const handleVideoPreview = async (courseId) => {
+    const videos = await loadCourseVideos(courseId);
+    if (videos && videos.length > 0) {
+      const firstVideo = videos[0];
+      setPreviewVideo({
+        videoUrl: firstVideo.youtubeUrl,
+        thumbnailUrl: firstVideo.thumbnailUrl,
+        title: firstVideo.title,
+        duration: firstVideo.durationSeconds
+      });
+    }
+  };
+
+  // Función para cerrar preview
+  const closeVideoPreview = () => {
+    setPreviewVideo(null);
+  };
+
   // Si no hay cursos, mostrar mensaje
   if (!courses || courses.length === 0) {
     return (
@@ -188,7 +225,7 @@ export default function CourseList({
         <div
           key={course.id}
           className="relative group overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="relative">
+          <div className="relative group/image">
             <img
               src={
                 course.imageUrl ||
@@ -209,6 +246,16 @@ export default function CourseList({
               className="absolute top-3 left-3 bg-white/80 backdrop-blur-sm">
               {course.category || "Sin categoría"}
             </Badge>
+            {/* Botón de preview de video */}
+            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+              <button
+                onClick={() => handleVideoPreview(course.id)}
+                className="bg-white bg-opacity-90 hover:bg-opacity-100 text-gray-800 px-4 py-2 rounded-full flex items-center space-x-2 transition-all duration-200 hover:scale-105"
+              >
+                <Play className="w-4 h-4" />
+                <span className="text-sm font-medium">Vista previa</span>
+              </button>
+            </div>
           </div>
 
           <div className="p-4 space-y-3">
@@ -347,6 +394,18 @@ export default function CourseList({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Video Preview Modal */}
+      {previewVideo && (
+        <VideoPreview
+          videoUrl={previewVideo.videoUrl}
+          thumbnailUrl={previewVideo.thumbnailUrl}
+          title={previewVideo.title}
+          duration={previewVideo.duration}
+          isVisible={!!previewVideo}
+          onClose={closeVideoPreview}
+        />
       )}
     </div>
   );
