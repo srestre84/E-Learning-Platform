@@ -80,6 +80,7 @@ public class Securityconfig {
                 .requestMatchers("/api/courses").permitAll() // Catálogo público
                 .requestMatchers("/api/courses/{id}").permitAll() // Detalle público de curso
                 .requestMatchers("/api/course-videos/course/{courseId}").permitAll() // Videos públicos del curso
+                .requestMatchers("/api/course-videos/course/{courseId}/lessons").permitAll() // Lecciones públicas del curso
 
                 // ✅ Herramientas de desarrollo
                 .requestMatchers("/h2-console/**").permitAll()      // H2 para desarrollo
