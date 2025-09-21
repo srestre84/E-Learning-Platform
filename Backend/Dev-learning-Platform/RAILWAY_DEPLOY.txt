@@ -12,4 +12,4 @@ Configuration Files:
 - nixpacks.toml: Build configuration
 - start.sh: Startup script
 
-Last Updated: 2025-01-21 19:50:00 - Fixed user credentials to match frontend (admin@test.com, instructor@test.com, student@test.com with Password123)
+Last Updated: 2025-01-21 19:55:00 - FORCE REDEPLOY: Fixed user credentials and added modules/lessons (commit 925af28c)
