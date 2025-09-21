@@ -17,7 +17,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.Dev_learning_Platform.Dev_learning_Platform.config.TestConfig;
 import com.Dev_learning_Platform.Dev_learning_Platform.dtos.UserRegisterDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -26,7 +25,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-@Import(TestConfig.class)
 public class UserControllerTest {
 
     @Autowired
