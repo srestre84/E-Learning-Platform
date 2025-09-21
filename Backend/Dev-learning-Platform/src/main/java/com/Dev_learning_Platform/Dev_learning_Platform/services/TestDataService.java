@@ -23,10 +23,10 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Servicio para crear datos iniciales mínimos del sistema
- * Solo se ejecuta en perfiles de desarrollo y test
+ * Se ejecuta en perfiles de desarrollo, test, local y default
  */
 @Service
-@Profile({"dev", "test", "local"})
+@Profile({"dev", "test", "local", "default"})
 @RequiredArgsConstructor
 @Slf4j
 public class TestDataService implements CommandLineRunner {
