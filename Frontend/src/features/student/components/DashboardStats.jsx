@@ -4,13 +4,13 @@ import {
   Award,
   Clock3,
   CheckCircle,
-  BookType,
+  Book,
   Users,
   Target,
 } from "lucide-react";
 
 const iconComponents = {
-  BookType: BookType,
+  BookType: Book,
   CheckCircle: CheckCircle,
   Clock3: Clock3,
   Award: Award,

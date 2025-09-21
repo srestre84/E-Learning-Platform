@@ -7,14 +7,14 @@ import {
   BarChart as BarChartIcon,
   Add as AddIcon,
   Search as SearchIcon,
-  FilterList as FilterListIcon,
-  GridView as GridViewIcon,
-  ViewList as ViewListIcon,
+  Filter as FilterListIcon,
+  Grid as GridViewIcon,
+  List as ViewListIcon,
   Star as StarIcon,
   People as PeopleIcon,
-  AccessTime as AccessTimeIcon,
-  MoreVert as MoreVertIcon,
-  Book as BookIcon
+  Clock as AccessTimeIcon,
+  MoreVertical as MoreVertIcon,
+  BookOpen as BookIcon
 } from 'lucide-react';
 import {
   Box,

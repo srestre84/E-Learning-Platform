@@ -41,7 +41,7 @@ import {
   ArrowDown,
   BookOpen,
   School,
-  AttachMoney,
+  DollarSign,
   People,
 } from "lucide-react";
 import api from "@/services/api";
@@ -672,7 +672,7 @@ export default function CoursesPage() {
                   <TableCell>
                     <Box
                       sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      <AttachMoney
+                      <DollarSign
                         sx={{ fontSize: 16, color: "success.main" }}
                       />
                       <Typography variant="body2" fontWeight={600}>

@@ -25,7 +25,7 @@ import {
   ArrowRight,
   Users,
   Target,
-  BookOpenCheck,
+  BookCheck,
   Calendar,
   Trophy,
   Zap,
@@ -865,7 +865,7 @@ export default function DashboardStudent() {
               <CardHeader className="pb-6">
                 <CardTitle className="text-2xl flex items-center gap-3 text-gray-900">
                   <div className="p-3 bg-red-100 rounded-xl">
-                    <BookOpenCheck className="h-8 w-8 text-red-600" />
+                    <BookCheck className="h-8 w-8 text-red-600" />
                   </div>
                   Mis Cursos
                   {enrolledCourses.length > 0 && (

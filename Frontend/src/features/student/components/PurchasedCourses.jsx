@@ -45,10 +45,10 @@ import {
   Download,
   Share2,
   Heart,
-  MoreVertical,
+  MoreHorizontal,
   Loader2,
   Trophy,
-  Bookmark,
+  BookmarkPlusPlus,
   Eye,
   ChevronDown,
   ArrowUpDown,
@@ -654,7 +654,7 @@ export default function PurchasedCourses() {
                   {isUnenrolling ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <MoreVertical className="w-4 h-4" />
+                    <MoreHorizontal className="w-4 h-4" />
                   )}
                 </Button>
               </DropdownMenuTrigger>
