@@ -34,7 +34,6 @@ import {
   Edit,
   Delete,
   Save,
-  Cancel,
   Filter,
   X,
   ArrowUp,
@@ -926,10 +925,10 @@ export default function CoursesPage() {
         <DialogActions sx={{ p: 3, bgcolor: "grey.50", gap: 1 }}>
           <Button
             onClick={handleCloseDialogs}
-            startIcon={<Cancel />}
+            startIcon={<X />}
             variant="outlined"
             sx={{ borderRadius: 2, px: 3, py: 1 }}>
-            Cancelar
+            Xar
           </Button>
           <Button
             onClick={handleSaveCourse}
@@ -1024,10 +1023,10 @@ export default function CoursesPage() {
         <DialogActions sx={{ p: 3, bgcolor: "grey.50", gap: 1 }}>
           <Button
             onClick={handleCloseDialogs}
-            startIcon={<Cancel />}
+            startIcon={<X />}
             variant="outlined"
             sx={{ borderRadius: 2, px: 3, py: 1 }}>
-            Cancelar
+            Xar
           </Button>
           <Button
             onClick={handleConfirmDelete}
