@@ -15,8 +15,8 @@ RUN mvn dependency:go-offline -B
 # Copiar código fuente
 COPY src ./src
 
-# Construir la aplicación
-RUN mvn clean package -DskipTests
+    # Construir la aplicación
+    RUN mvn clean package -DskipTests -Dmaven.test.skip=true
 
 # Imagen de runtime
 FROM eclipse-temurin:17-jre
