@@ -1,0 +1,14 @@
+# Nixpacks configuration for E-Learning Platform Backend
+# This file forces Railway to use Nixpacks instead of Railpack
+
+[phases.setup]
+nixPkgs = ["maven", "openjdk17"]
+
+[phases.install]
+cmds = ["mvn clean package -DskipTests"]
+
+[phases.build]
+cmds = ["mvn clean package -DskipTests"]
+
+[start]
+cmd = "java -jar target/Dev_learning_Platform-0.0.1-SNAPSHOT.jar"
