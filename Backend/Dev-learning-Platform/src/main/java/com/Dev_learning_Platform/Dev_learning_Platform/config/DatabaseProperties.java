@@ -22,13 +22,22 @@ public class DatabaseProperties {
     public DataSource dataSource() {
         HikariConfig config = new HikariConfig();
         
-        // Convertir postgresql:// a jdbc:postgresql:// con formato correcto
-        String jdbcUrl = convertToJdbcUrl(databaseUrl);
+        // Parsear la URL de Render y extraer componentes por separado
+        DatabaseConnectionInfo connectionInfo = parseDatabaseUrl(databaseUrl);
         
         System.out.println("Original DATABASE_URL: " + databaseUrl);
-        System.out.println("Converted JDBC URL: " + jdbcUrl);
+        System.out.println("Parsed - Host: " + connectionInfo.host);
+        System.out.println("Parsed - Port: " + connectionInfo.port);
+        System.out.println("Parsed - Database: " + connectionInfo.database);
+        System.out.println("Parsed - Username: " + connectionInfo.username);
+        
+        // Construir URL sin credenciales y usar username/password por separado
+        String jdbcUrl = String.format("jdbc:postgresql://%s:%d/%s", 
+            connectionInfo.host, connectionInfo.port, connectionInfo.database);
         
         config.setJdbcUrl(jdbcUrl);
+        config.setUsername(connectionInfo.username);
+        config.setPassword(connectionInfo.password);
         config.setDriverClassName("org.postgresql.Driver");
         config.setMaximumPoolSize(5);
         config.setMinimumIdle(1);
@@ -39,9 +48,9 @@ public class DatabaseProperties {
         return new HikariDataSource(config);
     }
     
-    private String convertToJdbcUrl(String databaseUrl) {
+    private DatabaseConnectionInfo parseDatabaseUrl(String databaseUrl) {
         if (databaseUrl == null || !databaseUrl.startsWith("postgresql://")) {
-            return databaseUrl;
+            throw new IllegalArgumentException("Invalid DATABASE_URL format: " + databaseUrl);
         }
         
         try {
@@ -66,13 +75,30 @@ public class DatabaseProperties {
             String host = hostParts[0];
             String database = hostParts[1];
             
-            // Construir la URL JDBC correcta con puerto por defecto
-            return String.format("jdbc:postgresql://%s:5432/%s?user=%s&password=%s", 
-                host, database, username, password);
+            // Puerto por defecto para PostgreSQL
+            int port = 5432;
+            
+            return new DatabaseConnectionInfo(host, port, database, username, password);
                 
         } catch (Exception e) {
-            // Si hay error en el parsing, usar la conversión simple
-            return "jdbc:" + databaseUrl;
+            throw new IllegalArgumentException("Error parsing DATABASE_URL: " + e.getMessage(), e);
+        }
+    }
+    
+    // Clase interna para almacenar la información de conexión
+    private static class DatabaseConnectionInfo {
+        final String host;
+        final int port;
+        final String database;
+        final String username;
+        final String password;
+        
+        DatabaseConnectionInfo(String host, int port, String database, String username, String password) {
+            this.host = host;
+            this.port = port;
+            this.database = database;
+            this.username = username;
+            this.password = password;
         }
     }
 }
