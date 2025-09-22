@@ -1,6 +1,8 @@
 # Use OpenJDK 17 as base image
 FROM openjdk:17-jdk-slim
 
+# Force rebuild
+
 # Set working directory
 WORKDIR /app
 
