@@ -79,6 +79,7 @@ public class Securityconfig {
                 .requestMatchers("/api/users/register").permitAll() // Registro público  
                 .requestMatchers("/api/courses").permitAll() // Catálogo público
                 .requestMatchers("/api/courses/{id}").permitAll() // Detalle público de curso
+                .requestMatchers("/api/categories").permitAll() // Categorías públicas
                 .requestMatchers("/api/course-videos/course/{courseId}").permitAll() // Videos públicos del curso
                 .requestMatchers("/api/course-videos/course/{courseId}/lessons").permitAll() // Lecciones públicas del curso
 
