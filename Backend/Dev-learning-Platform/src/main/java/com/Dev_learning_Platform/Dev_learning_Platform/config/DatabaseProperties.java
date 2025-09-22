@@ -11,7 +11,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
-public class DatabaseConfig {
+public class DatabaseProperties {
 
     @Value("${DATABASE_URL:}")
     private String databaseUrl;
@@ -24,7 +24,7 @@ public class DatabaseConfig {
         
         // Convertir postgresql:// a jdbc:postgresql://
         String jdbcUrl = databaseUrl;
-        if (databaseUrl.startsWith("postgresql://")) {
+        if (databaseUrl != null && databaseUrl.startsWith("postgresql://")) {
             jdbcUrl = "jdbc:" + databaseUrl;
         }
         
