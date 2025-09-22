@@ -12,4 +12,4 @@ Configuration Files:
 - nixpacks.toml: Build configuration
 - start.sh: Startup script
 
-Last Updated: 2025-01-21 19:55:00 - FORCE REDEPLOY: Fixed user credentials and added modules/lessons (commit 925af28c)
+Last Updated: 2025-01-22 00:50:00 - FIXED: Removed spring.profiles.active from profile-specific files in feature branch
