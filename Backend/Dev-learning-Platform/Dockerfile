@@ -1,55 +1,27 @@
-# Multi-stage build para optimizar el tamaño de la imagen
-FROM maven:3.9.6-eclipse-temurin-17 AS build
+# Use OpenJDK 17 as base image
+FROM openjdk:17-jdk-slim
 
-# Establecer directorio de trabajo
+# Set working directory
 WORKDIR /app
 
-# Copiar archivos de configuración de Maven
-COPY pom.xml .
-COPY mvnw .
-COPY .mvn .mvn
+# Copy Maven wrapper and pom.xml
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
 
-# Descargar dependencias (capa de cache)
-RUN mvn dependency:go-offline -B
+# Make mvnw executable
+RUN chmod +x ./mvnw
 
-# Copiar código fuente
+# Download dependencies
+RUN ./mvnw dependency:go-offline -B
+
+# Copy source code
 COPY src ./src
 
-    # Construir la aplicación
-    RUN mvn clean package -DskipTests -Dmaven.test.skip=true
+# Build the application
+RUN ./mvnw clean package -DskipTests
 
-# Imagen de runtime
-FROM eclipse-temurin:17-jre
-
-# Instalar dependencias del sistema
-RUN apt-get update && apt-get install -y \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Crear usuario no-root
-RUN groupadd -r elearning && useradd -r -g elearning elearning
-
-# Establecer directorio de trabajo
-WORKDIR /app
-
-# Crear directorio para uploads
-RUN mkdir -p /app/uploads && chown -R elearning:elearning /app
-
-# Copiar JAR desde la etapa de build
-COPY --from=build /app/target/*.jar app.jar
-
-# Cambiar propietario de los archivos
-RUN chown -R elearning:elearning /app
-
-# Cambiar a usuario no-root
-USER elearning
-
-# Exponer puerto
+# Expose port
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8080/actuator/health || exit 1
-
-# Comando de inicio
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run the application
+CMD ["java", "-jar", "target/Dev-learning-Platform-0.0.1-SNAPSHOT.jar"]
