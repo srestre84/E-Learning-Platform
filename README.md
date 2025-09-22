@@ -1,25 +1,68 @@
-# 🚀 E-Learning Platform - Academia Digital para Desarrolladores
+# 🚀 E-Learning Platform v2.0 - Academia Digital para Desarrolladores
 
 <div align="center">
 
+![Version](https://img.shields.io/badge/Version-2.0-blue?style=for-the-badge&logo=git&logoColor=white)
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.5-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-005C84?style=for-the-badge&logo=mysql&logoColor=white)
 ![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)
 ![Stripe](https://img.shields.io/badge/Stripe-Payments-635BFF?style=for-the-badge&logo=stripe&logoColor=white)
 ![Oracle Cloud](https://img.shields.io/badge/Oracle%20Cloud-Infrastructure-F80000?style=for-the-badge&logo=oracle&logoColor=white)
-![Vercel](https://img.shields.io/badge/Vercel-Deploy-000000?style=for-the-badge&logo=vercel&logoColor=white)
+![Netlify](https://img.shields.io/badge/Netlify-Deploy-00C7B7?style=for-the-badge&logo=netlify&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
 
 [![Repositorio](https://img.shields.io/badge/GitHub-E--Learning--Platform-181717?style=for-the-badge&logo=github)](https://github.com/Juan-Valenzuela3/E-Learning-Platform/tree/develop)
 [![Trello](https://img.shields.io/badge/Trello-Scrum%20Board-0079BF?style=for-the-badge&logo=trello&logoColor=white)](https://trello.com/b/v7VAKuAp/hackathon-one)
+[![Demo Live](https://img.shields.io/badge/Demo-Live%20App-00C851?style=for-the-badge&logo=netlify&logoColor=white)](https://68d1ca8ed053bef8d836fb49--e-learning-platform-v2.netlify.app)
 [![Deploy Status](https://img.shields.io/badge/Deploy-Oracle%20Cloud-46E3B7?style=for-the-badge&logo=oracle&logoColor=white)](#)
 
 ### **🏆 Proyecto desarrollado para el Hackathon NoCountry - Oracle Next Education (ONE)**
 
 *Una plataforma innovadora que democratiza el acceso a la educación tecnológica de calidad, conectando instructores expertos con desarrolladores en crecimiento*
 
+## 🆕 **Versión 2.0 - Nuevas Funcionalidades**
+
+**Esta es la versión 2.0 del E-Learning Platform**, que incluye mejoras significativas y nuevas funcionalidades que posteriormente se integrarán con la versión 1.0 original:
+
+### ✨ **Nuevas Características v2.0**
+- 🎨 **Diseño Responsivo Completo**: Interfaz adaptada para móviles, tablets y desktop
+- 🔧 **Mejoras en UX/UI**: Componentes más modernos y experiencia de usuario optimizada
+- 🚀 **Optimizaciones de Performance**: Carga más rápida y mejor manejo de errores
+- 🛡️ **CORS Mejorado**: Configuración robusta para despliegues en Netlify y Render
+- 📱 **Mobile-First Design**: Prioridad en experiencia móvil con diseño responsive
+- ⚡ **Mejor Manejo de Errores**: Interceptores mejorados y retry automático
+- 🎯 **Componentes Reutilizables**: Arquitectura más modular y mantenible
+
+### 🔄 **Roadmap de Integración**
+- **Fase 1**: ✅ v2.0 desplegada y funcionando independientemente
+- **Fase 2**: 🔄 Integración con v1.0 y merge de funcionalidades
+- **Fase 3**: 🚀 Lanzamiento de la versión unificada final
+
 </div>
+
+---
+
+## 📊 **Comparación v1.0 vs v2.0**
+
+| Característica | v1.0 Original | v2.0 Mejorada |
+|----------------|---------------|---------------|
+| **Responsive Design** | Básico | ✅ Completo (Mobile-First) |
+| **CORS Configuration** | Local | ✅ Netlify + Render |
+| **Error Handling** | Estándar | ✅ Interceptores + Retry |
+| **Performance** | Base | ✅ Optimizada |
+| **UI Components** | Material-UI | ✅ Tailwind + Custom |
+| **Deployment** | Oracle Cloud | ✅ Netlify + Render |
+| **Mobile Experience** | Limitada | ✅ Prioritaria |
+| **Code Architecture** | Monolítica | ✅ Modular |
+
+### 🎯 **Objetivo de v2.0**
+La versión 2.0 fue desarrollada para:
+- Probar nuevas tecnologías y enfoques
+- Mejorar la experiencia móvil
+- Optimizar el rendimiento
+- Facilitar el mantenimiento
+- Preparar la integración final con v1.0
 
 ---
 
@@ -116,7 +159,21 @@
 
 ---
 
-## ☁️ **Arquitectura de Despliegue en Oracle Cloud**
+## ☁️ **Arquitectura de Despliegue v2.0**
+
+### **Frontend - Netlify**
+- **URL**: https://68d1ca8ed053bef8d836fb49--e-learning-platform-v2.netlify.app
+- **Plataforma**: Netlify (CDN Global)
+- **Build**: Automático desde GitHub
+- **Features**: Deploy instantáneo, SSL automático, optimización de assets
+
+### **Backend - Render**
+- **URL**: https://e-learning-platform-2-dew2.onrender.com
+- **Plataforma**: Render (Cloud Platform)
+- **Database**: PostgreSQL (Render managed)
+- **Features**: Auto-deploy, health checks, logging integrado
+
+### **Arquitectura de Despliegue en Oracle Cloud (v1.0)**
 
 ### **Infraestructura como Código**
 
