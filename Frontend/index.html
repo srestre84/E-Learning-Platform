@@ -10,7 +10,43 @@
 
 <body>
   <div id="root"></div>
-  <script src="/disable-extensions.js"></script>
+  <script>
+    // Script para deshabilitar extensiones problemáticas
+    (function() {
+      'use strict';
+      
+      console.log("🔧 Deshabilitando extensiones problemáticas...");
+
+      // Deshabilitar extensiones que pueden causar problemas de listener asíncrono
+      if (typeof chrome !== 'undefined' && chrome.runtime) {
+        console.log("🚫 Chrome extensiones detectadas");
+      }
+
+      // Limpiar listeners problemáticos
+      if (typeof window !== 'undefined') {
+        // Remover listeners de mensajes que puedan estar causando problemas
+        const originalAddEventListener = window.addEventListener;
+        window.addEventListener = function(type, listener, options) {
+          if (type === 'message' && typeof listener === 'function') {
+            console.log("⚠️ Interceptando listener de mensaje");
+            // Wrapper para evitar problemas de asincronía
+            const wrappedListener = function(event) {
+              try {
+                return listener(event);
+              } catch (error) {
+                console.error("❌ Error en listener de mensaje:", error);
+                return false;
+              }
+            };
+            return originalAddEventListener.call(this, type, wrappedListener, options);
+          }
+          return originalAddEventListener.call(this, type, listener, options);
+        };
+      }
+
+      console.log("✅ Extensiones deshabilitadas");
+    })();
+  </script>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 

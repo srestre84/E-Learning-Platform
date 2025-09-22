@@ -6,13 +6,13 @@ const isProd = import.meta.env.MODE === 'production' || import.meta.env.VITE_ENV
 // 🌐 Base URL según el entorno
 const API_URL = isProd
   ? 'https://e-learning-platform-2-dew2.onrender.com'
-  : 'http://localhost:8081';
+  : 'http://localhost:8080';
 
 
 // ✅ Crear instancia de Axios
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 30000,
+  timeout: 60000, // Aumentar timeout para Render (puede tardar en despertar)
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -205,9 +205,17 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // ⏳ Reintento automático si hubo timeout
+    // ⏳ Reintento automático si hubo timeout (especialmente para Render)
     if (error.code === "ECONNABORTED" && !originalRequest._retry) {
       originalRequest._retry = true;
+      console.log("🔄 Reintentando petición después de timeout...");
+      return api(originalRequest);
+    }
+
+    // 🔄 Reintento para errores de conexión (Render puede estar despertando)
+    if (error.code === "ERR_NETWORK" && !originalRequest._retry) {
+      originalRequest._retry = true;
+      console.log("🔄 Reintentando petición después de error de red...");
       return api(originalRequest);
     }
 
@@ -215,6 +223,14 @@ api.interceptors.response.use(
     if (error.code === "ERR_NETWORK") {
       return Promise.reject(
         new Error("No se pudo conectar con el servidor. Verifica tu conexión a internet.")
+      );
+    }
+
+    // 🔌 Error de extensiones del navegador
+    if (error.message && error.message.includes("message channel closed")) {
+      console.warn("⚠️ Error causado por extensiones del navegador. Intenta en modo incógnito.");
+      return Promise.reject(
+        new Error("Error de comunicación. Intenta deshabilitar extensiones o usar modo incógnito.")
       );
     }
 
