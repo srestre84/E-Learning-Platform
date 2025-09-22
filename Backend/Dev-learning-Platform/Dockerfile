@@ -24,5 +24,8 @@ RUN mvn clean package -DskipTests
 # Expose port
 EXPOSE 8080
 
+# List files to debug
+RUN ls -la target/
+
 # Run the application
 CMD ["java", "-jar", "target/elearning-platform-0.0.1-SNAPSHOT.jar"]
