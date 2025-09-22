@@ -1,37 +1,50 @@
 #!/bin/bash
 
-echo "🔍 Probando configuración CORS del backend..."
+# CORS Test Script for E-Learning Platform
+# This script tests CORS configuration for your deployed backend
+
+echo "🔍 Testing CORS Configuration..."
+echo "=================================="
+
+# Backend URL (update this with your actual Render URL)
+BACKEND_URL="https://e-learning-platform-1-oupq.onrender.com"
+FRONTEND_URL="https://e-learning-platform-v2.netlify.app"
+
+echo "Backend URL: $BACKEND_URL"
+echo "Frontend URL: $FRONTEND_URL"
 echo ""
 
-# URL del backend
-BACKEND_URL="http://149.130.176.157:8080"
-
-echo "1. Probando OPTIONS (preflight request)..."
-curl -i -X OPTIONS \
-  -H "Origin: http://localhost:5173" \
-  -H "Access-Control-Request-Method: POST" \
-  -H "Access-Control-Request-Headers: Content-Type" \
-  "${BACKEND_URL}/api/users/register"
+# Test 1: Preflight request (OPTIONS)
+echo "1. Testing OPTIONS preflight request..."
+curl -X OPTIONS \
+  -H "Origin: $FRONTEND_URL" \
+  -H "Access-Control-Request-Method: GET" \
+  -H "Access-Control-Request-Headers: Content-Type,Authorization" \
+  -v \
+  "$BACKEND_URL/api/courses" 2>&1 | grep -E "(Access-Control|HTTP|Origin)"
 
 echo ""
-echo "----------------------------------------"
-echo ""
-
-echo "2. Probando POST directo con CORS headers..."
-curl -i -X POST \
-  -H "Origin: http://localhost:5173" \
+echo "2. Testing actual GET request..."
+curl -X GET \
+  -H "Origin: $FRONTEND_URL" \
   -H "Content-Type: application/json" \
-  -d '{"userName":"test","lastName":"user","email":"test@test.com","password":"Test123456","role":"STUDENT"}' \
-  "${BACKEND_URL}/api/users/register"
+  -v \
+  "$BACKEND_URL/api/courses" 2>&1 | grep -E "(Access-Control|HTTP|Origin)"
 
 echo ""
-echo "----------------------------------------"
-echo ""
+echo "3. Testing login endpoint..."
+curl -X POST \
+  -H "Origin: $FRONTEND_URL" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"test123"}' \
+  -v \
+  "$BACKEND_URL/api/auth/login" 2>&1 | grep -E "(Access-Control|HTTP|Origin)"
 
-echo "3. Probando endpoint de salud..."
-curl -i -X GET \
-  -H "Origin: http://localhost:5173" \
-  "${BACKEND_URL}/actuator/health"
-
 echo ""
-echo "✅ Pruebas completadas. Busca los headers 'Access-Control-Allow-*' en las respuestas."
+echo "✅ CORS test completed!"
+echo ""
+echo "Expected results:"
+echo "- Access-Control-Allow-Origin should include your Netlify URL"
+echo "- Access-Control-Allow-Methods should include GET,POST,PUT,DELETE,OPTIONS"
+echo "- Access-Control-Allow-Headers should include * or specific headers"
+echo "- Access-Control-Allow-Credentials should be true"
