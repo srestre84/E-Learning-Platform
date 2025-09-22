@@ -18,6 +18,12 @@
     manejo más claro de los temas claro y oscuro.
   */
   :root {
+    /* Variables de responsividad */
+    --container-padding: 1rem;
+    --container-max-width: 1200px;
+    --header-height: 4rem;
+    --sidebar-width: 16rem;
+    --sidebar-collapsed-width: 4rem;
     /* --- Variables de color de marca de Figma --- */
     --color-azure-11: #111827;
     --color-black-solid: #000000;
@@ -130,6 +136,39 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Configuración responsive para diferentes dispositivos */
+  @media (max-width: 640px) {
+    :root {
+      --container-padding: 0.75rem;
+      --header-height: 3.5rem;
+      --sidebar-width: 100vw;
+    }
+  }
+
+  @media (min-width: 641px) and (max-width: 768px) {
+    :root {
+      --container-padding: 1rem;
+      --header-height: 4rem;
+      --sidebar-width: 14rem;
+    }
+  }
+
+  @media (min-width: 769px) and (max-width: 1024px) {
+    :root {
+      --container-padding: 1.25rem;
+      --header-height: 4rem;
+      --sidebar-width: 16rem;
+    }
+  }
+
+  @media (min-width: 1025px) {
+    :root {
+      --container-padding: 1.5rem;
+      --header-height: 4rem;
+      --sidebar-width: 16rem;
+    }
+  }
 }
 
 /*
@@ -142,5 +181,58 @@
   */
   .border-border {
     @apply border border-solid border-neutral-200;
+  }
+
+  /* Clases responsive para contenedores */
+  .container-responsive {
+    @apply w-full mx-auto px-4 sm:px-6 lg:px-8;
+    max-width: var(--container-max-width);
+    padding-left: var(--container-padding);
+    padding-right: var(--container-padding);
+  }
+
+  /* Grid responsive para cards */
+  .grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6;
+  }
+
+  /* Texto responsive */
+  .text-responsive-xl {
+    @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl;
+  }
+
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl md:text-2xl lg:text-3xl;
+  }
+
+  .text-responsive-base {
+    @apply text-sm sm:text-base md:text-lg;
+  }
+
+  /* Botones responsive */
+  .btn-responsive {
+    @apply w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base;
+  }
+
+  /* Espaciado responsive */
+  .spacing-responsive {
+    @apply py-8 sm:py-12 md:py-16 lg:py-20;
+  }
+
+  /* Sidebar responsive */
+  .sidebar-responsive {
+    width: var(--sidebar-width);
+    transition: width 0.3s ease-in-out;
+  }
+
+  @media (max-width: 768px) {
+    .sidebar-responsive {
+      @apply fixed inset-y-0 left-0 z-50 transform -translate-x-full;
+      width: var(--sidebar-width);
+    }
+    
+    .sidebar-responsive.open {
+      @apply translate-x-0;
+    }
   }
 }

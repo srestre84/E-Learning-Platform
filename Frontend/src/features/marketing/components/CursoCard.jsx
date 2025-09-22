@@ -33,7 +33,7 @@ export default function CursoCard({ course, isAuthenticated = false }) {
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow">
       {/* Imagen */}
-      <div className="relative h-40 w-full bg-gray-100">
+      <div className="relative h-32 sm:h-36 md:h-40 w-full bg-gray-100">
         <img
           src={course.imageUrl || generateCoursePlaceholder(course.title)}
           alt={course.title}
@@ -48,39 +48,39 @@ export default function CursoCard({ course, isAuthenticated = false }) {
       </div>
 
       {/* Contenido */}
-      <div className="p-4 flex flex-col flex-grow">
-        <h3 className="font-bold text-gray-800 text-lg mb-2 line-clamp-2">
+      <div className="p-3 sm:p-4 flex flex-col flex-grow">
+        <h3 className="font-bold text-gray-800 text-base sm:text-lg mb-2 line-clamp-2">
           {course.title}
         </h3>
 
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+        <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-2">
           {course.description || "Sin descripción"}
         </p>
 
         {course.instructor && (
-          <p className="text-sm text-gray-500 mb-3">Por {course.instructor}</p>
+          <p className="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-3">Por {course.instructor}</p>
         )}
 
-        <div className="flex justify-between items-center mt-auto pt-3 border-t border-gray-100">
-          <div className="flex items-center space-x-2">
-            <Users className="h-4 w-4 text-gray-500" />
-            <span className="text-sm text-gray-600">
+        <div className="flex justify-between items-center mt-auto pt-2 sm:pt-3 border-t border-gray-100">
+          <div className="flex items-center space-x-1 sm:space-x-2">
+            <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
+            <span className="text-xs sm:text-sm text-gray-600">
               {course.studentsEnrolled || 0}
             </span>
-            <BookOpen className="h-4 w-4 text-gray-500 ml-2" />
-            <span className="text-sm text-gray-600">
+            <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500 ml-1 sm:ml-2" />
+            <span className="text-xs sm:text-sm text-gray-600">
               {course.sections || 0}
             </span>
           </div>
 
-          <span className="font-bold text-gray-900">
+          <span className="font-bold text-sm sm:text-base text-gray-900">
             {course.price === 0 ? "Gratis" : `$${course.price.toFixed(2)}`}
           </span>
         </div>
 
         <Button
           asChild
-          className="w-full mt-3 bg-red-500 hover:bg-red-600 text-white">
+          className="w-full mt-2 sm:mt-3 bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm py-2 sm:py-3">
           <Link to={`/cursos/${course.id}`}>Ver detalles</Link>
         </Button>
       </div>
