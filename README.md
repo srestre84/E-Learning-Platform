@@ -52,32 +52,17 @@
 - **Control de Versiones**: Actualización de contenido sin afectar estudiantes activos
 - **Análisis de Engagement**: Métricas detalladas de progreso y interacción
 
-### 🎥 **Reproductor de Video Avanzado**
-- Streaming adaptativo con múltiples calidades (HD, FHD, 4K)
-- Control de velocidad de reproducción (0.5x a 2x)
-- Marcadores de tiempo y notas personalizadas
-- Transcripciones automáticas y subtítulos
-- Prevención de descarga no autorizada
-
 ### 💳 **Sistema de Pagos Robusto**
 - **Integración Stripe**: Pagos seguros con tarjetas de crédito/débito
-- **Modelos de Precios**: Cursos individuales, suscripciones y paquetes
-- **Cupones y Descuentos**: Sistema promocional avanzado
-- **Facturación Automática**: Generación de facturas y comprobantes
-- **Análisis Financiero**: Dashboard de ingresos para instructores
+- **Modelos de Precios**: Cursos individuales
 
 ### 🏆 **Progreso y Certificaciones**
 - **Tracking Detallado**: Seguimiento granular del progreso del estudiante
-- **Certificados Digitales**: Generación automática con verificación blockchain
 - **Gamificación**: Sistema de badges y logros por completar objetivos
-- **Evaluaciones**: Quizzes, exámenes y proyectos prácticos
-- **Portfolio Integration**: Conexión con GitHub para mostrar proyectos
 
 ### 🔍 **Búsqueda y Recomendaciones**
 - **Motor de Búsqueda**: Filtros avanzados por tecnología, nivel y precio
-- **IA Recomendaciones**: Algoritmos de machine learning para sugerir cursos
 - **Wishlist**: Lista de cursos deseados con notificaciones de descuentos
-- **Reviews y Ratings**: Sistema de calificaciones y comentarios verificados
 
 ---
 
@@ -466,9 +451,7 @@ mvn test -Dtest=*PerformanceTest
 |------|-----------|--------------|----------|
 | **Unit Tests** | 85%+ | JUnit 5, Mockito | Lógica de negocio |
 | **Integration Tests** | 70%+ | Testcontainers, WireMock | APIs y BD |
-| **Performance Tests** | Key Endpoints | JMeter, AssertJ | Rendimiento |
 | **Security Tests** | Auth & Authorization | Spring Security Test | Seguridad |
-| **E2E Tests** | Critical Flows | Selenium, Cypress | Usuario final |
 
 ### **Scripts de Validación**
 
@@ -494,7 +477,7 @@ mvn test -Dtest=*PerformanceTest
 
 | Desarrollador | GitHub | LinkedIn | Rol y Especialización |
 |---------------|--------|----------|---------------------|
-| **Juan Valenzuela** | [@Juan-Valenzuela3](https://github.com/Juan-Valenzuela3) | [LinkedIn](https://linkedin.com/in/juan-valenzuela-dev) | *🚀 Tech Lead & DevOps Engineer*<br/>Backend Architecture, Oracle Cloud, CI/CD |
+| **Juan Valenzuela** | [@Juan-Valenzuela3](https://github.com/Juan-Valenzuela3) | [LinkedIn](https://www.linkedin.com/in/juan-valenzuela-camelo) | *🚀 Tech Lead & DevOps Engineer*<br/>Backend Architecture, Oracle Cloud, CI/CD |
 | **Sebastian Restrepo** | [@srestre84](https://github.com/srestre84) | [LinkedIn](#) | *⚡ Backend Developer*<br/>Spring Boot, API Design, Database Architecture |
 | **Alejandro Anchundia** | [@EV3THlm](https://github.com/anchundiatech) | [LinkedIn](#) | *🎨 Frontend Developer*<br/>React Development, UI/UX, Frontend Architecture |
 | **Monica Baez** | [@MONKORPSE](https://github.com/MONKORPSE) | [LinkedIn](#) | *🔒 Testing Developer & QA*<br/>JUnit, Testing |
