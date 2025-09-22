@@ -25,6 +25,9 @@ public class DatabaseProperties {
         // Convertir postgresql:// a jdbc:postgresql:// con formato correcto
         String jdbcUrl = convertToJdbcUrl(databaseUrl);
         
+        System.out.println("Original DATABASE_URL: " + databaseUrl);
+        System.out.println("Converted JDBC URL: " + jdbcUrl);
+        
         config.setJdbcUrl(jdbcUrl);
         config.setDriverClassName("org.postgresql.Driver");
         config.setMaximumPoolSize(5);
