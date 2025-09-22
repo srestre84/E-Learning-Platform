@@ -42,7 +42,7 @@ public class DatabaseProperties {
         }
         
         try {
-            // Parsear la URL de Render: postgresql://user:password@host:port/database
+            // Parsear la URL de Render: postgresql://user:password@host/database
             String urlWithoutProtocol = databaseUrl.substring("postgresql://".length());
             String[] parts = urlWithoutProtocol.split("@");
             
@@ -58,19 +58,14 @@ public class DatabaseProperties {
             String username = credParts[0];
             String password = credParts[1];
             
-            // Extraer host, puerto y base de datos
+            // Extraer host y base de datos
             String[] hostParts = hostAndDb.split("/");
-            String hostPort = hostParts[0];
+            String host = hostParts[0];
             String database = hostParts[1];
             
-            // Si no hay puerto, agregar el puerto por defecto de PostgreSQL
-            if (!hostPort.contains(":")) {
-                hostPort += ":5432";
-            }
-            
-            // Construir la URL JDBC correcta
-            return String.format("jdbc:postgresql://%s/%s?user=%s&password=%s", 
-                hostPort, database, username, password);
+            // Construir la URL JDBC correcta con puerto por defecto
+            return String.format("jdbc:postgresql://%s:5432/%s?user=%s&password=%s", 
+                host, database, username, password);
                 
         } catch (Exception e) {
             // Si hay error en el parsing, usar la conversión simple
