@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
  * Se ejecuta en perfiles de desarrollo, test, local y default
  */
 @Service
-@Profile({"dev", "test", "local", "default"})
+@Profile({"dev", "test", "local", "default", "vercel"})
 @RequiredArgsConstructor
 @Slf4j
 public class TestDataService implements CommandLineRunner {
