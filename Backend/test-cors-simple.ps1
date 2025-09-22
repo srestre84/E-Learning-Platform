@@ -1,7 +1,7 @@
 # CORS Test Script for E-Learning Platform (PowerShell)
 Write-Host "Testing CORS Configuration..." -ForegroundColor Cyan
 
-$BACKEND_URL = "https://e-learning-platform-1-oupq.onrender.com"
+$BACKEND_URL = "https://e-learning-platform-2-dew2.onrender.com"
 $FRONTEND_URL = "https://e-learning-platform-v2.netlify.app"
 
 Write-Host "Backend URL: $BACKEND_URL"
