@@ -3,19 +3,20 @@
 <div align="center">
 
 ![Version](https://img.shields.io/badge/Version-2.0-blue?style=for-the-badge&logo=git&logoColor=white)
-![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
+![Java](https://img.shields.io/badge/Java-17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.5-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-8.0-005C84?style=for-the-badge&logo=mysql&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 ![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-5.x-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![Stripe](https://img.shields.io/badge/Stripe-Payments-635BFF?style=for-the-badge&logo=stripe&logoColor=white)
-![Oracle Cloud](https://img.shields.io/badge/Oracle%20Cloud-Infrastructure-F80000?style=for-the-badge&logo=oracle&logoColor=white)
 ![Netlify](https://img.shields.io/badge/Netlify-Deploy-00C7B7?style=for-the-badge&logo=netlify&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
+![Render](https://img.shields.io/badge/Render-Backend-46E3B7?style=for-the-badge&logo=render&logoColor=white)
 
 [![Repositorio](https://img.shields.io/badge/GitHub-E--Learning--Platform-181717?style=for-the-badge&logo=github)](https://github.com/Juan-Valenzuela3/E-Learning-Platform/tree/develop)
 [![Trello](https://img.shields.io/badge/Trello-Scrum%20Board-0079BF?style=for-the-badge&logo=trello&logoColor=white)](https://trello.com/b/v7VAKuAp/hackathon-one)
 [![Demo Live](https://img.shields.io/badge/Demo-Live%20App-00C851?style=for-the-badge&logo=netlify&logoColor=white)](https://68d1ca8ed053bef8d836fb49--e-learning-platform-v2.netlify.app)
-[![Deploy Status](https://img.shields.io/badge/Deploy-Oracle%20Cloud-46E3B7?style=for-the-badge&logo=oracle&logoColor=white)](#)
+[![Backend Deploy](https://img.shields.io/badge/Backend-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://e-learning-platform-2-dew2.onrender.com)
 
 ### **🏆 Proyecto desarrollado para el Hackathon NoCountry - Oracle Next Education (ONE)**
 
@@ -111,19 +112,19 @@ La versión 2.0 fue desarrollada para:
 
 ## 🏗️ **Arquitectura Tecnológica**
 
-### **Arquitectura General**
+### **Arquitectura General v2.0**
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Frontend      │    │    Backend       │    │   Cloud Storage │
-│   React 18      │◄──►│  Spring Boot 3.5 │◄──►│  Oracle Object  │
-│   Vercel        │    │  Oracle Cloud    │    │    Storage      │
+│   Frontend      │    │    Backend       │    │   File Storage  │
+│   React 18      │◄──►│  Spring Boot 3.5 │◄──►│  Local Storage  │
+│   Netlify       │    │  Render          │    │  Docker Volumes │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
          │                        │                        │
          └────────────────────────┼────────────────────────┘
                                   ▼
                     ┌──────────────────┐
-                    │   MySQL Database │
-                    │  Oracle Cloud    │
+                    │   PostgreSQL     │
+                    │  Render Database │
                     └──────────────────┘
 ```
 
@@ -132,14 +133,15 @@ La versión 2.0 fue desarrollada para:
 | Categoría | Tecnología | Versión | Propósito |
 |-----------|------------|---------|-----------|
 | **Core Framework** | Spring Boot | 3.5.5 | Framework principal de aplicación |
-| **Lenguaje** | Java | 21 LTS | Lenguaje de desarrollo principal |
-| **Base de Datos** | MySQL | 8.0+ | Almacenamiento principal de datos |
+| **Lenguaje** | Java | 17 LTS | Lenguaje de desarrollo principal |
+| **Base de Datos** | PostgreSQL | 13+ | Almacenamiento principal de datos |
+| **Base de Datos Dev** | H2 | 2.x | Base de datos en memoria para desarrollo |
 | **ORM** | Spring Data JPA | - | Mapeo objeto-relacional |
 | **Seguridad** | Spring Security + JWT | - | Autenticación y autorización |
 | **Pagos** | Stripe Java SDK | - | Procesamiento de pagos |
-| **Cloud Storage** | Oracle Cloud SDK | - | Almacenamiento de recursos multimedia |
+| **Almacenamiento** | Local Storage | - | Almacenamiento de archivos locales |
 | **Documentación** | SpringDoc OpenAPI | - | Documentación automática de API |
-| **Testing** | JUnit 5 + Testcontainers | - | Testing integral automatizado |
+| **Testing** | JUnit 5 | - | Testing unitario automatizado |
 | **Build** | Maven | 3.8+ | Gestión de dependencias y build |
 
 ### **Stack Tecnológico Frontend**
@@ -147,15 +149,15 @@ La versión 2.0 fue desarrollada para:
 | Categoría | Tecnología | Versión | Propósito |
 |-----------|------------|---------|-----------|
 | **Framework** | React | 18 | Biblioteca principal UI |
-| **Build Tool** | Vite | Latest | Build tool y dev server |
-| **UI Framework** | Material-UI | v5 | Componentes de interfaz |
-| **Styling** | TailwindCSS | v3 | Framework CSS utility-first |
-| **Routing** | React Router | v7 | Enrutamiento SPA |
-| **State Management** | TanStack Query | v4 | Gestión de estado servidor |
-| **Forms** | React Hook Form + Yup | - | Manejo de formularios y validación |
+| **Build Tool** | Vite | 5.x | Build tool y dev server |
+| **Styling** | TailwindCSS | 3.x | Framework CSS utility-first |
+| **UI Components** | Custom Components | - | Componentes personalizados |
+| **Routing** | React Router | v6 | Enrutamiento SPA |
+| **State Management** | Context API | - | Gestión de estado global |
+| **Forms** | React Hook Form | - | Manejo de formularios |
 | **HTTP Client** | Axios | - | Cliente HTTP para API calls |
-| **Charts** | Chart.js + Recharts | - | Visualización de datos |
 | **Icons** | Lucide React | - | Biblioteca de iconos |
+| **Responsive** | Mobile-First | - | Diseño responsivo optimizado |
 
 ---
 
@@ -350,6 +352,8 @@ CREATE TABLE enrollments (
 | **RF08** | Dashboard de administración | 🟡 Importante | ✅ Completado |
 | **RF09** | Sistema de búsqueda y filtros | 🟡 Importante | ✅ Completado |
 | **RF10** | Generación de certificados digitales | 🟢 Opcional | 🚧 En desarrollo |
+| **RF11** | Diseño responsivo completo (Mobile-First) | 🟡 Importante | ✅ Completado |
+| **RF12** | Manejo robusto de errores y retry automático | 🟡 Importante | ✅ Completado |
 
 ### **Requisitos No Funcionales**
 
@@ -382,9 +386,9 @@ CREATE TABLE enrollments (
 
 ### **Prerrequisitos del Entorno**
 
-- **Java Development Kit**: OpenJDK 21 LTS
+- **Java Development Kit**: OpenJDK 17 LTS
 - **Build Tool**: Apache Maven 3.8+
-- **Base de Datos**: MySQL 8.0+ o MariaDB 10.6+
+- **Base de Datos**: PostgreSQL 13+ (Producción) / H2 (Desarrollo)
 - **Node.js**: v18+ para el frontend
 - **Package Manager**: npm/yarn/pnpm
 - **Git**: Para control de versiones
@@ -404,25 +408,30 @@ cd E-Learning-Platform/Backend/Dev-learning-Platform
 cp .env.example .env
 
 # Configurar variables críticas
-DB_URL=jdbc:mysql://localhost:3306/elearning_db
-DB_USERNAME=your_db_username
+# Para PostgreSQL (Producción)
+DB_URL=jdbc:postgresql://localhost:5432/elearning_db
+DB_USERNAME=elearning_user
 DB_PASSWORD=your_secure_password
+
+# Para H2 (Desarrollo) - Se configura automáticamente
+# DB_URL=jdbc:h2:mem:testdb
+# DB_USERNAME=sa
+# DB_PASSWORD=
+
 JWT_SECRET=your_super_secret_jwt_key_256_bits_minimum
 STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
 STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
-OCI_CONFIG_FILE=/path/to/oci/config
-OCI_CONFIG_PROFILE=DEFAULT
 ```
 
 3. **Configurar base de datos**
 ```sql
--- Crear base de datos
-CREATE DATABASE elearning_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- Para PostgreSQL (Producción)
+CREATE DATABASE elearning_db;
+CREATE USER elearning_user WITH PASSWORD 'secure_password';
+GRANT ALL PRIVILEGES ON DATABASE elearning_db TO elearning_user;
 
--- Crear usuario específico (opcional pero recomendado)
-CREATE USER 'elearning_user'@'localhost' IDENTIFIED BY 'secure_password';
-GRANT ALL PRIVILEGES ON elearning_db.* TO 'elearning_user'@'localhost';
-FLUSH PRIVILEGES;
+-- Para H2 (Desarrollo) - Se configura automáticamente
+-- No requiere configuración manual
 ```
 
 4. **Compilar y ejecutar**
@@ -456,8 +465,8 @@ pnpm install
 3. **Configurar variables de entorno**
 ```bash
 # Crear archivo .env.local
-echo "REACT_APP_API_BASE_URL=http://localhost:8080/api" > .env.local
-echo "REACT_APP_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_key" >> .env.local
+echo "VITE_API_BASE_URL=http://localhost:8080/api" > .env.local
+echo "VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_key" >> .env.local
 ```
 
 4. **Ejecutar en modo desarrollo**
