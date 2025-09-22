@@ -3,7 +3,7 @@ import api from './api';
 
 export const enrollInCourse = async (courseId) => {
   try {
-    const response = await api.post('/enrollments', { courseId });
+    const response = await api.post('/api/enrollments', { courseId });
     return response.data;
   } catch (error) {
     console.error('Enrollment error:', error.response);
