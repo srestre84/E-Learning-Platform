@@ -1,4 +1,0 @@
-Force Render deployment - Docker JAR fix
-Timestamp: 2025-09-22T04:05:00Z
-Commit: 51bb47df
-Status: Deploying with corrected JAR name
