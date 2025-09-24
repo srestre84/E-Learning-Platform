@@ -1,6 +1,8 @@
 # Sebastián Restrepo Rico
 ### Ejecutivo Comercial | Backend Developer
 
+> 🚀 **¡Bienvenido a mi perfil profesional!** Soy un desarrollador backend con 15+ años de experiencia en el sector financiero, ahora enfocado en crear soluciones tecnológicas innovadoras.
+
 <div align="center">
   <img src="https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=java&logoColor=white" alt="Java" />
   <img src="https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white" />
